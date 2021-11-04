@@ -13,22 +13,28 @@ def main():
 
     Files = args.input_file
 
-    for F in Files:
-
-        t, decay, echo_time = userfile(F)
-
-        decay = phase_correction(decay)
-
-        if args.monoexponential:
-            out_1(t, decay, echo_time, F)
-        elif args.biexponential:
-            out_2(t, decay, echo_time, F)
-        elif args.triexponential:
-            out_3(t, decay, echo_time, F)
-        elif args.multiexponential:
-            out_multi(t, decay, echo_time, F)
-        else:
-            print('Must choose an option: -exp1, -exp2, -exp3 or -all. Use -h for guidance.')
+    if args.monoexponential:
+        for F in Files:
+            t, decay, tEcho = userfile(F)
+            decay = phase_correction(decay)
+            out_1(t, decay, tEcho, F)
+    elif args.biexponential:
+        for F in Files:
+            t, decay, tEcho = userfile(F)
+            decay = phase_correction(decay)
+            out_2(t, decay, tEcho, F)
+    elif args.triexponential:
+        for F in Files:
+            t, decay, tEcho = userfile(F)
+            decay = phase_correction(decay)
+            out_3(t, decay, tEcho, F)
+    elif args.multiexponential:
+        for F in Files:
+            t, decay, tEcho = userfile(F)
+            decay = phase_correction(decay)
+            out_multi(t, decay, tEcho, F)
+    else:
+        print('Must choose an option: -exp1, -exp2, -exp3 or -all. Use -h for guidance.')
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

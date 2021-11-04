@@ -50,8 +50,8 @@ def userfile(input_file):
     Im = data[:, 2]
     decay = Re + Im * 1j # Complex signal
 
-    echo_time = t[1] - t[0]
-    return t, decay, echo_time
+    tEcho = t[1] - t[0]
+    return t, decay, tEcho
 
 def phase_correction(decay):
     '''
@@ -111,7 +111,7 @@ def fit_1(t, decay):
 
     return popt, r2, chi2, M0, T2, M0_SD, T2_SD
 
-def plot_1(t, decay, popt, echo_time, input_file):
+def plot_1(t, decay, popt, tEcho, input_file):
     '''
     Creates plot for monoexponential.
     '''
@@ -121,7 +121,7 @@ def plot_1(t, decay, popt, echo_time, input_file):
     ax.plot(t, decay, lw=3, label='data')
     ax.plot(t, exp_1(t, *popt), lw=2, label='mono')
 
-    ax.text(0.02,0.02, fr'$T_E$={echo_time} ms', ha='left', va='bottom',
+    ax.text(0.02,0.02, fr'$T_E$={tEcho} ms', ha='left', va='bottom',
             transform=ax.transAxes, size='small') #medium
 
     ax.set_xlabel('t [ms]')
@@ -131,14 +131,14 @@ def plot_1(t, decay, popt, echo_time, input_file):
 
     plt.savefig(f'{input_file.split(".txt")[0]}_plot-exp1')
 
-def out_1(t, decay, echo_time, input_file):
+def out_1(t, decay, tEcho, input_file):
     '''
     Fit monoexponential, save optimized parameters with statistics and plot.
     '''
 
     popt, r2, chi2, M0, T2, M0_SD, T2_SD = fit_1(t, decay)
 
-    plot_1(t, decay, popt, echo_time, input_file)
+    plot_1(t, decay, popt, tEcho, input_file)
 
     output_file = input_file.split('.txt')[0]
     with open(f'{output_file}_fit-exp1.csv', 'w') as f:
@@ -168,7 +168,7 @@ def fit_2(t, decay):
 
     return popt, r2, chi2, M0_1, T2_1, M0_2, T2_2, M0_1_SD, T2_1_SD, M0_2_SD, T2_2_SD
 
-def plot_2(t, decay, popt, echo_time, input_file):
+def plot_2(t, decay, popt, tEcho, input_file):
     '''
     Creates plot for biexponential.
     '''
@@ -178,7 +178,7 @@ def plot_2(t, decay, popt, echo_time, input_file):
     ax.plot(t, decay, lw=3, label='data')
     ax.plot(t, exp_2(t, *popt), lw=2, label='bi')
 
-    ax.text(0.02,0.02, fr'$T_E$={echo_time} ms', ha='left', va='bottom',
+    ax.text(0.02,0.02, fr'$T_E$={tEcho} ms', ha='left', va='bottom',
             transform=ax.transAxes, size='small') #medium
 
     ax.set_xlabel('t [ms]')
@@ -188,14 +188,14 @@ def plot_2(t, decay, popt, echo_time, input_file):
 
     plt.savefig(f'{input_file.split(".txt")[0]}_plot-exp2')
 
-def out_2(t, decay, echo_time, input_file):
+def out_2(t, decay, tEcho, input_file):
     '''
     Fit biexponential, save optimized parameters with statistics and plot.
     '''
 
     popt, r2, chi2, M0_1, T2_1, M0_2, T2_2, M0_1_SD, T2_1_SD, M0_2_SD, T2_2_SD = fit_2(t, decay)
 
-    plot_2(t, decay, popt, echo_time, input_file)
+    plot_2(t, decay, popt, tEcho, input_file)
 
     output_file = input_file.split('.txt')[0]
     with open(f'{output_file}_fit-exp2.csv', 'w') as f:
@@ -225,7 +225,7 @@ def fit_3(t, decay):
 
     return popt, r2, chi2, M0_1, T2_1, M0_2, T2_2, M0_3, T2_3, M0_1_SD, T2_1_SD, M0_2_SD, T2_2_SD, M0_3_SD, T2_3_SD
 
-def plot_3(t, decay, popt, echo_time, input_file):
+def plot_3(t, decay, popt, tEcho, input_file):
     '''
     Creates plot for triexponential.
     '''
@@ -235,7 +235,7 @@ def plot_3(t, decay, popt, echo_time, input_file):
     ax.plot(t, decay, lw=3, label='data')
     ax.plot(t, exp_3(t, *popt), lw=2, label='tri')
 
-    ax.text(0.02,0.02, fr'$T_E$={echo_time} ms', ha='left', va='bottom',
+    ax.text(0.02,0.02, fr'$T_E$={tEcho} ms', ha='left', va='bottom',
             transform=ax.transAxes, size='small') #medium
 
     ax.set_xlabel('t [ms]')
@@ -245,14 +245,14 @@ def plot_3(t, decay, popt, echo_time, input_file):
 
     plt.savefig(f'{input_file.split(".txt")[0]}_plot-exp3')
 
-def out_3(t, decay, echo_time, input_file):
+def out_3(t, decay, tEcho, input_file):
     '''
     Fit triexponential, save optimized parameters with statistics and plot.
     '''
 
     popt, r2, chi2, M0_1, T2_1, M0_2, T2_2, M0_3, T2_3, M0_1_SD, T2_1_SD, M0_2_SD, T2_2_SD, M0_3_SD, T2_3_SD = fit_3(t, decay)
 
-    plot_3(t, decay, popt, echo_time, input_file)
+    plot_3(t, decay, popt, tEcho, input_file)
 
     output_file = input_file.split('.txt')[0]
     with open(f'{output_file}_fit-exp3.csv', 'w') as f:
@@ -263,7 +263,7 @@ def out_3(t, decay, echo_time, input_file):
 ######################## Multi - choosing
 ################################################################################
 
-def out_multi(t, decay, echo_time, input_file):
+def out_multi(t, decay, tEcho, input_file):
     '''
     Fits mono-, bi- and tri- exponential decay to choose best fit.
     Also save optimized parameters with statistics and plot.
@@ -282,7 +282,7 @@ def out_multi(t, decay, echo_time, input_file):
     ax.plot(t, exp_2(t, *popt_bi), lw=2, label='bi')
     ax.plot(t, exp_3(t, *popt_tri), lw=2, label='tri')
 
-    ax.text(0.02,0.02, fr'$T_E$={echo_time} ms', ha='left', va='bottom',
+    ax.text(0.02,0.02, fr'$T_E$={tEcho} ms', ha='left', va='bottom',
             transform=ax.transAxes, size='small') #medium
 
     ax.set_xlabel('t [ms]')
