@@ -1,4 +1,4 @@
-#!/usr/bin/python3.6
+#!/usr/bin/python3.8
 
 '''
     Description: core functions for FID.py.
@@ -17,7 +17,8 @@ plt.rcParams["font.size"] = 35
 
 plt.rcParams["axes.labelweight"] = "bold"
 plt.rcParams["axes.linewidth"] = 3
-plt.rcParams["axes.prop_cycle"] = cycler('color', ['tab:orange', 'mediumseagreen', 'm', 'y', 'k'])
+plt.rcParams["axes.prop_cycle"] = cycler('color', ['tab:orange',
+                                        'mediumseagreen', 'm', 'y', 'k'])
 
 plt.rcParams['xtick.major.size'] = 10
 plt.rcParams['xtick.major.width'] = 3
@@ -31,7 +32,7 @@ plt.rcParams["legend.shadow"] = True
 plt.rcParams["legend.fontsize"] = 30
 plt.rcParams["legend.edgecolor"] = 'black'
 
-plt.rcParams["figure.figsize"] = 12.5, 13.5 #12.5, 10
+plt.rcParams["figure.figsize"] = 12.5, 13.5
 plt.rcParams["figure.autolayout"] = True
 
 plt.rcParams["lines.linewidth"] = 4
@@ -96,12 +97,14 @@ def plot_FID(t, FID, ns, rd, rg, input_file):
     ax1.set_xlabel('t [ms]')
     ax1.set_ylabel(r'$\Re$[s(t)]')
     ax1.set_title(f'ns={ns} ; rd = {rd} ; rg = {rg}')
-    ax1.text(0.98,0.98, fr'$\Re$[s(0)] = {FID[0].real:.2f}', ha='right', va='top', transform=ax1.transAxes)
+    ax1.text(0.98,0.98, fr'$\Re$[s(0)] = {FID[0].real:.2f}', ha='right',
+            va='top', transform=ax1.transAxes)
 
     ax2.plot(t, FID.imag, label='Im', color='mediumseagreen')
     ax2.xaxis.tick_top()
     ax2.set_ylabel(r'$\Im$[s(t)]')
-    ax2.text(0.98,0.02, fr'$\Im$[s(0)] = {FID[0].imag:.2f}', ha='right', va='bottom', transform=ax2.transAxes)
+    ax2.text(0.98,0.02, fr'$\Im$[s(0)] = {FID[0].imag:.2f}', ha='right',
+            va='bottom', transform=ax2.transAxes)
 
     plt.savefig(f'{input_file.split(".txt")[0]}_plot-FID')
 
@@ -113,7 +116,8 @@ def plot_spec_freq(freq, spec, max_peak, ns, rd, rg, input_file):
     ax1.set_xlabel(r'$\nu$ [Hz]')
     ax1.set_ylabel(r'$\Re$[S($\nu$)]')
     ax1.set_title(f'ns={ns} ; rd = {rd} ; rg = {rg}')
-    ax1.text(0.98,0.98, f'Max = {max_peak.real:.2f}', ha='right', va='top', transform=ax1.transAxes)
+    ax1.text(0.98,0.98, f'Max = {max_peak.real:.2f}', ha='right',
+            va='top', transform=ax1.transAxes)
 
     ax2.plot(freq, spec.imag, color='mediumseagreen')
     ax2.set_ylabel(r'$\Im$[S($\nu$)]')
@@ -131,7 +135,8 @@ def plot_spec_mini(freq, spec, max_peak, ns, rd, rg, input_file):
     ax1.set_xlabel(r'$\delta$ [ppm]')
     ax1.set_ylabel(r'$\Re$[S($\nu$)]')
     ax1.set_title(f'ns={ns} ; rd = {rd} ; rg = {rg}')
-    ax1.text(0.98,0.98, f'Max = {max_peak.real:.2f}', ha='right', va='top', transform=ax1.transAxes)
+    ax1.text(0.98,0.98, f'Max = {max_peak.real:.2f}', ha='right',
+            va='top', transform=ax1.transAxes)
 
     ax2.plot(CS, spec.imag, color='mediumseagreen')
     ax2.set_ylabel(r'$\Im$[S($\nu$)]')
@@ -149,7 +154,8 @@ def plot_spec_bruker(freq, spec, max_peak, ns, rd, rg, input_file):
     ax1.set_xlabel(r'$\delta$ [ppm]')
     ax1.set_ylabel(r'$\Re$[S($\nu$)]')
     ax1.set_title(f'ns={ns} ; rd = {rd} ; rg = {rg}')
-    ax1.text(0.98,0.98, f'Max = {max_peak.real:.2f}', ha='right', va='top', transform=ax1.transAxes)
+    ax1.text(0.98,0.98, f'Max = {max_peak.real:.2f}', ha='right',
+            va='top', transform=ax1.transAxes)
 
     ax2.plot(CS, spec.imag, color='mediumseagreen')
     ax2.set_ylabel(r'$\Im$[S($\nu$)]')

@@ -1,7 +1,7 @@
-#!/usr/bin/python3.6
+#!/usr/bin/python3.8
 
 '''
-    Description:
+    Description: fit exponential decay (1, 2 or 3 components) with CPMG data.
     Written by: Ignacio J. Chevallier-Boutell.
     Dated: November, 2021.
 '''
@@ -30,25 +30,24 @@ def main():
         else:
             print('Must choose an option: -exp1, -exp2, -exp3 or -all. Use -h for guidance.')
 
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('input_file', help = "Path to the inputs file.", nargs = '+')
+    parser.add_argument('input_file', help = "Path to the inputs file.",
+                        nargs = '+')
 
-    parser.add_argument('-all', '--multiexponential', action = 'store_true', help = "Fits mono-, bi- and tri- exponential decay to choose best fit.")
+    parser.add_argument('-all', '--multiexponential', action = 'store_true',
+                        help = "Fits mono-, bi- and tri- exponential decay to \
+                        choose best fit.")
 
-    parser.add_argument('-exp1', '--monoexponential', action = 'store_true', help = "Fits monoexponential decay.")
+    parser.add_argument('-exp1', '--monoexponential', action = 'store_true',
+                        help = "Fits monoexponential decay.")
 
-    parser.add_argument('-exp2', '--biexponential', action = 'store_true', help = "Fits biexponential decay.")
+    parser.add_argument('-exp2', '--biexponential', action = 'store_true',
+                        help = "Fits biexponential decay.")
 
-    parser.add_argument('-exp3', '--triexponential', action = 'store_true', help = "Fits triexponential decay.")
-
-    # parser.add_argument('-spec', '--spectrum', action = 'store_true', help = "Plots spectrum vs frequency, with phase correction.")
-    #
-    # parser.add_argument('-mini', '--MiniSpec', action = 'store_true', help = "Plots spectrum vs CS [ppm] (Minispec=20MHz), with phase correction.")
-    #
-    # parser.add_argument('-bruker', '--Bruker', action = 'store_true', help = "Plots spectrum vs CS [ppm] (Bruker=300MHz), with phase correction.")
+    parser.add_argument('-exp3', '--triexponential', action = 'store_true',
+                        help = "Fits triexponential decay.")
 
     args = parser.parse_args()
 

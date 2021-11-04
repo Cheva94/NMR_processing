@@ -1,7 +1,7 @@
-#!/usr/bin/python3.6
+#!/usr/bin/python3.8
 
 '''
-    Description: plots FID and its spectrum, with phase correction.
+    Description: plots FID and its spectrum (Hz or ppm), with phase correction.
     Written by: Ignacio J. Chevallier-Boutell.
     Dated: November, 2021.
 '''
@@ -21,32 +21,28 @@ def main():
 
         freq, spec, max_peak = spectrum(FID, Np, dw)
 
-        if args.FID:
-            plot_FID(t, FID, ns, rd, rg, F)
+        plot_FID(t, FID, ns, rd, rg, F)
 
-        elif args.spectrum:
-            if args.MiniSpec:
-                plot_spec_mini(freq, spec, max_peak, ns, rd, rg, F)
-            elif args.Bruker:
-                plot_spec_bruker(freq, spec, max_peak, ns, rd, rg, F)
-            else:
-                plot_spec_freq(freq, spec, max_peak, ns, rd, rg, F)
-
+        if args.MiniSpec:
+            plot_spec_mini(freq, spec, max_peak, ns, rd, rg, F)
+        elif args.Bruker:
+            plot_spec_bruker(freq, spec, max_peak, ns, rd, rg, F)
         else:
-            print('Must choose an option: -fid, -spec, -mini or -bruker. Use -h for guidance.')
+            plot_spec_freq(freq, spec, max_peak, ns, rd, rg, F)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('input_file', help = "Path to the input files.", nargs = '+')
+    parser.add_argument('input_file', help = "Path to the input files.",
+                        nargs = '+')
 
-    parser.add_argument('-fid', '--FID', action = 'store_true', help = "Plots FID with phase correction.")
+    parser.add_argument('-mini', '--MiniSpec', action = 'store_true', help =
+                        "Plots spectrum vs CS [ppm] (Minispec=20MHz), with \
+                        phase correction.")
 
-    parser.add_argument('-spec', '--spectrum', action = 'store_true', help = "Plots spectrum vs frequency, with phase correction.")
-
-    parser.add_argument('-mini', '--MiniSpec', action = 'store_true', help = "Plots spectrum vs CS [ppm] (Minispec=20MHz), with phase correction.")
-
-    parser.add_argument('-bruker', '--Bruker', action = 'store_true', help = "Plots spectrum vs CS [ppm] (Bruker=300MHz), with phase correction.")
+    parser.add_argument('-bruker', '--Bruker', action = 'store_true', help =
+                        "Plots spectrum vs CS [ppm] (Bruker=300MHz), with \
+                        phase correction.")
 
     args = parser.parse_args()
 
