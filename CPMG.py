@@ -1,0 +1,55 @@
+#!/usr/bin/python3.6
+
+'''
+    Description:
+    Written by: Ignacio J. Chevallier-Boutell.
+    Dated: November, 2021.
+'''
+
+import argparse
+from core.coreCPMG import *
+
+def main():
+
+    Files = args.input_file
+
+    for F in Files:
+
+        t, decay, echo_time = userfile(F)
+
+        decay = phase_correction(decay)
+
+        if args.monoexponential:
+            out_1(t, decay, echo_time, F)
+        elif args.biexponential:
+            out_2(t, decay, echo_time, F)
+        elif args.triexponential:
+            out_3(t, decay, echo_time, F)
+        elif args.multiexponential:
+            out_multi(t, decay, echo_time, F)
+        else:
+            print('Must choose an option: -exp1, -exp2, -exp3 or -all. Use -h for guidance.')
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('input_file', help = "Path to the inputs file.", nargs = '+')
+
+    parser.add_argument('-all', '--multiexponential', action = 'store_true', help = "Fits mono-, bi- and tri- exponential decay to choose best fit.")
+
+    parser.add_argument('-exp1', '--monoexponential', action = 'store_true', help = "Fits monoexponential decay.")
+
+    parser.add_argument('-exp2', '--biexponential', action = 'store_true', help = "Fits biexponential decay.")
+
+    parser.add_argument('-exp3', '--triexponential', action = 'store_true', help = "Fits triexponential decay.")
+
+    # parser.add_argument('-spec', '--spectrum', action = 'store_true', help = "Plots spectrum vs frequency, with phase correction.")
+    #
+    # parser.add_argument('-mini', '--MiniSpec', action = 'store_true', help = "Plots spectrum vs CS [ppm] (Minispec=20MHz), with phase correction.")
+    #
+    # parser.add_argument('-bruker', '--Bruker', action = 'store_true', help = "Plots spectrum vs CS [ppm] (Bruker=300MHz), with phase correction.")
+
+    args = parser.parse_args()
+
+    main()
