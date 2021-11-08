@@ -1,7 +1,7 @@
-#!/usr/bin/python3.8
+#!/usr/bin/python3.6
 
 '''
-    Description: fit exponential decay (1, 2 or 3 components) with CPMG data,
+    Description: fits exponential decay (1, 2 or 3 components) with CPMG data,
                 considering temporal evolution of parameters.
     Written by: Ignacio J. Chevallier-Boutell.
     Dated: November, 2021.
@@ -17,8 +17,7 @@ def main():
     if args.monoexponential:
         tEvol, tDecay, tEcho = t_arrays(Files[0])
         out_1(tEvol, tDecay, Files)
-        # Faltaría hacer los plots
-
+        plot_1(Files[0])
 
     # elif args.biexponential:
     #     for F in Files:

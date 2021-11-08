@@ -1,7 +1,7 @@
 #!/usr/bin/python3.8
 
 '''
-    Description: fit exponential decay (1, 2 or 3 components) with CPMG data.
+    Description: fits exponential decay (1, 2 or 3 components) with CPMG data.
     Written by: Ignacio J. Chevallier-Boutell.
     Dated: November, 2021.
 '''

@@ -1,4 +1,4 @@
-#!/usr/bin/python3.8
+#!/usr/bin/python3.6
 
 '''
     Description: core functions for CPMG_tempEvol.py.
@@ -9,6 +9,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 from cycler import cycler
 from scipy.optimize import curve_fit
 
@@ -78,6 +79,9 @@ def decay_phCorr(input_file):
     decay = decay * np.exp(1j * np.deg2rad(max(initVal, key=initVal.get)))
     return decay.real
 
+def div_ceil(a, b):
+    return int(np.ceil((a + b - 1) / b))
+
 ################################################################################
 ######################## Monoexponential section
 ################################################################################
@@ -117,30 +121,54 @@ def out_1(tEvol, tDecay, Files):
     params = np.array(params)
     name = Files[0].split("_")[0]
     dataDecay.to_csv(f'{name}_dataDecay.csv', index=False)
-    with open(f'{name}_dataEvol.csv', 'w') as f:
+    with open(f'{name}_dataEvol-exp1.csv', 'w') as f:
         f.write("t [min], MO, M0-SD, T2 [ms], T2-SD [ms] \n")
         for exp in range(len(Files)):
             f.write(f'{tEvol[exp]}, {params[exp,0]:.4f}, {params[exp,1]:.4f}, {params[exp,2]:.4f}, {params[exp,3]:.4f} \n')
 
-# def plot_1(t, decay, popt, tEcho, input_file):
-#     '''
-#     Creates plot for monoexponential.
-#     '''
-#
-#     fig, ax = plt.subplots()
-#
-#     ax.plot(t, decay, lw=3, label='data')
-#     ax.plot(t, exp_1(t, *popt), lw=2, label='mono')
-#
-#     ax.text(0.02,0.02, fr'$T_E$={tEcho} ms', ha='left', va='bottom',
-#             transform=ax.transAxes, size='small') #medium
-#
-#     ax.set_xlabel('t [ms]')
-#     ax.set_ylabel(r'$Echo_{top}$ (t)')
-#
-#     ax.legend()
-#
-#     plt.savefig(f'{input_file.split(".txt")[0]}_plot-exp1')
+def plot_1(input_file):
+    '''
+    Creates plot
+    '''
+
+    File = input_file.split('_')[0]
+    A = pd.read_csv(f'{File}_dataDecay.csv').to_numpy()
+    exps = np.shape(A)[1]-1
+    count = div_ceil(exps, 10)
+
+    c = np.arange(count)
+    norm = mpl.colors.Normalize(vmin=c[0], vmax=c[-1])
+    cmap = mpl.cm.ScalarMappable(norm=norm, cmap=mpl.cm.rainbow)
+    cmap.set_array([])
+
+    fig, ax = plt.subplots()
+
+    for i in range(count):
+        ax.plot(A[:, 0], A[:, (10 * i) + 1], lw=3, color=cmap.to_rgba(i))
+
+    cbar = fig.colorbar(cmap, ticks=[0, 1])
+    cbar.ax.set_yticklabels(['Start', 'End'], fontsize=15)
+
+    ax.set_xlabel('t [ms]')
+    ax.set_ylabel(r'$Echo_{top}$')
+
+    plt.savefig(f'{File}_dataDecay-plot')
+
+    A = pd.read_csv(f'{File}_dataEvol-exp1.csv').to_numpy()
+
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(25, 10))
+
+    ax1.errorbar(A[:, 0], A[:, 1], yerr = A[:, 2], capsize = 15, marker = 'o', ls = 'None', ms = 15)
+    ax1.set_xlabel('t [min]')
+    ax1.set_ylabel('M0')
+
+    ax2.errorbar(A[:, 0], A[:, 3], yerr = A[:, 4], capsize = 15, marker = 'o', ls = 'None', ms = 15)
+    ax2.set_xlabel('t [min]')
+    ax2.set_ylabel('T2 [ms]')
+
+    plt.savefig(f'{File}_dataEvol-exp1-plot')
+
+    # plt.show()
 
 # def out_1(t, decay, tEcho, input_file):
 #     '''
@@ -189,7 +217,7 @@ def out_1(tEvol, tDecay, Files):
 #             transform=ax.transAxes, size='small') #medium
 #
 #     ax.set_xlabel('t [ms]')
-#     ax.set_ylabel(r'$Echo_{top}$ (t)')
+#     ax.set_ylabel(r'$Echo_{top}$')
 #
 #     ax.legend()
 #
@@ -246,7 +274,7 @@ def out_1(tEvol, tDecay, Files):
 #             transform=ax.transAxes, size='small') #medium
 #
 #     ax.set_xlabel('t [ms]')
-#     ax.set_ylabel(r'$Echo_{top}$ (t)')
+#     ax.set_ylabel(r'$Echo_{top}$')
 #
 #     ax.legend()
 #
