@@ -127,7 +127,7 @@ def fit_1(t, decay):
     M0, T2 = popt[0], popt[1]
     M0_SD, T2_SD = perr[0], perr[1]
 
-    return popt, M0, T2, M0_SD, T2_SD
+    return M0, T2, M0_SD, T2_SD
 
 def out_1(tEvol, tDecay, Files):
     '''
@@ -141,7 +141,7 @@ def out_1(tEvol, tDecay, Files):
     for F in Files:
         decay = decay_phCorr(F)
         dataDecay[f'Exp #{count}'] = decay
-        popt, M0, T2, M0_SD, T2_SD = fit_1(tDecay, decay)
+        M0, T2, M0_SD, T2_SD = fit_1(tDecay, decay)
         params.append([M0, M0_SD, T2, T2_SD])
         count += 1
 
@@ -172,9 +172,9 @@ def plot_param1(fileRoot):
 
     plt.savefig(f'{fileRoot}_dataEvol-exp1')
 
-# ################################################################################
-# ######################## Biexponential section
-# ################################################################################
+################################################################################
+######################## Biexponential section
+################################################################################
 
 def exp_2(t, M0_1, T2_1, M0_2, T2_2):
     return M0_1 * np.exp(- t / T2_1) + M0_2 * np.exp(- t / T2_2)
@@ -187,10 +187,17 @@ def fit_2(t, decay):
     popt, pcov = curve_fit(exp_2, t, decay, bounds=(0, np.inf))
     perr = np.sqrt(np.diag(pcov))
 
-    M0_1, T2_1, M0_2, T2_2 = popt[0], popt[1], popt[2], popt[3]
-    M0_1_SD, T2_1_SD, M0_2_SD, T2_2_SD = perr[0], perr[1], perr[2], perr[3]
+    M0s =  {'1':popt[0], '2':popt[2]}
+    M0s = [key for key in {k: v for k, v in sorted(M0s.items(), key=lambda item: item[1], reverse=True)}.keys()]
 
-    return popt, M0_1, T2_1, M0_2, T2_2, M0_1_SD, T2_1_SD, M0_2_SD, T2_2_SD
+    comp_1 = (popt[0], perr[0], popt[1], perr[1])
+    comp_2 = (popt[2], perr[2], popt[3], perr[3])
+    comps = {'comp1':comp_1, 'comp2':comp_2}
+
+    M0_1, M0_1_SD, T2_1, T2_1_SD = comps[f'comp{M0s[0]}']
+    M0_2, M0_2_SD, T2_2, T2_2_SD = comps[f'comp{M0s[1]}']
+
+    return M0_1, T2_1, M0_2, T2_2, M0_1_SD, T2_1_SD, M0_2_SD, T2_2_SD
 
 def out_2(tEvol, tDecay, Files):
     '''
@@ -204,7 +211,7 @@ def out_2(tEvol, tDecay, Files):
     for F in Files:
         decay = decay_phCorr(F)
         dataDecay[f'Exp #{count}'] = decay
-        popt, M0_1, T2_1, M0_2, T2_2, M0_1_SD, T2_1_SD, M0_2_SD, T2_2_SD = fit_2(tDecay, decay)
+        M0_1, T2_1, M0_2, T2_2, M0_1_SD, T2_1_SD, M0_2_SD, T2_2_SD = fit_2(tDecay, decay)
         params.append([M0_1, M0_1_SD, T2_1, T2_1_SD, M0_2, M0_2_SD, T2_2, T2_2_SD])
         count += 1
 
@@ -223,25 +230,33 @@ def plot_param2(fileRoot):
 
     A = pd.read_csv(f'{fileRoot}_dataEvol-exp2.csv').to_numpy()
 
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(25, 10))
+    fig, axs = plt.subplots(2, 2, figsize=(25, 20))
 
-    ax1.errorbar(A[:, 0], A[:, 1], yerr = A[:, 2], capsize = 15, marker = 'o', ls = 'None', ms = 15, label='Comp. 1')
-    ax1.errorbar(A[:, 0], A[:, 5], yerr = A[:, 6], capsize = 15, marker = 'o', ls = 'None', ms = 15, label='Comp. 2')
-    ax1.set_xlabel('t [min]')
-    ax1.set_ylabel('M0')
-    ax1.legend(ncol=2, bbox_to_anchor=(1, 1.15))
+    axs[0,0].errorbar(A[:, 0], A[:, 1], yerr = A[:, 2], capsize = 15, marker = 'o', ls = 'None', ms = 15, label='Comp. 1')
+    axs[0,0].set_xlabel('t [min]')
+    axs[0,0].set_ylabel('M0')
+    axs[0,0].set_title('Comp.1')
 
-    ax2.errorbar(A[:, 0], A[:, 3], yerr = A[:, 4], capsize = 15, marker = 'o', ls = 'None', ms = 15, label='Comp. 1')
-    ax2.errorbar(A[:, 0], A[:, 7], yerr = A[:, 8], capsize = 15, marker = 'o', ls = 'None', ms = 15, label='Comp. 2')
-    ax2.set_xlabel('t [min]')
-    ax2.set_ylabel('T2 [ms]')
-    ax2.legend(ncol=2, bbox_to_anchor=(1, 1.15))
+    axs[0,1].errorbar(A[:, 0], A[:, 3], yerr = A[:, 4], capsize = 15, marker = 'o', ls = 'None', ms = 15, label='Comp. 1')
+    axs[0,1].set_xlabel('t [min]')
+    axs[0,1].set_ylabel('T2 [ms]')
+    axs[0,1].set_title('Comp.1')
+
+    axs[1,0].errorbar(A[:, 0], A[:, 5], yerr = A[:, 6], capsize = 15, marker = 'o', ls = 'None', ms = 15, label='Comp. 2', color='mediumseagreen')
+    axs[1,0].set_xlabel('t [min]')
+    axs[1,0].set_ylabel('M0')
+    axs[1,0].set_title('Comp.2')
+
+    axs[1,1].errorbar(A[:, 0], A[:, 7], yerr = A[:, 8], capsize = 15, marker = 'o', ls = 'None', ms = 15, label='Comp. 2', color='mediumseagreen')
+    axs[1,1].set_xlabel('t [min]')
+    axs[1,1].set_ylabel('T2 [ms]')
+    axs[1,1].set_title('Comp.2')
 
     plt.savefig(f'{fileRoot}_dataEvol-exp2')
 
-# ################################################################################
-# ######################## Triexponential section
-# ################################################################################
+################################################################################
+######################## Triexponential section
+################################################################################
 
 def exp_3(t, M0_1, T2_1, M0_2, T2_2, M0_3, T2_3):
     return M0_1 * np.exp(- t / T2_1) + M0_2 * np.exp(- t / T2_2) + M0_3 * np.exp(- t / T2_3)
@@ -254,10 +269,19 @@ def fit_3(t, decay):
     popt, pcov = curve_fit(exp_3, t, decay, bounds=(0, np.inf))
     perr = np.sqrt(np.diag(pcov))
 
-    M0_1, T2_1, M0_2, T2_2, M0_3, T2_3 = popt[0], popt[1], popt[2], popt[3], popt[4], popt[5]
-    M0_1_SD, T2_1_SD, M0_2_SD, T2_2_SD, M0_3_SD, T2_3_SD = perr[0], perr[1], perr[2], perr[3], perr[4], perr[5]
+    M0s =  {'1':popt[0], '2':popt[2], '3':popt[4]}
+    M0s = [key for key in {k: v for k, v in sorted(M0s.items(), key=lambda item: item[1], reverse=True)}.keys()]
 
-    return popt, M0_1, T2_1, M0_2, T2_2, M0_3, T2_3, M0_1_SD, T2_1_SD, M0_2_SD, T2_2_SD, M0_3_SD, T2_3_SD
+    comp_1 = (popt[0], perr[0], popt[1], perr[1])
+    comp_2 = (popt[2], perr[2], popt[3], perr[3])
+    comp_3 = (popt[4], perr[4], popt[5], perr[5])
+    comps = {'comp1':comp_1, 'comp2':comp_2, 'comp3':comp_3}
+
+    M0_1, M0_1_SD, T2_1, T2_1_SD = comps[f'comp{M0s[0]}']
+    M0_2, M0_2_SD, T2_2, T2_2_SD = comps[f'comp{M0s[1]}']
+    M0_3, M0_3_SD, T2_3, T2_3_SD = comps[f'comp{M0s[2]}']
+
+    return M0_1, T2_1, M0_2, T2_2, M0_3, T2_3, M0_1_SD, T2_1_SD, M0_2_SD, T2_2_SD, M0_3_SD, T2_3_SD
 
 def out_3(tEvol, tDecay, Files):
     '''
@@ -271,7 +295,7 @@ def out_3(tEvol, tDecay, Files):
     for F in Files:
         decay = decay_phCorr(F)
         dataDecay[f'Exp #{count}'] = decay
-        popt, M0_1, T2_1, M0_2, T2_2, M0_3, T2_3, M0_1_SD, T2_1_SD, M0_2_SD, T2_2_SD, M0_3_SD, T2_3_SD = fit_3(tDecay, decay)
+        M0_1, T2_1, M0_2, T2_2, M0_3, T2_3, M0_1_SD, T2_1_SD, M0_2_SD, T2_2_SD, M0_3_SD, T2_3_SD = fit_3(tDecay, decay)
         params.append([M0_1, M0_1_SD, T2_1, T2_1_SD, M0_2, M0_2_SD, T2_2, T2_2_SD, M0_3, M0_3_SD, T2_3, T2_3_SD])
         count += 1
 
@@ -290,20 +314,36 @@ def plot_param3(fileRoot):
 
     A = pd.read_csv(f'{fileRoot}_dataEvol-exp3.csv').to_numpy()
 
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(25, 10))
+    fig, axs = plt.subplots(3, 2, figsize=(25, 30))
 
-    ax1.errorbar(A[:, 0], A[:, 1], yerr = A[:, 2], capsize = 15, marker = 'o', ls = 'None', ms = 15, label='Comp. 1')
-    ax1.errorbar(A[:, 0], A[:, 5], yerr = A[:, 6], capsize = 15, marker = 'o', ls = 'None', ms = 15, label='Comp. 2')
-    ax1.errorbar(A[:, 0], A[:, 9], yerr = A[:, 10], capsize = 15, marker = 'o', ls = 'None', ms = 15, label='Comp. 3')
-    ax1.set_xlabel('t [min]')
-    ax1.set_ylabel('M0')
-    ax1.legend(ncol=3, bbox_to_anchor=(1, 1.15))
+    axs[0,0].errorbar(A[:, 0], A[:, 1], yerr = A[:, 2], capsize = 15, marker = 'o', ls = 'None', ms = 15, label='Comp. 1')
+    axs[0,0].set_xlabel('t [min]')
+    axs[0,0].set_ylabel('M0')
+    axs[0,0].set_title('Comp.1')
 
-    ax2.errorbar(A[:, 0], A[:, 3], yerr = A[:, 4], capsize = 15, marker = 'o', ls = 'None', ms = 15, label='Comp. 1')
-    ax2.errorbar(A[:, 0], A[:, 7], yerr = A[:, 8], capsize = 15, marker = 'o', ls = 'None', ms = 15, label='Comp. 2')
-    ax2.errorbar(A[:, 0], A[:, 11], yerr = A[:, 12], capsize = 15, marker = 'o', ls = 'None', ms = 15, label='Comp. 3')
-    ax2.set_xlabel('t [min]')
-    ax2.set_ylabel('T2 [ms]')
-    ax2.legend(ncol=3, bbox_to_anchor=(1, 1.15))
+    axs[0,1].errorbar(A[:, 0], A[:, 3], yerr = A[:, 4], capsize = 15, marker = 'o', ls = 'None', ms = 15, label='Comp. 1')
+    axs[0,1].set_xlabel('t [min]')
+    axs[0,1].set_ylabel('T2 [ms]')
+    axs[0,1].set_title('Comp.1')
 
+    axs[1,0].errorbar(A[:, 0], A[:, 5], yerr = A[:, 6], capsize = 15, marker = 'o', ls = 'None', ms = 15, label='Comp. 2', color='mediumseagreen')
+    axs[1,0].set_xlabel('t [min]')
+    axs[1,0].set_ylabel('M0')
+    axs[1,0].set_title('Comp.2')
+
+    axs[1,1].errorbar(A[:, 0], A[:, 7], yerr = A[:, 8], capsize = 15, marker = 'o', ls = 'None', ms = 15, label='Comp. 2', color='mediumseagreen')
+    axs[1,1].set_xlabel('t [min]')
+    axs[1,1].set_ylabel('T2 [ms]')
+    axs[1,1].set_title('Comp.2')
+
+    axs[2,0].errorbar(A[:, 0], A[:, 9], yerr = A[:, 10], capsize = 15, marker = 'o', ls = 'None', ms = 15, label='Comp. 3', color='k')
+    axs[2,0].set_xlabel('t [min]')
+    axs[2,0].set_ylabel('M0')
+    axs[2,0].set_title('Comp.3')
+
+    axs[2,1].errorbar(A[:, 0], A[:, 11], yerr = A[:, 12], capsize = 15, marker = 'o', ls = 'None', ms = 15, label='Comp. 3', color='k')
+    axs[2,1].set_xlabel('t [min]')
+    axs[2,1].set_ylabel('T2 [ms]')
+    axs[2,1].set_title('Comp.3')
+    
     plt.savefig(f'{fileRoot}_dataEvol-exp3')
