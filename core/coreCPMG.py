@@ -129,7 +129,7 @@ def plot_1(t, decay, popt, tEcho, input_file):
 
     ax.legend()
 
-    plt.savefig(f'{input_file.split(".txt")[0]}_plot-exp1')
+    plt.savefig(f'{input_file.split(".txt")[0]}-exp1')
 
 def out_1(t, decay, tEcho, input_file):
     '''
@@ -186,7 +186,7 @@ def plot_2(t, decay, popt, tEcho, input_file):
 
     ax.legend()
 
-    plt.savefig(f'{input_file.split(".txt")[0]}_plot-exp2')
+    plt.savefig(f'{input_file.split(".txt")[0]}-exp2')
 
 def out_2(t, decay, tEcho, input_file):
     '''
@@ -243,7 +243,7 @@ def plot_3(t, decay, popt, tEcho, input_file):
 
     ax.legend()
 
-    plt.savefig(f'{input_file.split(".txt")[0]}_plot-exp3')
+    plt.savefig(f'{input_file.split(".txt")[0]}-exp3')
 
 def out_3(t, decay, tEcho, input_file):
     '''
@@ -290,7 +290,7 @@ def out_multi(t, decay, tEcho, input_file):
 
     ax.legend()
 
-    plt.savefig(f'{input_file.split(".txt")[0]}_plot-all')
+    plt.savefig(f'{input_file.split(".txt")[0]}-all')
 
     output_file = input_file.split('.txt')[0]
     with open(f'{output_file}_fit-all.csv', 'w') as f:

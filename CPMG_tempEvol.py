@@ -17,18 +17,21 @@ def main():
     if args.monoexponential:
         tEvol, tDecay, tEcho = t_arrays(Files[0])
         out_1(tEvol, tDecay, Files)
-        plot_1(Files[0])
-
-    # elif args.biexponential:
-    #     for F in Files:
-    #         t, decay, tEcho = userfile(F)
-    #         decay = phase_correction(decay)
-    #         out_2(t, decay, tEcho, F)
-    # elif args.triexponential:
-    #     for F in Files:
-    #         t, decay, tEcho = userfile(F)
-    #         decay = phase_correction(decay)
-    #         out_3(t, decay, tEcho, F)
+        fileRoot = Files[0].split('_')[0]
+        plot_decay(fileRoot)
+        plot_param1(fileRoot)
+    elif args.biexponential:
+        tEvol, tDecay, tEcho = t_arrays(Files[0])
+        out_2(tEvol, tDecay, Files)
+        fileRoot = Files[0].split('_')[0]
+        plot_decay(fileRoot)
+        plot_param2(fileRoot)
+    elif args.triexponential:
+        tEvol, tDecay, tEcho = t_arrays(Files[0])
+        out_3(tEvol, tDecay, Files)
+        fileRoot = Files[0].split('_')[0]
+        plot_decay(fileRoot)
+        plot_param3(fileRoot)
     else:
         print('Must choose an option: -exp1, -exp2 or -exp3. Use -h for guidance.')
 

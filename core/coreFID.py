@@ -106,7 +106,7 @@ def plot_FID(t, FID, ns, rd, rg, input_file):
     ax2.text(0.98,0.02, fr'$\Im$[s(0)] = {FID[0].imag:.2f}', ha='right',
             va='bottom', transform=ax2.transAxes)
 
-    plt.savefig(f'{input_file.split(".txt")[0]}_plot-FID')
+    plt.savefig(f'{input_file.split(".txt")[0]}-FID')
 
 def plot_spec_freq(freq, spec, max_peak, ns, rd, rg, input_file):
 
@@ -123,7 +123,7 @@ def plot_spec_freq(freq, spec, max_peak, ns, rd, rg, input_file):
     ax2.set_ylabel(r'$\Im$[S($\nu$)]')
     ax2.xaxis.tick_top()
 
-    plt.savefig(f'{input_file.split(".txt")[0]}_plot-spec_freq')
+    plt.savefig(f'{input_file.split(".txt")[0]}-spec_freq')
 
 def plot_spec_mini(freq, spec, max_peak, ns, rd, rg, input_file):
 
@@ -142,7 +142,7 @@ def plot_spec_mini(freq, spec, max_peak, ns, rd, rg, input_file):
     ax2.set_ylabel(r'$\Im$[S($\nu$)]')
     ax2.xaxis.tick_top()
 
-    plt.savefig(f'{input_file.split(".txt")[0]}_plot-spec_MiniSpec')
+    plt.savefig(f'{input_file.split(".txt")[0]}-spec_MiniSpec')
 
 def plot_spec_bruker(freq, spec, max_peak, ns, rd, rg, input_file):
 
@@ -161,4 +161,4 @@ def plot_spec_bruker(freq, spec, max_peak, ns, rd, rg, input_file):
     ax2.set_ylabel(r'$\Im$[S($\nu$)]')
     ax2.xaxis.tick_top()
 
-    plt.savefig(f'{input_file.split(".txt")[0]}_plot-spec_Bruker')
+    plt.savefig(f'{input_file.split(".txt")[0]}-spec_Bruker')
