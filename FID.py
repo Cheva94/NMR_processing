@@ -1,4 +1,4 @@
-#!/usr/bin/python3.8
+#!/usr/bin/python3.6
 
 '''
     Description: plots FID and its spectrum (Hz or ppm), with phase correction.
@@ -16,17 +16,12 @@ def main():
     for F in Files:
 
         t, Np, dw, FID, ns, rd, rg = userfile(F)
-
         FID = phase_correction(FID)
-
-        freq, spec, max_peak = spectrum(FID, Np, dw)
-
         plot_FID(t, FID, ns, rd, rg, F)
 
+        freq, spec, max_peak = spectrum(FID, Np, dw)
         if args.MiniSpec:
             plot_spec_mini(freq, spec, max_peak, ns, rd, rg, F)
-        elif args.Bruker:
-            plot_spec_bruker(freq, spec, max_peak, ns, rd, rg, F)
         else:
             plot_spec_freq(freq, spec, max_peak, ns, rd, rg, F)
 
@@ -38,10 +33,6 @@ if __name__ == "__main__":
 
     parser.add_argument('-mini', '--MiniSpec', action = 'store_true', help =
                         "Plots spectrum vs CS [ppm] (Minispec=20MHz), with \
-                        phase correction.")
-
-    parser.add_argument('-bruker', '--Bruker', action = 'store_true', help =
-                        "Plots spectrum vs CS [ppm] (Bruker=300MHz), with \
                         phase correction.")
 
     args = parser.parse_args()

@@ -38,25 +38,26 @@ plt.rcParams["figure.autolayout"] = True
 
 plt.rcParams["lines.linestyle"] = '-'
 
-def t_arrays(input_file):
+def t_arrays(fileRoot, t_wait, nFiles):
     '''
     Array with experimental time (time between CPMG experiments) and decay time.
     '''
 
-    tDecay = pd.read_csv(input_file, header = None, delim_whitespace = True).to_numpy()[:, 0]
-    tEcho = tDecay[1] - tDecay[0]
+    tDecay = pd.read_csv(f'{fileRoot}_001.txt', header = None, delim_whitespace = True).to_numpy()[:, 0]
+    # tEcho = tDecay[1] - tDecay[0]
 
-    File = input_file.split('_')[0]
-    hms = pd.read_csv(f'{File}.txt', header = None, delim_whitespace = True, index_col=0).iloc[:, [1,3,5]].to_numpy()
-    tEvol = []
+    # hms = pd.read_csv(f'{File}-tExp.txt', header = None, delim_whitespace = True, index_col=0).iloc[:, [1,3,5]].to_numpy()
+    # tEvol = []
+    #
+    # for exp in range(len(hms)):
+    #     t = hms[exp,0] * 60 + hms[exp,1] + hms[exp,2] / 60 # minutes
+    #     tEvol.append(t)
+    #
+    # tEvol -= tEvol[0]
 
-    for exp in range(len(hms)):
-        t = hms[exp,0] * 60 + hms[exp,1] + hms[exp,2] / 60 # minutes
-        tEvol.append(t)
+    tEvol = [i * int(t_wait) for i in range(nFiles)]
 
-    tEvol -= tEvol[0]
-
-    return tEvol, tDecay, tEcho
+    return tEvol, tDecay
 
 def decay_phCorr(input_file):
     '''
@@ -82,29 +83,29 @@ def decay_phCorr(input_file):
 def div_ceil(a, b):
     return int(np.ceil((a + b - 1) / b))
 
-def plot_decay(fileRoot):
+def plot_decay(fileRoot, tEvol):
     '''
     Plots decay in time.
     '''
 
     A = pd.read_csv(f'{fileRoot}_dataDecay.csv').to_numpy()
     exps = np.shape(A)[1]-1
-    count = div_ceil(exps, 10)
+    count = [10*i for i in range(div_ceil(exps, 10))]
 
-    c = np.arange(count)
-    norm = mpl.colors.Normalize(vmin=c[0], vmax=c[-1])
+    norm = mpl.colors.Normalize(vmin=count[0], vmax=count[-1])
     cmap = mpl.cm.ScalarMappable(norm=norm, cmap=mpl.cm.rainbow)
     cmap.set_array([])
 
     fig, ax = plt.subplots()
 
-    for i in range(count):
-        ax.plot(A[:, 0], A[:, (10 * i) + 1], lw=3, color=cmap.to_rgba(i))
+    t_seg = A[:, 0] * 0.001
+    for i in count:
+        ax.plot(t_seg, A[:, i+1], lw=3, color=cmap.to_rgba(i))
 
-    cbar = fig.colorbar(cmap, ticks=[0, 1])
-    cbar.ax.set_yticklabels(['Start', 'End'], fontsize=15)
+    cbar = fig.colorbar(cmap, ticks=[count[0], count[-1]])
+    cbar.ax.set_yticklabels([f't = 0 h', f't = {tEvol[-1]/60:.0f} h'], fontsize=15)
 
-    ax.set_xlabel('t [ms]')
+    ax.set_xlabel('t [s]')
     ax.set_ylabel(r'$Echo_{top}$')
 
     plt.savefig(f'{fileRoot}_dataDecay')
@@ -129,7 +130,7 @@ def fit_1(t, decay):
 
     return M0, T2, M0_SD, T2_SD
 
-def out_1(tEvol, tDecay, Files):
+def out_1(tEvol, tDecay, Files, fileRoot):
     '''
     Extracts all the information and puts it together in two .csv files.
     '''
@@ -146,9 +147,9 @@ def out_1(tEvol, tDecay, Files):
         count += 1
 
     params = np.array(params)
-    name = Files[0].split("_")[0]
-    dataDecay.to_csv(f'{name}_dataDecay.csv', index=False)
-    with open(f'{name}_dataEvol-exp1.csv', 'w') as f:
+
+    dataDecay.to_csv(f'{fileRoot}_dataDecay.csv', index=False)
+    with open(f'{fileRoot}_dataEvol-exp1.csv', 'w') as f:
         f.write("t [min], MO, M0-SD, T2 [ms], T2-SD [ms] \n")
         for exp in range(len(Files)):
             f.write(f'{tEvol[exp]}, {params[exp,0]:.4f}, {params[exp,1]:.4f}, {params[exp,2]:.4f}, {params[exp,3]:.4f} \n')
@@ -162,12 +163,14 @@ def plot_param1(fileRoot):
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(25, 10))
 
-    ax1.errorbar(A[:, 0], A[:, 1], yerr = A[:, 2], capsize = 15, marker = 'o', ls = 'None', ms = 15)
-    ax1.set_xlabel('t [min]')
+    t_h = A[:, 0] / 60
+
+    ax1.errorbar(t_h, A[:, 1], yerr = A[:, 2], capsize = 8, marker = 'o', ls = ':', ms = 8)
+    ax1.set_xlabel('t [h]')
     ax1.set_ylabel('M0')
 
-    ax2.errorbar(A[:, 0], A[:, 3], yerr = A[:, 4], capsize = 15, marker = 'o', ls = 'None', ms = 15)
-    ax2.set_xlabel('t [min]')
+    ax2.errorbar(t_h, A[:, 3], yerr = A[:, 4], capsize = 8, marker = 'o', ls = ':', ms = 8)
+    ax2.set_xlabel('t [h]')
     ax2.set_ylabel('T2 [ms]')
 
     plt.savefig(f'{fileRoot}_dataEvol-exp1')
@@ -199,7 +202,7 @@ def fit_2(t, decay):
 
     return M0_1, T2_1, M0_2, T2_2, M0_1_SD, T2_1_SD, M0_2_SD, T2_2_SD
 
-def out_2(tEvol, tDecay, Files):
+def out_2(tEvol, tDecay, Files, fileRoot):
     '''
     Extracts all the information and puts it together in two .csv files.
     '''
@@ -216,9 +219,8 @@ def out_2(tEvol, tDecay, Files):
         count += 1
 
     params = np.array(params)
-    name = Files[0].split("_")[0]
-    dataDecay.to_csv(f'{name}_dataDecay.csv', index=False)
-    with open(f'{name}_dataEvol-exp2.csv', 'w') as f:
+    dataDecay.to_csv(f'{fileRoot}_dataDecay.csv', index=False)
+    with open(f'{fileRoot}_dataEvol-exp2.csv', 'w') as f:
         f.write("t [min], MO_1, M0_1-SD, T2_1 [ms], T2_1-SD [ms], MO_2, M0_2-SD, T2_2 [ms], T2_2-SD [ms] \n")
         for exp in range(len(Files)):
             f.write(f'{tEvol[exp]}, {params[exp,0]:.4f}, {params[exp,1]:.4f}, {params[exp,2]:.4f}, {params[exp,3]:.4f}, {params[exp,4]:.4f}, {params[exp,5]:.4f}, {params[exp,6]:.4f}, {params[exp,7]:.4f} \n')
@@ -232,23 +234,25 @@ def plot_param2(fileRoot):
 
     fig, axs = plt.subplots(2, 2, figsize=(25, 20))
 
-    axs[0,0].errorbar(A[:, 0], A[:, 1], yerr = A[:, 2], capsize = 15, marker = 'o', ls = 'None', ms = 15, label='Comp. 1')
-    axs[0,0].set_xlabel('t [min]')
+    t_h = A[:, 0] / 60
+
+    axs[0,0].errorbar(t_h, A[:, 1], yerr = A[:, 2], capsize = 8, marker = 'o', ls = ':', ms = 8, label='Comp. 1')
+    axs[0,0].set_xlabel('t [h]')
     axs[0,0].set_ylabel('M0')
     axs[0,0].set_title('Comp.1')
 
-    axs[0,1].errorbar(A[:, 0], A[:, 3], yerr = A[:, 4], capsize = 15, marker = 'o', ls = 'None', ms = 15, label='Comp. 1')
-    axs[0,1].set_xlabel('t [min]')
+    axs[0,1].errorbar(t_h, A[:, 3], yerr = A[:, 4], capsize = 8, marker = 'o', ls = ':', ms = 8, label='Comp. 1')
+    axs[0,1].set_xlabel('t [h]')
     axs[0,1].set_ylabel('T2 [ms]')
     axs[0,1].set_title('Comp.1')
 
-    axs[1,0].errorbar(A[:, 0], A[:, 5], yerr = A[:, 6], capsize = 15, marker = 'o', ls = 'None', ms = 15, label='Comp. 2', color='mediumseagreen')
-    axs[1,0].set_xlabel('t [min]')
+    axs[1,0].errorbar(t_h, A[:, 5], yerr = A[:, 6], capsize = 8, marker = 'o', ls = ':', ms = 8, label='Comp. 2', color='mediumseagreen')
+    axs[1,0].set_xlabel('t [h]')
     axs[1,0].set_ylabel('M0')
     axs[1,0].set_title('Comp.2')
 
-    axs[1,1].errorbar(A[:, 0], A[:, 7], yerr = A[:, 8], capsize = 15, marker = 'o', ls = 'None', ms = 15, label='Comp. 2', color='mediumseagreen')
-    axs[1,1].set_xlabel('t [min]')
+    axs[1,1].errorbar(t_h, A[:, 7], yerr = A[:, 8], capsize = 8, marker = 'o', ls = ':', ms = 8, label='Comp. 2', color='mediumseagreen')
+    axs[1,1].set_xlabel('t [h]')
     axs[1,1].set_ylabel('T2 [ms]')
     axs[1,1].set_title('Comp.2')
 
@@ -283,7 +287,7 @@ def fit_3(t, decay):
 
     return M0_1, T2_1, M0_2, T2_2, M0_3, T2_3, M0_1_SD, T2_1_SD, M0_2_SD, T2_2_SD, M0_3_SD, T2_3_SD
 
-def out_3(tEvol, tDecay, Files):
+def out_3(tEvol, tDecay, Files, fileRoot):
     '''
     Extracts all the information and puts it together in two .csv files.
     '''
@@ -300,9 +304,8 @@ def out_3(tEvol, tDecay, Files):
         count += 1
 
     params = np.array(params)
-    name = Files[0].split("_")[0]
-    dataDecay.to_csv(f'{name}_dataDecay.csv', index=False)
-    with open(f'{name}_dataEvol-exp3.csv', 'w') as f:
+    dataDecay.to_csv(f'{fileRoot}_dataDecay.csv', index=False)
+    with open(f'{fileRoot}_dataEvol-exp3.csv', 'w') as f:
         f.write("t [min], MO_1, M0_1-SD, T2_1 [ms], T2_1-SD [ms], MO_2, M0_2-SD, T2_2 [ms], T2_2-SD [ms], MO_3, M0_3-SD, T2_3 [ms], T2_3-SD [ms] \n")
         for exp in range(len(Files)):
             f.write(f'{tEvol[exp]}, {params[exp,0]:.4f}, {params[exp,1]:.4f}, {params[exp,2]:.4f}, {params[exp,3]:.4f}, {params[exp,4]:.4f}, {params[exp,5]:.4f}, {params[exp,6]:.4f}, {params[exp,7]:.4f}, {params[exp,8]:.4f}, {params[exp,9]:.4f}, {params[exp,10]:.4f}, {params[exp,11]:.4f} \n')
@@ -316,34 +319,36 @@ def plot_param3(fileRoot):
 
     fig, axs = plt.subplots(3, 2, figsize=(25, 30))
 
-    axs[0,0].errorbar(A[:, 0], A[:, 1], yerr = A[:, 2], capsize = 15, marker = 'o', ls = 'None', ms = 15, label='Comp. 1')
-    axs[0,0].set_xlabel('t [min]')
+    t_h = A[:, 0] / 60
+
+    axs[0,0].errorbar(t_h, A[:, 1], yerr = A[:, 2], capsize = 8, marker = 'o', ls = ':', ms = 8, label='Comp. 1')
+    axs[0,0].set_xlabel('t [h]')
     axs[0,0].set_ylabel('M0')
     axs[0,0].set_title('Comp.1')
 
-    axs[0,1].errorbar(A[:, 0], A[:, 3], yerr = A[:, 4], capsize = 15, marker = 'o', ls = 'None', ms = 15, label='Comp. 1')
-    axs[0,1].set_xlabel('t [min]')
+    axs[0,1].errorbar(t_h, A[:, 3], yerr = A[:, 4], capsize = 8, marker = 'o', ls = ':', ms = 8, label='Comp. 1')
+    axs[0,1].set_xlabel('t [h]')
     axs[0,1].set_ylabel('T2 [ms]')
     axs[0,1].set_title('Comp.1')
 
-    axs[1,0].errorbar(A[:, 0], A[:, 5], yerr = A[:, 6], capsize = 15, marker = 'o', ls = 'None', ms = 15, label='Comp. 2', color='mediumseagreen')
-    axs[1,0].set_xlabel('t [min]')
+    axs[1,0].errorbar(t_h, A[:, 5], yerr = A[:, 6], capsize = 8, marker = 'o', ls = ':', ms = 8, label='Comp. 2', color='mediumseagreen')
+    axs[1,0].set_xlabel('t [h]')
     axs[1,0].set_ylabel('M0')
     axs[1,0].set_title('Comp.2')
 
-    axs[1,1].errorbar(A[:, 0], A[:, 7], yerr = A[:, 8], capsize = 15, marker = 'o', ls = 'None', ms = 15, label='Comp. 2', color='mediumseagreen')
-    axs[1,1].set_xlabel('t [min]')
+    axs[1,1].errorbar(t_h, A[:, 7], yerr = A[:, 8], capsize = 8, marker = 'o', ls = ':', ms = 8, label='Comp. 2', color='mediumseagreen')
+    axs[1,1].set_xlabel('t [h]')
     axs[1,1].set_ylabel('T2 [ms]')
     axs[1,1].set_title('Comp.2')
 
-    axs[2,0].errorbar(A[:, 0], A[:, 9], yerr = A[:, 10], capsize = 15, marker = 'o', ls = 'None', ms = 15, label='Comp. 3', color='k')
-    axs[2,0].set_xlabel('t [min]')
+    axs[2,0].errorbar(t_h, A[:, 9], yerr = A[:, 10], capsize = 8, marker = 'o', ls = ':', ms = 8, label='Comp. 3', color='k')
+    axs[2,0].set_xlabel('t [h]')
     axs[2,0].set_ylabel('M0')
     axs[2,0].set_title('Comp.3')
 
-    axs[2,1].errorbar(A[:, 0], A[:, 11], yerr = A[:, 12], capsize = 15, marker = 'o', ls = 'None', ms = 15, label='Comp. 3', color='k')
-    axs[2,1].set_xlabel('t [min]')
+    axs[2,1].errorbar(t_h, A[:, 11], yerr = A[:, 12], capsize = 8, marker = 'o', ls = ':', ms = 8, label='Comp. 3', color='k')
+    axs[2,1].set_xlabel('t [h]')
     axs[2,1].set_ylabel('T2 [ms]')
     axs[2,1].set_title('Comp.3')
-    
+
     plt.savefig(f'{fileRoot}_dataEvol-exp3')
