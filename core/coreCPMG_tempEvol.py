@@ -55,7 +55,7 @@ def t_arrays(fileRoot, t_wait, nFiles):
     #
     # tEvol -= tEvol[0]
 
-    tEvol = [i * int(t_wait) for i in range(nFiles)]
+    tEvol = [i * t_wait for i in range(nFiles)]
 
     return tEvol, tDecay
 
@@ -83,14 +83,15 @@ def decay_phCorr(input_file):
 def div_ceil(a, b):
     return int(np.ceil((a + b - 1) / b))
 
-def plot_decay(fileRoot, tEvol):
+def plot_decay(fileRoot, tEvol, t_wait):
     '''
     Plots decay in time.
     '''
 
     A = pd.read_csv(f'{fileRoot}_dataDecay.csv').to_numpy()
     exps = np.shape(A)[1]-1
-    count = [10*i for i in range(div_ceil(exps, 10))]
+    hour = 60/t_wait
+    count = [10*i for i in range(div_ceil(exps, hour))]
 
     norm = mpl.colors.Normalize(vmin=count[0], vmax=count[-1])
     cmap = mpl.cm.ScalarMappable(norm=norm, cmap=mpl.cm.rainbow)
@@ -168,10 +169,12 @@ def plot_param1(fileRoot):
     ax1.errorbar(t_h, A[:, 1], yerr = A[:, 2], capsize = 8, marker = 'o', ls = ':', ms = 8)
     ax1.set_xlabel('t [h]')
     ax1.set_ylabel('M0')
+    ax1.set_title(f'Comp. 1 - SDprom = {np.mean(A[:, 2]):.2f}')
 
     ax2.errorbar(t_h, A[:, 3], yerr = A[:, 4], capsize = 8, marker = 'o', ls = ':', ms = 8)
     ax2.set_xlabel('t [h]')
     ax2.set_ylabel('T2 [ms]')
+    ax2.set_title(f'Comp. 1 - SDprom = {np.mean(A[:, 4]):.2f}')
 
     plt.savefig(f'{fileRoot}_dataEvol-exp1')
 
@@ -190,15 +193,15 @@ def fit_2(t, decay):
     popt, pcov = curve_fit(exp_2, t, decay, bounds=(0, np.inf))
     perr = np.sqrt(np.diag(pcov))
 
-    M0s =  {'1':popt[0], '2':popt[2]}
-    M0s = [key for key in {k: v for k, v in sorted(M0s.items(), key=lambda item: item[1], reverse=True)}.keys()]
+    T2s =  {'1':popt[1], '2':popt[3]}
+    T2s = [key for key in {k: v for k, v in sorted(T2s.items(), key=lambda item: item[1], reverse=True)}.keys()]
 
     comp_1 = (popt[0], perr[0], popt[1], perr[1])
     comp_2 = (popt[2], perr[2], popt[3], perr[3])
     comps = {'comp1':comp_1, 'comp2':comp_2}
 
-    M0_1, M0_1_SD, T2_1, T2_1_SD = comps[f'comp{M0s[0]}']
-    M0_2, M0_2_SD, T2_2, T2_2_SD = comps[f'comp{M0s[1]}']
+    M0_1, M0_1_SD, T2_1, T2_1_SD = comps[f'comp{T2s[0]}']
+    M0_2, M0_2_SD, T2_2, T2_2_SD = comps[f'comp{T2s[1]}']
 
     return M0_1, T2_1, M0_2, T2_2, M0_1_SD, T2_1_SD, M0_2_SD, T2_2_SD
 
@@ -239,22 +242,22 @@ def plot_param2(fileRoot):
     axs[0,0].errorbar(t_h, A[:, 1], yerr = A[:, 2], capsize = 8, marker = 'o', ls = ':', ms = 8, label='Comp. 1')
     axs[0,0].set_xlabel('t [h]')
     axs[0,0].set_ylabel('M0')
-    axs[0,0].set_title('Comp.1')
+    axs[0,0].set_title(f'Comp. 1 - SDprom = {np.mean(A[:, 2]):.2f}')
 
     axs[0,1].errorbar(t_h, A[:, 3], yerr = A[:, 4], capsize = 8, marker = 'o', ls = ':', ms = 8, label='Comp. 1')
     axs[0,1].set_xlabel('t [h]')
     axs[0,1].set_ylabel('T2 [ms]')
-    axs[0,1].set_title('Comp.1')
+    axs[0,1].set_title(f'Comp. 1 - SDprom = {np.mean(A[:, 4]):.2f}')
 
     axs[1,0].errorbar(t_h, A[:, 5], yerr = A[:, 6], capsize = 8, marker = 'o', ls = ':', ms = 8, label='Comp. 2', color='mediumseagreen')
     axs[1,0].set_xlabel('t [h]')
     axs[1,0].set_ylabel('M0')
-    axs[1,0].set_title('Comp.2')
+    axs[1,0].set_title(f'Comp. 2 - SDprom = {np.mean(A[:, 6]):.2f}')
 
     axs[1,1].errorbar(t_h, A[:, 7], yerr = A[:, 8], capsize = 8, marker = 'o', ls = ':', ms = 8, label='Comp. 2', color='mediumseagreen')
     axs[1,1].set_xlabel('t [h]')
     axs[1,1].set_ylabel('T2 [ms]')
-    axs[1,1].set_title('Comp.2')
+    axs[1,1].set_title(f'Comp. 2 - SDprom = {np.mean(A[:, 8]):.2f}')
 
     plt.savefig(f'{fileRoot}_dataEvol-exp2')
 
@@ -273,17 +276,17 @@ def fit_3(t, decay):
     popt, pcov = curve_fit(exp_3, t, decay, bounds=(0, np.inf))
     perr = np.sqrt(np.diag(pcov))
 
-    M0s =  {'1':popt[0], '2':popt[2], '3':popt[4]}
-    M0s = [key for key in {k: v for k, v in sorted(M0s.items(), key=lambda item: item[1], reverse=True)}.keys()]
+    T2s =  {'1':popt[1], '2':popt[3], '3':popt[5]}
+    T2s = [key for key in {k: v for k, v in sorted(T2s.items(), key=lambda item: item[1], reverse=True)}.keys()]
 
     comp_1 = (popt[0], perr[0], popt[1], perr[1])
     comp_2 = (popt[2], perr[2], popt[3], perr[3])
     comp_3 = (popt[4], perr[4], popt[5], perr[5])
     comps = {'comp1':comp_1, 'comp2':comp_2, 'comp3':comp_3}
 
-    M0_1, M0_1_SD, T2_1, T2_1_SD = comps[f'comp{M0s[0]}']
-    M0_2, M0_2_SD, T2_2, T2_2_SD = comps[f'comp{M0s[1]}']
-    M0_3, M0_3_SD, T2_3, T2_3_SD = comps[f'comp{M0s[2]}']
+    M0_1, M0_1_SD, T2_1, T2_1_SD = comps[f'comp{T2s[0]}']
+    M0_2, M0_2_SD, T2_2, T2_2_SD = comps[f'comp{T2s[1]}']
+    M0_3, M0_3_SD, T2_3, T2_3_SD = comps[f'comp{T2s[2]}']
 
     return M0_1, T2_1, M0_2, T2_2, M0_3, T2_3, M0_1_SD, T2_1_SD, M0_2_SD, T2_2_SD, M0_3_SD, T2_3_SD
 
@@ -324,31 +327,31 @@ def plot_param3(fileRoot):
     axs[0,0].errorbar(t_h, A[:, 1], yerr = A[:, 2], capsize = 8, marker = 'o', ls = ':', ms = 8, label='Comp. 1')
     axs[0,0].set_xlabel('t [h]')
     axs[0,0].set_ylabel('M0')
-    axs[0,0].set_title('Comp.1')
+    axs[0,0].set_title(f'Comp. 1 - SDprom = {np.mean(A[:, 2]):.2f}')
 
     axs[0,1].errorbar(t_h, A[:, 3], yerr = A[:, 4], capsize = 8, marker = 'o', ls = ':', ms = 8, label='Comp. 1')
     axs[0,1].set_xlabel('t [h]')
     axs[0,1].set_ylabel('T2 [ms]')
-    axs[0,1].set_title('Comp.1')
+    axs[0,1].set_title(f'Comp. 1 - SDprom = {np.mean(A[:, 4]):.2f}')
 
     axs[1,0].errorbar(t_h, A[:, 5], yerr = A[:, 6], capsize = 8, marker = 'o', ls = ':', ms = 8, label='Comp. 2', color='mediumseagreen')
     axs[1,0].set_xlabel('t [h]')
     axs[1,0].set_ylabel('M0')
-    axs[1,0].set_title('Comp.2')
+    axs[1,0].set_title(f'Comp. 2 - SDprom = {np.mean(A[:, 6]):.2f}')
 
     axs[1,1].errorbar(t_h, A[:, 7], yerr = A[:, 8], capsize = 8, marker = 'o', ls = ':', ms = 8, label='Comp. 2', color='mediumseagreen')
     axs[1,1].set_xlabel('t [h]')
     axs[1,1].set_ylabel('T2 [ms]')
-    axs[1,1].set_title('Comp.2')
+    axs[1,1].set_title(f'Comp. 2 - SDprom = {np.mean(A[:, 8]):.2f}')
 
     axs[2,0].errorbar(t_h, A[:, 9], yerr = A[:, 10], capsize = 8, marker = 'o', ls = ':', ms = 8, label='Comp. 3', color='k')
     axs[2,0].set_xlabel('t [h]')
     axs[2,0].set_ylabel('M0')
-    axs[2,0].set_title('Comp.3')
+    axs[2,0].set_title(f'Comp. 3 - SDprom = {np.mean(A[:, 10]):.2f}')
 
     axs[2,1].errorbar(t_h, A[:, 11], yerr = A[:, 12], capsize = 8, marker = 'o', ls = ':', ms = 8, label='Comp. 3', color='k')
     axs[2,1].set_xlabel('t [h]')
     axs[2,1].set_ylabel('T2 [ms]')
-    axs[2,1].set_title('Comp.3')
+    axs[2,1].set_title(f'Comp. 3 - SDprom = {np.mean(A[:, 12]):.2f}')
 
     plt.savefig(f'{fileRoot}_dataEvol-exp3')

@@ -16,20 +16,20 @@ def main():
     nFiles = len(Files)
     fileRoot = Files[0].split('_0')[0]
 
-    t_wait = args.t_wait
+    t_wait = int(args.t_wait)
     tEvol, tDecay = t_arrays(fileRoot, t_wait, nFiles)
 
     if args.monoexponential:
         out_1(tEvol, tDecay, Files, fileRoot)
-        plot_decay(fileRoot, tEvol)
+        plot_decay(fileRoot, tEvol, t_wait)
         plot_param1(fileRoot)
     elif args.biexponential:
         out_2(tEvol, tDecay, Files, fileRoot)
-        plot_decay(fileRoot, tEvol)
+        plot_decay(fileRoot, tEvol, t_wait)
         plot_param2(fileRoot)
     elif args.triexponential:
         out_3(tEvol, tDecay, Files, fileRoot)
-        plot_decay(fileRoot, tEvol)
+        plot_decay(fileRoot, tEvol, t_wait)
         plot_param3(fileRoot)
     else:
         print('Must choose an option: -exp1, -exp2 or -exp3. Use -h for guidance.')
