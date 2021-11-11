@@ -34,6 +34,8 @@ def main():
     else:
         print('Must choose an option: -exp1, -exp2 or -exp3. Use -h for guidance.')
 
+    plt.show()
+    
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
