@@ -1,7 +1,7 @@
 #!/usr/bin/python3.6
 
 '''
-    Description: plots FID and its spectrum (Hz or ppm), with phase correction.
+    Description: corrects phase of FID and normalizes it considering the receiver gain and number of protons in the sample. Then plots it and transforms it to get spectrum in Hz and ppm. All the processed data will be also saved in ouput files.
     Written by: Ignacio J. Chevallier-Boutell.
     Dated: November, 2021.
 '''
@@ -27,6 +27,8 @@ def main():
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
+
+    parser = argparse.ArgumentParser(description='Corrects phase of FID and normalizes it considering the receiver gain and number of protons in the sample. Then plots it and transforms it to get spectrum in Hz and ppm. All the processed data will be also saved in ouput files.')
 
     parser.add_argument('input', help = "Path to the input file.")
 
