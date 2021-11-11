@@ -1,6 +1,0 @@
-ns	4
-RG	65
-p90	3.3
-dummy	0
-pul[dB]	6
-rd	10

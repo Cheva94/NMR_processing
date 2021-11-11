@@ -106,7 +106,13 @@ def plot_FID(t, FID, ns, rd, rg, input_file):
     ax2.text(0.98,0.02, fr'$\Im$[s(0)] = {FID[0].imag:.2f}', ha='right',
             va='bottom', transform=ax2.transAxes)
 
-    plt.savefig(f'{input_file.split(".txt")[0]}_plot-FID')
+    name = input_file.split(".txt")[0]
+    plt.savefig(f'{name}_phcorr')
+
+    with open(f'{name}_phcorr.csv', 'w') as f:
+        f.write("t [ms], Re[FID], Im[FID] \n")
+        for i in range(len(t)):
+            f.write(f'{t[i]:.4f}, {FID.real[i]:.4f}, {FID.imag[i]:.4f} \n')
 
 def plot_spec_freq(freq, spec, max_peak, ns, rd, rg, input_file):
 
@@ -123,7 +129,13 @@ def plot_spec_freq(freq, spec, max_peak, ns, rd, rg, input_file):
     ax2.set_ylabel(r'$\Im$[S($\nu$)]')
     ax2.xaxis.tick_top()
 
-    plt.savefig(f'{input_file.split(".txt")[0]}_plot-spec_freq')
+    name = input_file.split(".txt")[0]
+    plt.savefig(f'{name}_spec-freq')
+
+    with open(f'{name}_spec-freq.csv', 'w') as f:
+        f.write("Freq [Hz], Re[spec], Im[spec] \n")
+        for i in range(len(freq)):
+            f.write(f'{freq[i]:.4f}, {spec.real[i]:.4f}, {spec.imag[i]:.4f} \n')
 
 def plot_spec_mini(freq, spec, max_peak, ns, rd, rg, input_file):
 
@@ -142,23 +154,10 @@ def plot_spec_mini(freq, spec, max_peak, ns, rd, rg, input_file):
     ax2.set_ylabel(r'$\Im$[S($\nu$)]')
     ax2.xaxis.tick_top()
 
-    plt.savefig(f'{input_file.split(".txt")[0]}_plot-spec_MiniSpec')
+    name = input_file.split(".txt")[0]
+    plt.savefig(f'{name}_spec-MiniSpec')
 
-def plot_spec_bruker(freq, spec, max_peak, ns, rd, rg, input_file):
-
-    CS = freq / 300
-
-    fig, (ax1, ax2) = plt.subplots(2, 1, gridspec_kw={'height_ratios': [3, 1]})
-
-    ax1.plot(CS, spec.real)
-    ax1.set_xlabel(r'$\delta$ [ppm]')
-    ax1.set_ylabel(r'$\Re$[S($\nu$)]')
-    ax1.set_title(f'ns={ns} ; rd = {rd} ; rg = {rg}')
-    ax1.text(0.98,0.98, f'Max = {max_peak.real:.2f}', ha='right',
-            va='top', transform=ax1.transAxes)
-
-    ax2.plot(CS, spec.imag, color='mediumseagreen')
-    ax2.set_ylabel(r'$\Im$[S($\nu$)]')
-    ax2.xaxis.tick_top()
-
-    plt.savefig(f'{input_file.split(".txt")[0]}_plot-spec_Bruker')
+    with open(f'{name}_spec-MiniSpec.csv', 'w') as f:
+        f.write("CS [ppm], Re[spec], Im[spec] \n")
+        for i in range(len(CS)):
+            f.write(f'{CS[i]:.4f}, {spec.real[i]:.4f}, {spec.imag[i]:.4f} \n')
