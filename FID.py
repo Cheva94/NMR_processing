@@ -11,29 +11,26 @@ from core.coreFID import *
 
 def main():
 
-    Files = args.input_file
+    F = args.input
+    nH = args.nH
+    t, nP, DW, FID, nS, RD, RG = userfile(F)
 
-    for F in Files:
+    FID = phase_correction(FID)
+    FID = normalize(FID, nH, RG)
+    fileRoot = F.split(".txt")[0]
+    plot_FID(t, FID, nS, RD, fileRoot)
+    out_FID(t, FID, fileRoot)
 
-        t, Np, dw, FID, ns, rd, rg = userfile(F)
-        FID = phase_correction(FID)
-        plot_FID(t, FID, ns, rd, rg, F)
-
-        freq, spec, max_peak = spectrum(FID, Np, dw)
-        if args.MiniSpec:
-            plot_spec_mini(freq, spec, max_peak, ns, rd, rg, F)
-        else:
-            plot_spec_freq(freq, spec, max_peak, ns, rd, rg, F)
+    freq, spec, max_peak = spectrum(FID, nP, DW)
+    plot_spec(freq, spec, max_peak, nS, RD, fileRoot)
+    out_spec(freq, spec, fileRoot)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('input_file', help = "Path to the input files.",
-                        nargs = '+')
+    parser.add_argument('input', help = "Path to the input file.")
 
-    parser.add_argument('-mini', '--MiniSpec', action = 'store_true', help =
-                        "Plots spectrum vs CS [ppm] (Minispec=20MHz), with \
-                        phase correction.")
+    parser.add_argument('nH', help = "Number of protons in the sample.", type = int)
 
     args = parser.parse_args()
 
