@@ -1,7 +1,7 @@
 #!/usr/bin/python3.6
 
 '''
-    Description: corrects phase of FID and normalizes it considering the receiver gain and number of protons in the sample. Then plots it and transforms it to get spectrum in Hz and ppm. All the processed data will be also saved in ouput files.
+    Description: corrects phase of FID and normalizes it considering the receiver gain and number of protons in the sample. Then plots the FID and transforms it to get spectrum in Hz and ppm. All the processed data will be also saved in ouput files (.csv).
     Written by: Ignacio J. Chevallier-Boutell.
     Dated: November, 2021.
 '''

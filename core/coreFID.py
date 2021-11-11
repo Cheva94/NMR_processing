@@ -93,15 +93,15 @@ def plot_FID(t, FID, nS, RD, fileRoot):
 
     ax1.plot(t, FID.real)
     ax1.set_xlabel('t [ms]')
-    ax1.set_ylabel(r'$\Re$[s]')
+    ax1.set_ylabel(r'$M_R$')
     ax1.set_title(f'nS={nS} ; RD = {RD}')
-    ax1.text(0.98,0.98, fr'$\Re$[s(0)] = {FID[0].real:.2f}', ha='right',
+    ax1.text(0.98,0.98, fr'$M_R (0)$ = {FID[0].real:.2f}', ha='right',
             va='top', transform=ax1.transAxes)
 
     ax2.plot(t, FID.imag, label='Im', color='mediumseagreen')
     ax2.xaxis.tick_top()
-    ax2.set_ylabel(r'$\Im$[s]')
-    ax2.text(0.98,0.02, fr'$\Im$[s(0)] = {FID[0].imag:.2f}', ha='right',
+    ax2.set_ylabel(r'$M_I$')
+    ax2.text(0.98,0.02, fr'$M_I (0)$ = {FID[0].imag:.2f}', ha='right',
             va='bottom', transform=ax2.transAxes)
 
     plt.savefig(f'{fileRoot}_NormPhCorr')
@@ -140,12 +140,12 @@ def plot_spec(freq, spec, max_peak, nS, RD, fileRoot):
     axs[0,0].set_xlim(-2, 2)
     axs[0,0].xaxis.set_minor_locator(AutoMinorLocator())
     axs[0,0].set_xlabel(r'$\nu$ [Hz]')
-    axs[0,0].set_ylabel(r'$\Re$[S]')
+    axs[0,0].set_ylabel(r'$M_R$')
 
     axs[1,0].plot(freq, spec.imag, color='mediumseagreen')
     axs[1,0].set_xlim(-2, 2)
     axs[1,0].xaxis.set_minor_locator(AutoMinorLocator())
-    axs[1,0].set_ylabel(r'$\Im$[S]')
+    axs[1,0].set_ylabel(r'$M_I$')
     axs[1,0].xaxis.tick_top()
 
     CS = freq / 20
@@ -154,12 +154,12 @@ def plot_spec(freq, spec, max_peak, nS, RD, fileRoot):
     axs[0,1].set_xlim(-0.2, 0.2)
     axs[0,1].xaxis.set_minor_locator(AutoMinorLocator())
     axs[0,1].set_xlabel(r'$\delta$ [ppm]')
-    axs[0,1].set_ylabel(r'$\Re$[S]')
+    axs[0,1].set_ylabel(r'$M_R$')
 
     axs[1,1].plot(CS, spec.imag, color='mediumseagreen')
     axs[1,1].set_xlim(-0.2, 0.2)
     axs[1,1].xaxis.set_minor_locator(AutoMinorLocator())
-    axs[1,1].set_ylabel(r'$\Im$[S]')
+    axs[1,1].set_ylabel(r'$M_I$')
     axs[1,1].xaxis.tick_top()
 
     fig.suptitle(f'nS={nS} ; RD = {RD} ; Peak = {max_peak.real:.2f}')

@@ -16,14 +16,14 @@ plt.rcParams["font.weight"] = "bold"
 plt.rcParams["font.size"] = 35
 
 plt.rcParams["axes.labelweight"] = "bold"
-plt.rcParams["axes.linewidth"] = 3
+plt.rcParams["axes.linewidth"] = 5
 plt.rcParams["axes.prop_cycle"] = cycler('color', ['tab:orange',
                                         'mediumseagreen', 'k', 'm', 'y'])
 
 plt.rcParams['xtick.major.size'] = 10
-plt.rcParams['xtick.major.width'] = 3
+plt.rcParams['xtick.major.width'] = 5
 plt.rcParams['ytick.major.size'] = 10
-plt.rcParams['ytick.major.width'] = 3
+plt.rcParams['ytick.major.width'] = 5
 
 plt.rcParams["legend.loc"] = 'upper right'
 plt.rcParams["legend.frameon"] = True
@@ -37,29 +37,28 @@ plt.rcParams["figure.autolayout"] = True
 
 plt.rcParams["lines.linestyle"] = '-'
 
-def userfile(input_file):
+def userfile(F):
     '''
-    Process the txt input file given by the user.
+    Extracts data from the .txt input file given by the user.
     '''
 
-    data = pd.read_csv(input_file, header = None, delim_whitespace = True).to_numpy()
+    data = pd.read_csv(F, header = None, delim_whitespace = True).to_numpy()
 
-    t = data[:, 0]
+    t = data[:, 0] # In ms
+    tEcho = t[1] - t[0]
 
     Re = data[:, 1]
     Im = data[:, 2]
     decay = Re + Im * 1j # Complex signal
 
-    tEcho = t[1] - t[0]
     return t, decay, tEcho
 
 def phase_correction(decay):
     '''
-    Returns decay with phase correction (maximize real part).
+    Returns decay with phase correction (maximizing real part).
     '''
 
     initVal = {}
-
     for i in range(360):
         tita = np.deg2rad(i)
         decay_ph = decay * np.exp(1j * tita)
@@ -97,7 +96,7 @@ def exp_1(t, M0, T2):
 
 def fit_1(t, decay):
     '''
-    Fit monoexponential.
+    Fits monoexponential.
     '''
 
     popt, pcov = curve_fit(exp_1, t, decay, bounds=(0, np.inf))
@@ -111,39 +110,41 @@ def fit_1(t, decay):
 
     return popt, r2, chi2, M0, T2, M0_SD, T2_SD
 
-def plot_1(t, decay, popt, tEcho, input_file):
+def plot_1(t, decay, popt, tEcho, fileRoot):
     '''
     Creates plot for monoexponential.
     '''
 
+    t_seg = t * 0.001
+
     fig, ax = plt.subplots()
 
-    ax.plot(t, decay, lw=3, label='data')
-    ax.plot(t, exp_1(t, *popt), lw=2, label='mono')
+    ax.semilogy(t_seg, decay, label='data')
+    ax.semilogy(t_seg, exp_1(t, *popt), label='mono')
 
     ax.text(0.02,0.02, fr'$T_E$={tEcho} ms', ha='left', va='bottom',
-            transform=ax.transAxes, size='small') #medium
+            transform=ax.transAxes, size='small')
 
-    ax.set_xlabel('t [ms]')
-    ax.set_ylabel(r'$Echo_{top}$ (t)')
+    ax.set_xlabel('t [s]')
+    ax.set_ylabel('log(M)')
 
     ax.legend()
 
-    plt.savefig(f'{input_file.split(".txt")[0]}-exp1')
+    plt.savefig(f'{fileRoot}-exp1')
 
-def out_1(t, decay, tEcho, input_file):
+def out_1(t, decay, tEcho, fileRoot, r2, chi2, M0, T2, M0_SD, T2_SD):
     '''
-    Fit monoexponential, save optimized parameters with statistics and plot.
+    Generates one output file with phase corrected CPMG and another one with the fitting parameters in the monoexponential case.
     '''
 
-    popt, r2, chi2, M0, T2, M0_SD, T2_SD = fit_1(t, decay)
+    with open(f'{fileRoot}-PhCorr.csv', 'w') as f:
+        f.write("t [ms], decay \n")
+        for i in range(len(t)):
+            f.write(f'{t[i]:.4f}, {decay[i]:.4f} \n')
 
-    plot_1(t, decay, popt, tEcho, input_file)
-
-    output_file = input_file.split('.txt')[0]
-    with open(f'{output_file}_fit-exp1.csv', 'w') as f:
-        f.write("M0, M0-SD, T2 [ms], T2-SD [ms], R2, Chi2 \n")
-        f.write(f'{M0:.4f}, {M0_SD:.4f}, {T2:.4f}, {T2_SD:.4f}, {r2:.4f}, {chi2:.4f}')
+    with open(f'{fileRoot}-exp1.csv', 'w') as f:
+        f.write("M0, M0-SD, T2 [ms], T2-SD [ms], R2, Chi2, tEcho [ms] \n")
+        f.write(f'{M0:.4f}, {M0_SD:.4f}, {T2:.4f}, {T2_SD:.4f}, {r2:.4f}, {chi2:.4f}, {tEcho:.4f}')
 
 ################################################################################
 ######################## Biexponential section
@@ -154,7 +155,7 @@ def exp_2(t, M0_1, T2_1, M0_2, T2_2):
 
 def fit_2(t, decay):
     '''
-    Fit biexponential.
+    Fits biexponential.
     '''
 
     popt, pcov = curve_fit(exp_2, t, decay, bounds=(0, np.inf))
@@ -168,39 +169,41 @@ def fit_2(t, decay):
 
     return popt, r2, chi2, M0_1, T2_1, M0_2, T2_2, M0_1_SD, T2_1_SD, M0_2_SD, T2_2_SD
 
-def plot_2(t, decay, popt, tEcho, input_file):
+def plot_2(t, decay, popt, tEcho, fileRoot):
     '''
     Creates plot for biexponential.
     '''
 
+    t_seg = t * 0.001
+
     fig, ax = plt.subplots()
 
-    ax.plot(t, decay, lw=3, label='data')
-    ax.plot(t, exp_2(t, *popt), lw=2, label='bi')
+    ax.semilogy(t_seg, decay, label='data')
+    ax.semilogy(t_seg, exp_2(t, *popt), label='bi')
 
     ax.text(0.02,0.02, fr'$T_E$={tEcho} ms', ha='left', va='bottom',
-            transform=ax.transAxes, size='small') #medium
+            transform=ax.transAxes, size='small')
 
-    ax.set_xlabel('t [ms]')
-    ax.set_ylabel(r'$Echo_{top}$ (t)')
+    ax.set_xlabel('t [s]')
+    ax.set_ylabel('log(M)')
 
     ax.legend()
 
-    plt.savefig(f'{input_file.split(".txt")[0]}-exp2')
+    plt.savefig(f'{fileRoot}-exp2')
 
-def out_2(t, decay, tEcho, input_file):
+def out_2(t, decay, tEcho, fileRoot, r2, chi2, M0_1, T2_1, M0_2, T2_2, M0_1_SD, T2_1_SD, M0_2_SD, T2_2_SD):
     '''
-    Fit biexponential, save optimized parameters with statistics and plot.
+    Generates one output file with phase corrected CPMG and another one with the fitting parameters in the biexponential case.
     '''
 
-    popt, r2, chi2, M0_1, T2_1, M0_2, T2_2, M0_1_SD, T2_1_SD, M0_2_SD, T2_2_SD = fit_2(t, decay)
+    with open(f'{fileRoot}-PhCorr.csv', 'w') as f:
+        f.write("t [ms], decay \n")
+        for i in range(len(t)):
+            f.write(f'{t[i]:.4f}, {decay[i]:.4f} \n')
 
-    plot_2(t, decay, popt, tEcho, input_file)
-
-    output_file = input_file.split('.txt')[0]
-    with open(f'{output_file}_fit-exp2.csv', 'w') as f:
-        f.write("M0_1, M0_1-SD, T2_1 [ms], T2_1-SD [ms], M0_2, M0_2-SD, T2_2 [ms], T2_2-SD [ms], R2, Chi2 \n")
-        f.write(f'{M0_1:.4f}, {M0_1_SD:.4f}, {T2_1:.4f}, {T2_1_SD:.4f}, {M0_2:.4f}, {M0_2_SD:.4f}, {T2_2:.4f}, {T2_2_SD:.4f}, {r2:.4f}, {chi2:.4f}')
+    with open(f'{fileRoot}-exp2.csv', 'w') as f:
+        f.write("M0_1, M0_1-SD, T2_1 [ms], T2_1-SD [ms], M0_2, M0_2-SD, T2_2 [ms], T2_2-SD [ms], R2, Chi2, tEcho [ms] \n")
+        f.write(f'{M0_1:.4f}, {M0_1_SD:.4f}, {T2_1:.4f}, {T2_1_SD:.4f}, {M0_2:.4f}, {M0_2_SD:.4f}, {T2_2:.4f}, {T2_2_SD:.4f}, {r2:.4f}, {chi2:.4f}, {tEcho:.4f}')
 
 ################################################################################
 ######################## Triexponential section
@@ -211,7 +214,7 @@ def exp_3(t, M0_1, T2_1, M0_2, T2_2, M0_3, T2_3):
 
 def fit_3(t, decay):
     '''
-    Fit triexponential.
+    Fits triexponential.
     '''
 
     popt, pcov = curve_fit(exp_3, t, decay, bounds=(0, np.inf))
@@ -225,76 +228,38 @@ def fit_3(t, decay):
 
     return popt, r2, chi2, M0_1, T2_1, M0_2, T2_2, M0_3, T2_3, M0_1_SD, T2_1_SD, M0_2_SD, T2_2_SD, M0_3_SD, T2_3_SD
 
-def plot_3(t, decay, popt, tEcho, input_file):
+def plot_3(t, decay, popt, tEcho, fileRoot):
     '''
     Creates plot for triexponential.
     '''
 
-    fig, ax = plt.subplots()
+    t_seg = t * 0.001
 
-    ax.plot(t, decay, lw=3, label='data')
-    ax.plot(t, exp_3(t, *popt), lw=2, label='tri')
+    fig, ax = plt.subplots()
+    
+    ax.semilogy(t_seg, decay, label='data')
+    ax.semilogy(t_seg, exp_3(t, *popt), label='tri')
 
     ax.text(0.02,0.02, fr'$T_E$={tEcho} ms', ha='left', va='bottom',
-            transform=ax.transAxes, size='small') #medium
+            transform=ax.transAxes, size='small')
 
-    ax.set_xlabel('t [ms]')
-    ax.set_ylabel(r'$Echo_{top}$ (t)')
+    ax.set_xlabel('t [s]')
+    ax.set_ylabel('log(M)')
 
     ax.legend()
 
-    plt.savefig(f'{input_file.split(".txt")[0]}-exp3')
+    plt.savefig(f'{fileRoot}-exp3')
 
-def out_3(t, decay, tEcho, input_file):
+def out_3(t, decay, tEcho, fileRoot, r2, chi2, M0_1, T2_1, M0_2, T2_2, M0_3, T2_3, M0_1_SD, T2_1_SD, M0_2_SD, T2_2_SD, M0_3_SD, T2_3_SD):
     '''
-    Fit triexponential, save optimized parameters with statistics and plot.
-    '''
-
-    popt, r2, chi2, M0_1, T2_1, M0_2, T2_2, M0_3, T2_3, M0_1_SD, T2_1_SD, M0_2_SD, T2_2_SD, M0_3_SD, T2_3_SD = fit_3(t, decay)
-
-    plot_3(t, decay, popt, tEcho, input_file)
-
-    output_file = input_file.split('.txt')[0]
-    with open(f'{output_file}_fit-exp3.csv', 'w') as f:
-        f.write("M0_1, M0_1-SD, T2_1 [ms], T2_1-SD [ms], M0_2, M0_2-SD, T2_2 [ms], T2_2-SD [ms], M0_3, M0_3-SD, T2_3 [ms], T2_3-SD [ms], R2, Chi2 \n")
-        f.write(f'{M0_1:.4f}, {M0_1_SD:.4f}, {T2_1:.4f}, {T2_1_SD:.4f}, {M0_2:.4f}, {M0_2_SD:.4f}, {T2_2:.4f}, {T2_2_SD:.4f}, {M0_3:.4f}, {M0_3_SD:.4f}, {T2_3:.4f}, {T2_3_SD:.4f}, {r2:.4f}, {chi2:.4f}')
-
-################################################################################
-######################## Multi - choosing
-################################################################################
-
-def out_multi(t, decay, tEcho, input_file):
-    '''
-    Fits mono-, bi- and tri- exponential decay to choose best fit.
-    Also save optimized parameters with statistics and plot.
+    Generates one output file with phase corrected CPMG and another one with the fitting parameters in the triexponential case.
     '''
 
-    popt_mono, r2_mono, chi2_mono, M0_mono, T2_mono, M0_SD_mono, T2_SD_mono = fit_1(t, decay)
+    with open(f'{fileRoot}-PhCorr.csv', 'w') as f:
+        f.write("t [ms], decay \n")
+        for i in range(len(t)):
+            f.write(f'{t[i]:.4f}, {decay[i]:.4f} \n')
 
-    popt_bi, r2_bi, chi2_bi, M0_1_bi, T2_1_bi, M0_2_bi, T2_2_bi, M0_1_SD_bi, T2_1_SD_bi, M0_2_SD_bi, T2_2_SD_bi = fit_2(t, decay)
-
-    popt_tri, r2_tri, chi2_tri, M0_1_tri, T2_1_tri, M0_2_tri, T2_2_tri, M0_3_tri, T2_3_tri, M0_1_SD_tri, T2_1_SD_tri, M0_2_SD_tri, T2_2_SD_tri, M0_3_SD_tri, T2_3_SD_tri = fit_3(t, decay)
-
-    fig, ax = plt.subplots()
-
-    ax.plot(t, decay, lw=3, label='data')
-    ax.plot(t, exp_1(t, *popt_mono), lw=2, label='mono')
-    ax.plot(t, exp_2(t, *popt_bi), lw=2, label='bi')
-    ax.plot(t, exp_3(t, *popt_tri), lw=2, label='tri')
-
-    ax.text(0.02,0.02, fr'$T_E$={tEcho} ms', ha='left', va='bottom',
-            transform=ax.transAxes, size='small') #medium
-
-    ax.set_xlabel('t [ms]')
-    ax.set_ylabel(r'$Echo_{top}$ (t)')
-
-    ax.legend()
-
-    plt.savefig(f'{input_file.split(".txt")[0]}-all')
-
-    output_file = input_file.split('.txt')[0]
-    with open(f'{output_file}_fit-all.csv', 'w') as f:
-        f.write("Components, R2, Chi2, M0_1, M0_1-SD, T2_1 [ms], T2_1-SD [ms], M0_2, M0_2-SD, T2_2 [ms], T2_2-SD [ms], M0_3, M0_3-SD, T2_3 [ms], T2_3-SD [ms] \n")
-        f.write(f'Mono, {r2_mono:.4f}, {chi2_mono:.4f}, {M0_mono:.4f}, {M0_SD_mono:.4f}, {T2_mono:.4f}, {T2_SD_mono:.4f} \n')
-        f.write(f'Bi, {r2_bi:.4f}, {chi2_bi:.4f}, {M0_1_bi:.4f}, {M0_1_SD_bi:.4f}, {T2_1_bi:.4f}, {T2_1_SD_bi:.4f}, {M0_2_bi:.4f}, {M0_2_SD_bi:.4f}, {T2_2_bi:.4f}, {T2_2_SD_bi:.4f} \n')
-        f.write(f'Tri, {r2_tri:.4f}, {chi2_tri:.4f}, {M0_1_tri:.4f}, {M0_1_SD_tri:.4f}, {T2_1_tri:.4f}, {T2_1_SD_tri:.4f}, {M0_2_tri:.4f}, {M0_2_SD_tri:.4f}, {T2_2_tri:.4f}, {T2_2_SD_tri:.4f}, {M0_3_tri:.4f}, {M0_3_SD_tri:.4f}, {T2_3_tri:.4f}, {T2_3_SD_tri:.4f}')
+    with open(f'{fileRoot}-exp3.csv', 'w') as f:
+        f.write("M0_1, M0_1-SD, T2_1 [ms], T2_1-SD [ms], M0_2, M0_2-SD, T2_2 [ms], T2_2-SD [ms], M0_3, M0_3-SD, T2_3 [ms], T2_3-SD [ms], R2, Chi2, tEcho [ms] \n")
+        f.write(f'{M0_1:.4f}, {M0_1_SD:.4f}, {T2_1:.4f}, {T2_1_SD:.4f}, {M0_2:.4f}, {M0_2_SD:.4f}, {T2_2:.4f}, {T2_2_SD:.4f}, {M0_3:.4f}, {M0_3_SD:.4f}, {T2_3:.4f}, {T2_3_SD:.4f}, {r2:.4f}, {chi2:.4f}, {tEcho:.4f}')
