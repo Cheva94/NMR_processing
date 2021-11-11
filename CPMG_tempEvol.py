@@ -12,7 +12,7 @@ from core.coreCPMG_tempEvol import *
 
 def main():
 
-    Files = args.input_file
+    Files = args.input
     nFiles = len(Files)
     fileRoot = Files[0].split('_0')[0]
 
@@ -35,11 +35,13 @@ def main():
         print('Must choose an option: -exp1, -exp2 or -exp3. Use -h for guidance.')
 
     plt.show()
-    
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('input_file', help = "Path to the inputs file.",
+    parser = argparse.ArgumentParser(description='Falta')
+
+    parser.add_argument('input', help = "Path to the inputs file.",
                         nargs = '+')
 
     parser.add_argument('t_wait', help = "Waiting time (in minutes) between CPMG experiments.")

@@ -117,18 +117,21 @@ def plot_1(t, decay, popt, tEcho, fileRoot):
 
     t_seg = t * 0.001
 
-    fig, ax = plt.subplots()
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(25, 10))
 
-    ax.semilogy(t_seg, decay, label='data')
-    ax.semilogy(t_seg, exp_1(t, *popt), label='mono')
+    ax1.plot(t_seg, decay, label='data')
+    ax1.plot(t_seg, exp_1(t, *popt), label='mono')
+    ax1.set_xlabel('t [s]')
+    ax1.set_ylabel('M')
+    ax1.legend()
 
-    ax.text(0.02,0.02, fr'$T_E$={tEcho} ms', ha='left', va='bottom',
-            transform=ax.transAxes, size='small')
+    ax2.semilogy(t_seg, decay, label='data')
+    ax2.semilogy(t_seg, exp_1(t, *popt), label='mono')
+    ax2.set_xlabel('t [s]')
+    ax2.set_ylabel('log(M)')
+    ax2.legend()
 
-    ax.set_xlabel('t [s]')
-    ax.set_ylabel('log(M)')
-
-    ax.legend()
+    fig.suptitle(fr'$T_E$={tEcho:.2f} ms')
 
     plt.savefig(f'{fileRoot}-exp1')
 
@@ -176,18 +179,21 @@ def plot_2(t, decay, popt, tEcho, fileRoot):
 
     t_seg = t * 0.001
 
-    fig, ax = plt.subplots()
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(25, 10))
 
-    ax.semilogy(t_seg, decay, label='data')
-    ax.semilogy(t_seg, exp_2(t, *popt), label='bi')
+    ax1.plot(t_seg, decay, label='data')
+    ax1.plot(t_seg, exp_2(t, *popt), label='bi')
+    ax1.set_xlabel('t [s]')
+    ax1.set_ylabel('M')
+    ax1.legend()
 
-    ax.text(0.02,0.02, fr'$T_E$={tEcho} ms', ha='left', va='bottom',
-            transform=ax.transAxes, size='small')
+    ax2.semilogy(t_seg, decay, label='data')
+    ax2.semilogy(t_seg, exp_2(t, *popt), label='bi')
+    ax2.set_xlabel('t [s]')
+    ax2.set_ylabel('log(M)')
+    ax2.legend()
 
-    ax.set_xlabel('t [s]')
-    ax.set_ylabel('log(M)')
-
-    ax.legend()
+    fig.suptitle(fr'$T_E$={tEcho:.2f} ms')
 
     plt.savefig(f'{fileRoot}-exp2')
 
@@ -235,18 +241,21 @@ def plot_3(t, decay, popt, tEcho, fileRoot):
 
     t_seg = t * 0.001
 
-    fig, ax = plt.subplots()
-    
-    ax.semilogy(t_seg, decay, label='data')
-    ax.semilogy(t_seg, exp_3(t, *popt), label='tri')
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(25, 10))
 
-    ax.text(0.02,0.02, fr'$T_E$={tEcho} ms', ha='left', va='bottom',
-            transform=ax.transAxes, size='small')
+    ax1.plot(t_seg, decay, label='data')
+    ax1.plot(t_seg, exp_3(t, *popt), label='tri')
+    ax1.set_xlabel('t [s]')
+    ax1.set_ylabel('M')
+    ax1.legend()
 
-    ax.set_xlabel('t [s]')
-    ax.set_ylabel('log(M)')
+    ax2.semilogy(t_seg, decay, label='data')
+    ax2.semilogy(t_seg, exp_3(t, *popt), label='tri')
+    ax2.set_xlabel('t [s]')
+    ax2.set_ylabel('log(M)')
+    ax2.legend()
 
-    ax.legend()
+    fig.suptitle(fr'$T_E$={tEcho:.2f} ms')
 
     plt.savefig(f'{fileRoot}-exp3')
 
