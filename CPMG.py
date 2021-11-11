@@ -1,4 +1,4 @@
-#!/usr/bin/python3.8
+#!/usr/bin/python3.6
 
 '''
     Description: fits exponential decay (1, 2 or 3 components) with CPMG data.
