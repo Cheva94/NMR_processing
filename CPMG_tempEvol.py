@@ -38,19 +38,15 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='Corrects phase of CPMG decay and fits it considering 1, 2 or 3 exponentials, considering temporal evolution of parameters. Then plots one decay per hour in semilog scale. Also one fit for quarter of experiment progress. All the processed data will be also saved in ouput files (.csv).')
 
-    parser.add_argument('input', help = "Path to the inputs file.",
-                        nargs = '+')
+    parser.add_argument('input', help = "Path to the inputs file.", nargs = '+')
 
     parser.add_argument('t_wait', help = "Waiting time (in minutes) between CPMG experiments.", type=int)
 
-    parser.add_argument('-exp1', '--monoexponential', action = 'store_true',
-                        help = "Fits monoexponential decay.")
+    parser.add_argument('-exp1', '--monoexponential', action = 'store_true', help = "Fits monoexponential decay.")
 
-    parser.add_argument('-exp2', '--biexponential', action = 'store_true',
-                        help = "Fits biexponential decay.")
+    parser.add_argument('-exp2', '--biexponential', action = 'store_true', help = "Fits biexponential decay.")
 
-    parser.add_argument('-exp3', '--triexponential', action = 'store_true',
-                        help = "Fits triexponential decay.")
+    parser.add_argument('-exp3', '--triexponential', action = 'store_true', help = "Fits triexponential decay.")
 
     args = parser.parse_args()
 

@@ -20,13 +20,13 @@ def main():
     FID = normalize(FID, nH, RG)
     fileRoot = F.split(".txt")[0]
 
-    if back == None:
-        plot_FID(t, FID, nS, RD, fileRoot)
-        out_FID(t, FID, fileRoot)
+    # if back == None:
+    plot_FID(t, FID, nS, RD, fileRoot)
+    out_FID(t, FID, fileRoot)
 
-        freq, spec, max_peak = spectrum(FID, nP, DW)
-        plot_spec(freq, spec, max_peak, nS, RD, fileRoot)
-        out_spec(freq, spec, fileRoot)
+    freq, spec, max_peak = spectrum(FID, nP, DW)
+    plot_spec(freq, spec, max_peak, nS, RD, fileRoot)
+    out_spec(freq, spec, fileRoot)
 
     # else:
     #     back = pd.read_csv(F, header = None, delim_whitespace = True).to_numpy()

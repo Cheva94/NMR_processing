@@ -44,14 +44,11 @@ if __name__ == "__main__":
 
     parser.add_argument('input', help = "Path to the inputs file.")
 
-    parser.add_argument('-exp1', '--monoexponential', action = 'store_true',
-                        help = "Fits monoexponential decay.")
+    parser.add_argument('-exp1', '--monoexponential', action = 'store_true', help = "Fits monoexponential decay.")
 
-    parser.add_argument('-exp2', '--biexponential', action = 'store_true',
-                        help = "Fits biexponential decay.")
+    parser.add_argument('-exp2', '--biexponential', action = 'store_true', help = "Fits biexponential decay.")
 
-    parser.add_argument('-exp3', '--triexponential', action = 'store_true',
-                        help = "Fits triexponential decay.")
+    parser.add_argument('-exp3', '--triexponential', action = 'store_true', help = "Fits triexponential decay.")
 
     args = parser.parse_args()
 
