@@ -95,15 +95,13 @@ def plot_decay(fileRoot, tEvol, t_wait):
         ax2.semilogy(t_seg, A[:, i+1], lw=3, color=cmap.to_rgba(i))
 
     cbar = fig.colorbar(cmap, ticks=[count[0], count[-1]])
-    cbar.ax1.set_yticklabels([f't = 0 h', f't = {tEvol[-1]/60:.0f} h'], fontsize=15)
+    cbar.ax.set_yticklabels([f't = 0 h', f't = {tEvol[-1]/60:.0f} h'], fontsize=15)
 
     ax1.set_xlabel('t [s]')
     ax1.set_ylabel('M')
 
     ax2.set_xlabel('t [s]')
     ax2.set_ylabel('log(M)')
-
-    fig.suptitle(fr'$T_E$={tEcho:.2f} ms')
 
     plt.savefig(f'{fileRoot}-evolPhCorr')
 
@@ -127,25 +125,49 @@ def fit_1(t, decay):
 
     return M0, T2, M0_SD, T2_SD
 
-def out_1(tEvol, tDecay, Files, fileRoot):
+def out_1(tEvol, tDecay, Files, fileRoot, nFiles):
     '''
-    Extracts all the information and puts it together in two .csv files.
+    Extracts all the information and puts it together in two .csv files. Also plots evolution of fits (0, 25, 50, 75 and 100 %).
     '''
 
     params = []
     count = 1
     dataDecay = pd.DataFrame(tDecay, columns=['t [ms]'])
+    evolFiles = [int(nFiles * i) for i in [0.25, 0.5, 0.75, 1]]
+    evolCounter = 0
+    t_seg = tDecay * 0.001
 
     for F in Files:
         decay = decay_phCorr(F)
         dataDecay[f'Exp #{count}'] = decay
         M0, T2, M0_SD, T2_SD = fit_1(tDecay, decay)
         params.append([M0, M0_SD, T2, T2_SD])
+        if (count == 1) or any(count == x for x in evolFiles):
+            fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(25, 10))
+
+            ax1.plot(t_seg, decay, label='data')
+            ax1.plot(t_seg, exp_1(tDecay, M0, T2), label='mono')
+            ax1.set_xlabel('t [s]')
+            ax1.set_ylabel('M')
+            ax1.legend()
+
+            ax2.semilogy(t_seg, decay, label='data')
+            ax2.semilogy(t_seg, exp_1(tDecay, M0, T2), label='mono')
+            ax2.set_xlabel('t [s]')
+            ax2.set_ylabel('log(M)')
+            ax2.legend()
+
+            fig.suptitle(f'File {count}: Evolution = {tEvol[count-1]/60:.0f} h ; Progress = {int(evolCounter*100)} %')
+
+            plt.savefig(f'{fileRoot}-evolExp1-{str(evolCounter).replace(".", ",")}')
+
+            evolCounter += 0.25
+
         count += 1
 
-    params = np.array(params)
-
     dataDecay.to_csv(f'{fileRoot}-evolPhCorr.csv', index=False)
+
+    params = np.array(params)
     with open(f'{fileRoot}-evolExp1.csv', 'w') as f:
         f.write("t [min], MO, M0-SD, T2 [ms], T2-SD [ms] \n")
         for exp in range(len(Files)):
@@ -201,24 +223,49 @@ def fit_2(t, decay):
 
     return M0_1, T2_1, M0_2, T2_2, M0_1_SD, T2_1_SD, M0_2_SD, T2_2_SD
 
-def out_2(tEvol, tDecay, Files, fileRoot):
+def out_2(tEvol, tDecay, Files, fileRoot, nFiles):
     '''
-    Extracts all the information and puts it together in two .csv files.
+    Extracts all the information and puts it together in two .csv files. Also plots evolution of fits (0, 25, 50, 75 and 100 %).
     '''
 
     params = []
     count = 1
     dataDecay = pd.DataFrame(tDecay, columns=['t [ms]'])
+    evolFiles = [int(nFiles * i) for i in [0.25, 0.5, 0.75, 1]]
+    evolCounter = 0
+    t_seg = tDecay * 0.001
 
     for F in Files:
         decay = decay_phCorr(F)
         dataDecay[f'Exp #{count}'] = decay
         M0_1, T2_1, M0_2, T2_2, M0_1_SD, T2_1_SD, M0_2_SD, T2_2_SD = fit_2(tDecay, decay)
         params.append([M0_1, M0_1_SD, T2_1, T2_1_SD, M0_2, M0_2_SD, T2_2, T2_2_SD])
+        if (count == 1) or any(count == x for x in evolFiles):
+            fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(25, 10))
+
+            ax1.plot(t_seg, decay, label='data')
+            ax1.plot(t_seg, exp_2(tDecay, M0_1, T2_1, M0_2, T2_2), label='bi')
+            ax1.set_xlabel('t [s]')
+            ax1.set_ylabel('M')
+            ax1.legend()
+
+            ax2.semilogy(t_seg, decay, label='data')
+            ax2.semilogy(t_seg, exp_2(tDecay, M0_1, T2_1, M0_2, T2_2), label='bi')
+            ax2.set_xlabel('t [s]')
+            ax2.set_ylabel('log(M)')
+            ax2.legend()
+
+            fig.suptitle(f'File {count}: Evolution = {tEvol[count-1]/60:.0f} h ; Progress = {int(evolCounter*100)} %')
+
+            plt.savefig(f'{fileRoot}-evolExp2-{str(evolCounter).replace(".", ",")}')
+
+            evolCounter += 0.25
+
         count += 1
 
-    params = np.array(params)
     dataDecay.to_csv(f'{fileRoot}-evolPhCorr.csv', index=False)
+
+    params = np.array(params)
     with open(f'{fileRoot}-evolExp2.csv', 'w') as f:
         f.write("t [min], MO_1, M0_1-SD, T2_1 [ms], T2_1-SD [ms], MO_2, M0_2-SD, T2_2 [ms], T2_2-SD [ms] \n")
         for exp in range(len(Files)):
@@ -296,20 +343,45 @@ def fit_3(t, decay):
 
     return M0_1, T2_1, M0_2, T2_2, M0_3, T2_3, M0_1_SD, T2_1_SD, M0_2_SD, T2_2_SD, M0_3_SD, T2_3_SD
 
-def out_3(tEvol, tDecay, Files, fileRoot):
+def out_3(tEvol, tDecay, Files, fileRoot, nFiles):
     '''
     Extracts all the information and puts it together in two .csv files.
+    Also plots evolution of fits (0, 25, 50, 75 and 100 %).
     '''
 
     params = []
     count = 1
     dataDecay = pd.DataFrame(tDecay, columns=['t [ms]'])
+    evolFiles = [int(nFiles * i) for i in [0.25, 0.5, 0.75, 1]]
+    evolCounter = 0
+    t_seg = tDecay * 0.001
 
     for F in Files:
         decay = decay_phCorr(F)
         dataDecay[f'Exp #{count}'] = decay
         M0_1, T2_1, M0_2, T2_2, M0_3, T2_3, M0_1_SD, T2_1_SD, M0_2_SD, T2_2_SD, M0_3_SD, T2_3_SD = fit_3(tDecay, decay)
         params.append([M0_1, M0_1_SD, T2_1, T2_1_SD, M0_2, M0_2_SD, T2_2, T2_2_SD, M0_3, M0_3_SD, T2_3, T2_3_SD])
+        if (count == 1) or any(count == x for x in evolFiles):
+            fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(25, 10))
+
+            ax1.plot(t_seg, decay, label='data')
+            ax1.plot(t_seg, exp_3(tDecay, M0_1, T2_1, M0_2, T2_2, M0_3, T2_3), label='tri')
+            ax1.set_xlabel('t [s]')
+            ax1.set_ylabel('M')
+            ax1.legend()
+
+            ax2.semilogy(t_seg, decay, label='data')
+            ax2.semilogy(t_seg, exp_3(tDecay, M0_1, T2_1, M0_2, T2_2, M0_3, T2_3), label='tri')
+            ax2.set_xlabel('t [s]')
+            ax2.set_ylabel('log(M)')
+            ax2.legend()
+
+            fig.suptitle(f'File {count}: Evolution = {tEvol[count-1]/60:.0f} h ; Progress = {int(evolCounter*100)} %')
+
+            plt.savefig(f'{fileRoot}-evolExp3-{str(evolCounter).replace(".", ",")}')
+
+            evolCounter += 0.25
+
         count += 1
 
     params = np.array(params)
