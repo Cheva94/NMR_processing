@@ -82,7 +82,7 @@ def normalize(FID, nH, RG):
     Normalizes FID considering the receiver gain and the number of protons.
     '''
 
-    return 100 * FID / (RG * nH)
+    return FID / (RG * nH)
 
 def plot_FID(t, FID, nS, RD, fileRoot):
     '''
@@ -175,3 +175,13 @@ def out_spec(freq, spec, fileRoot):
         f.write("Freq [Hz], CS [ppm], Re[spec], Im[spec] \n")
         for i in range(len(freq)):
             f.write(f'{freq[i]:.4f}, {CS[i]:.4f}, {spec.real[i]:.4f}, {spec.imag[i]:.4f} \n')
+
+# def background(FID, back):
+#     '''
+#     Substract the given background to the FID.
+#     '''
+#
+#     Re = FID.real - back[:, 1]
+#     Im = FID.imag - back[:, 2]
+#
+#     return Re + Im * 1j

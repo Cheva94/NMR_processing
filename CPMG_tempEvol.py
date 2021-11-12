@@ -1,8 +1,7 @@
 #!/usr/bin/python3.6
 
 '''
-    Description: fits exponential decay (1, 2 or 3 components) with CPMG data,
-                considering temporal evolution of parameters.
+    Description: corrects phase of CPMG decay and fits it considering 1, 2 or 3 exponentials, considering temporal evolution of parameters. Then plots one decay per hour in semilog scale. Also one fit for quarter of experiment progress. All the processed data will be also saved in ouput files (.csv).
     Written by: Ignacio J. Chevallier-Boutell.
     Dated: November, 2021.
 '''
@@ -37,7 +36,7 @@ def main():
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
-    parser = argparse.ArgumentParser(description='Falta')
+    parser = argparse.ArgumentParser(description='Corrects phase of CPMG decay and fits it considering 1, 2 or 3 exponentials, considering temporal evolution of parameters. Then plots one decay per hour in semilog scale. Also one fit for quarter of experiment progress. All the processed data will be also saved in ouput files (.csv).')
 
     parser.add_argument('input', help = "Path to the inputs file.",
                         nargs = '+')
