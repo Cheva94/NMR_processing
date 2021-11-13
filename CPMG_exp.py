@@ -70,8 +70,8 @@ if __name__ == "__main__":
 
     parser.add_argument('input', help = "Path to the inputs file.")
 
-    parser.add_argument('exponential_fit', help = "CPMGits exponential decay. Must choose mono, bi or tri to fit with 1, 2 or 3 exponentials, respectively.")
-    
+    parser.add_argument('exponential_fit', help = "Fits exponential decay. Must choose mono, bi or tri to fit with 1, 2 or 3 exponentials, respectively.")
+
     parser.add_argument('-back', '--background', help = "Substracts the file given to the input file. It is NOT assumed that the background is already processed.")
 
     args = parser.parse_args()

@@ -11,27 +11,32 @@ from core.coreCPMG_expTmpEvol import *
 
 def main():
 
-    Files = args.input
-    nFiles = len(Files)
-    fileRoot = Files[0].split('_0')[0]
-
+    CPMGs = args.input
+    nFiles = len(CPMGs)
+    exp = args.exponential_fit
     t_wait = args.t_wait
+    back = args.background
+
+    fileRoot = CPMGs[0].split('_0')[0]
     tEvol, tDecay = t_arrays(fileRoot, t_wait, nFiles)
 
-    if args.monoexponential:
-        out_1(tEvol, tDecay, Files, fileRoot, nFiles)
-        plot_decay(fileRoot, tEvol, t_wait)
-        plot_param1(fileRoot)
-    elif args.biexponential:
-        out_2(tEvol, tDecay, Files, fileRoot, nFiles)
-        plot_decay(fileRoot, tEvol, t_wait)
-        plot_param2(fileRoot)
-    elif args.triexponential:
-        out_3(tEvol, tDecay, Files, fileRoot, nFiles)
-        plot_decay(fileRoot, tEvol, t_wait)
-        plot_param3(fileRoot)
+    if back == None:
+        if exp == 'mono':
+            out_1(tEvol, tDecay, CPMGs, fileRoot, nFiles)
+            plot_decay(fileRoot, tEvol, t_wait)
+            plot_param1(fileRoot)
+        elif exp == 'bi':
+            out_2(tEvol, tDecay, CPMGs, fileRoot, nFiles)
+            plot_decay(fileRoot, tEvol, t_wait)
+            plot_param2(fileRoot)
+        elif exp == 'tri':
+            out_3(tEvol, tDecay, CPMGs, fileRoot, nFiles)
+            plot_decay(fileRoot, tEvol, t_wait)
+            plot_param3(fileRoot)
+        else:
+            print('Must choose number of components to fit: mono, bi or tri.')
     else:
-        print('Must choose an option: -exp1, -exp2 or -exp3. Use -h for guidance.')
+        print('WIP')
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -42,11 +47,9 @@ if __name__ == "__main__":
 
     parser.add_argument('t_wait', help = "Waiting time (in minutes) between CPMG experiments.", type=int)
 
-    parser.add_argument('-exp1', '--monoexponential', action = 'store_true', help = "Fits monoexponential decay.")
+    parser.add_argument('exponential_fit', help = "Fits exponential decay. Must choose mono, bi or tri to fit with 1, 2 or 3 exponentials, respectively.")
 
-    parser.add_argument('-exp2', '--biexponential', action = 'store_true', help = "Fits biexponential decay.")
-
-    parser.add_argument('-exp3', '--triexponential', action = 'store_true', help = "Fits triexponential decay.")
+    parser.add_argument('-back', '--background', help = "Substracts the file given to the input file. It is NOT assumed that the background is already processed.")
 
     args = parser.parse_args()
 
