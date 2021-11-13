@@ -1,7 +1,7 @@
 #!/usr/bin/python3.6
 
 '''
-    Description: plots several FIDs together.
+    Description: plots several FIDs together. They all must be already processed.
     Written by: Ignacio J. Chevallier-Boutell.
     Dated: November, 2021.
 '''

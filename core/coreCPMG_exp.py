@@ -45,13 +45,17 @@ def userfile(F):
     data = pd.read_csv(F, header = None, delim_whitespace = True).to_numpy()
 
     t = data[:, 0] # In ms
-    tEcho = t[1] - t[0]
+    nP = len(t) # Number of points
 
     Re = data[:, 1]
     Im = data[:, 2]
     decay = Re + Im * 1j # Complex signal
 
-    return t, decay, tEcho
+    acq = File.split('.txt')[0]+'-acqs'+'.txt'
+    acq = pd.read_csv(acq, header = None, delim_whitespace = True)
+    nS, RG, RD, tau, nEcho = acq.iloc[0, 1], acq.iloc[1, 1], acq.iloc[5, 1], acq.iloc[6, 1], acq.iloc[7, 1]
+
+    return t, nP, decay, nS, RG, RD, 2*tau, nEcho
 
 def phase_correction(decay):
     '''

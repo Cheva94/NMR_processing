@@ -7,7 +7,7 @@
 '''
 
 import argparse
-from core.coreCPMG_tempEvol import *
+from core.coreCPMG_expTmpEvol import *
 
 def main():
 
