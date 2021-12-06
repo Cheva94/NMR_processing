@@ -1,13 +1,17 @@
 #!/usr/bin/python3.6
 
 '''
-    Description: corrects phase of CPMG decay and fits it considering 1, 2 or 3 exponentials, considering temporal evolution of parameters. Then plots one decay per hour in semilog scale. Also one fit for quarter of experiment progress. All the processed data will be also saved in ouput files (.csv).
+    Description: corrects phase of CPMG decay and fits it considering 1, 2 or 3
+    exponentials and the temporal evolution of parameters. Then plots one decay
+    per hour in semilog scale. Also one fit for quarter of experiment progress.
+    All the processed data will be also saved in ouput files (.csv).
+
     Written by: Ignacio J. Chevallier-Boutell.
     Dated: November, 2021.
 '''
 
 import argparse
-from core.coreCPMG_expTmpEvol import *
+from core.coremonitoring_exp import *
 
 def main():
 
