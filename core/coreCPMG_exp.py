@@ -17,8 +17,7 @@ plt.rcParams["font.size"] = 35
 
 plt.rcParams["axes.labelweight"] = "bold"
 plt.rcParams["axes.linewidth"] = 5
-plt.rcParams["axes.prop_cycle"] = cycler('color', ['tab:orange',
-                                        'mediumseagreen', 'k', 'm', 'y'])
+plt.rcParams["axes.prop_cycle"] = cycler('color', ['tab:orange', 'mediumseagreen', 'k', 'm', 'y'])
 
 plt.rcParams['xtick.major.size'] = 10
 plt.rcParams['xtick.major.width'] = 5
@@ -70,6 +69,14 @@ def phase_correction(decay):
 
     decay = decay * np.exp(1j * np.deg2rad(max(initVal, key=initVal.get)))
     return decay.real
+
+def normalize(decay, RG, mH=1):
+    '''
+    Normalizes the decay considering the receiver gain and the mass of protons.
+    '''
+
+    norm_fact = 1 / ((6.32589E-4 * np.exp(RG/9) - 0.0854) * mH)
+    return decay * norm_fact
 
 def r_square(x, y, f, popt):
     '''

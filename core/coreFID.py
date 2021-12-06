@@ -18,8 +18,7 @@ plt.rcParams["font.size"] = 35
 
 plt.rcParams["axes.labelweight"] = "bold"
 plt.rcParams["axes.linewidth"] = 5
-plt.rcParams["axes.prop_cycle"] = cycler('color', ['tab:orange',
-                                        'mediumseagreen', 'm', 'y', 'k'])
+plt.rcParams["axes.prop_cycle"] = cycler('color', ['tab:orange', 'mediumseagreen', 'm', 'y', 'k'])
 
 plt.rcParams['xtick.major.size'] = 10
 plt.rcParams['xtick.major.width'] = 5
@@ -77,12 +76,13 @@ def phase_correction(FID):
 
     return FID * np.exp(1j * np.deg2rad(max(initVal, key=initVal.get)))
 
-# def normalize(File, RG):
-#     '''
-#     Normalizes FID considering the receiver gain and the number of protons.
-#     '''
-#
-#     return FID / RG
+def normalize(FID, RG, mH=1):
+    '''
+    Normalizes FID considering the receiver gain and the mass of protons.
+    '''
+    
+    norm_fact = 1 / ((6.32589E-4 * np.exp(RG/9) - 0.0854) * mH)
+    return FID * norm_fact
 
 def plot_FID(t, FID, nS, RD, fileRoot):
     '''

@@ -1,7 +1,14 @@
 #!/usr/bin/python3.6
 
 '''
-    Description: orrects phase of CPMG decay and normalizes it considering the receiver gain. Then fits it considering 1, 2 or 3 exponentials. Finally it plots the decay in normal and semilog scales with the fitting. All the processed data will be also saved in ouput files (.csv). It may substract the background when given.
+    Description: corrects phase of CPMG decay and normalizes it considering the
+    receiver gain. It may also normalize by mass of 1H when given. Then fits it
+    considering 1, 2 or 3 exponentials. Finally it plots the decay in normal and
+    semilog scales with the fitting. All the processed data will be also saved
+    in ouput files (.csv). It may substract the background when given.
+
+    Notes: doesn't normalize the background by it mass yet (only by RG).
+
     Written by: Ignacio J. Chevallier-Boutell.
     Dated: November, 2021.
 '''
@@ -13,11 +20,16 @@ def main():
 
     CPMG = args.input
     exp = args.exponential_fit
+    mH = args.proton_mass
     back = args.background
 
     t, nP, decay, nS, RG, RD, tEcho, nEcho = userfile(CPMG)
     decay = phase_correction(decay)
-    decay /= RG
+
+    if mH == None:
+        decay = normalize(decay, RG)
+    else:
+        decay = normalize(decay, RG, mH)
 
     if back == None:
         fileRoot = CPMG.split(".txt")[0]
@@ -44,7 +56,7 @@ def main():
             exit()
 
         back = phase_correction(back)
-        back /= RG_B
+        back = normalize(back, RG_B)
 
         decay -= back
 
@@ -66,13 +78,15 @@ def main():
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
-    parser = argparse.ArgumentParser(description='Corrects phase of CPMG decay and normalizes it considering the receiver gain. Then fits it considering 1, 2 or 3 exponentials. Finally it plots the decay in normal and semilog scales with the fitting. All the processed data will be also saved in ouput files (.csv). It may substract the background when given.')
+    parser = argparse.ArgumentParser(description="Corrects phase of CPMG decay and normalizes it considering the receiver gain. It may also normalize by mass of 1H when given. Then fits it considering 1, 2 or 3 exponentials. Finally it plots the decay in normal and semilog scales with the fitting. All the processed data will be also saved in ouput files (.csv). It may substract the background when given. \n\n Notes: doesn't normalize the background by it mass yet (only by RG).")
 
     parser.add_argument('input', help = "Path to the inputs file.")
 
     parser.add_argument('exponential_fit', help = "Fits exponential decay. Must choose mono, bi or tri to fit with 1, 2 or 3 exponentials, respectively.")
 
     parser.add_argument('-back', '--background', help = "Substracts the file given to the input file. It is NOT assumed that the background is already processed.")
+
+    parser.add_argument('-mH', '--proton_mass', help = "Mass of protons in the sample.", type = float)
 
     args = parser.parse_args()
 
