@@ -60,7 +60,7 @@ def main():
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
-    parser = argparse.ArgumentParser(description='corrects phase of FID and normalizes it considering the receiver gain. It may also normalize by mass of 1H when given. Then plots FID and transforms it to get spectrum in Hz and ppm. All the processed data will be saved in ouput files (.csv). It may substract the background when given.')
+    parser = argparse.ArgumentParser(description="Corrects phase of FID and normalizes it considering the receiver gain. It may also normalize by mass of 1H when given. Then plots FID and transforms it to get spectrum in Hz and ppm. All the processed data will be saved in ouput files (.csv). It may substract the background when given. \n\n Notes: doesn't normalize the background by it mass yet (only by RG).")
 
     parser.add_argument('input', help = "Path to the input file.")
 
