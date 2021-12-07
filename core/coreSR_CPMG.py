@@ -4,14 +4,14 @@
     Description: core functions for SR_CPMG.py.
 
     Written by: Ignacio J. Chevallier-Boutell.
-    Dated: November, 2021.
+    Dated: December, 2021.
 '''
 
 import numpy as np
-import pandas as pd
 import matplotlib.pyplot as plt
+import pandas as pd
 # from matplotlib.ticker import AutoMinorLocator
-# from cycler import cycler
+from cycler import cycler
 # import scipy.fft as FT
 
 plt.rcParams["font.weight"] = "bold"
@@ -42,12 +42,52 @@ plt.rcParams["lines.linewidth"] = 4
 plt.rcParams["lines.markersize"] = 20
 plt.rcParams["lines.linestyle"] = '-'
 
-def flint(K1,K2,Z,alpha,S):
+def flint(K1, K2, Z, alpha, S):
     '''
     Fast 2D NMR relaxation distribution estimation.
-
-    Section 4: although the Lipshitz constant there does not have alpha added as it should have)
     '''
 
+    iter_max = 100000
+
+    K1TK1 = K1.T @ K1
+    K2TK2 = K2.T @ K2
+    K1TZK2 = K1.T @ Z @ K2
+    resZZT = np.trace(Z @ Z.T) # used for calculating residual
+
+    L = 2 * (np.trace(K1TK1) * np.trace(K2TK2) + alpha) # Lipschitz constant is larger than largest eigenvalue, but not much larger and with rapid decay. The factor of 2 helps
+    # Ver de simplificar los dos próximos renglones
+    fac1 = (L - 2 * alpha) / L
+    fac2 = 2 / L
+    lastRes = np.inf
+
+    resida = np.full((iter_max, 1), np.nan) # Vector columna
+
+    # Todo lo anterior es preparativo, recién ahora arranca la el algoritmo FISTA
+    Y = S
+    tstep = 1
+
+    for iter in range(iter_max):
+        term2 = K1TZK2 - K1TK1 * Y * K2TK2
+        Snew = fac1 * Y + fac2 * term2
+        Snew = np.maximum(0, Snew)
+
+        tnew = 0.5 * (1 + np.sqrt(1 + 4 * tstep**2))
+        fac3 = (tstep - 1) / tnew
+        Y = Snew + fac3 * (Snew - S)
+        tstep = tnew
+        S = Snew
+
+        # Don't calculate the residual every iteration; it takes much longer than the rest of the algorithm
+        if iter % 500:
+            TikhTerm = alpha * np.linalg.norm(S)**2
+            resid = resZZT - 2 * np.trace(S.T * K1TZK2) + np.trace(S.T * K1TK1 * S * K2TK2) + TikhTerm
+            resida[iter] = resid
+            resd = np.abs(resid - lastRes) / resid
+            lastRes = resid
+            # Show progress
+            print(f'iter = {iter} ; tstep = {tstep} ; trat = {fac3} ; L = {L} ; resid = {resid} ; resd = {resd}')
+
+            if resd < 1E-5: # truncation threshold
+                break
 
     return S, resida
