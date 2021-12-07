@@ -43,6 +43,8 @@ def main():
 
     np.savetxt("RatesSpectrum.csv", S, delimiter=',')
 
+    plot_map(T2, T1, S)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

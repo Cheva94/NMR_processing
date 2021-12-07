@@ -91,3 +91,39 @@ def flint(K1, K2, Z, alpha, S):
                 break
 
     return S, resida
+
+def plot_map(T2, T1, S):
+    '''
+    hkjh
+    '''
+
+    fig, ax1 = plt.subplots()
+
+    ax1.contour(T2, T1, S, 90)
+    ax1.set_xlabel(r'$T_2$ [ms]')
+    ax1.set_ylabel(r'$T_1$ [ms]')
+    ax1.set_xscale('log')
+    ax1.set_yscale('log')
+
+    plt.savefig(f'RatesSpectrum')
+    # Ver qué onda el tema de las diagonales cocientes de T1/T2
+
+def plot_map(T2, T1, S):
+    '''
+    sdasd
+    '''
+
+    projT1 = np.sum(S, axis=0)
+    projT2 = np.sum(S, axis=1)
+
+    fig, (ax1, ax2) = plt.subplots(1,2)
+
+    ax1.plot(T1, projT1)
+    ax1.set_xlabel(r'$T_1$ [ms]')
+    ax1.set_xscale('log')
+
+    ax2.plot(T2, projT2)
+    ax2.set_xlabel(r'$T_2$ [ms]')
+    ax2.set_xscale('log')
+
+    plt.savefig(f'RatesSpectrum_proj')
