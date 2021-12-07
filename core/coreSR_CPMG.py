@@ -49,18 +49,20 @@ def flint(K1, K2, Z, alpha, S):
 
     iter_max = 100000
 
+    resida = np.full((iter_max, 1), np.nan) # Vector columna
+
     K1TK1 = K1.T @ K1
     K2TK2 = K2.T @ K2
     K1TZK2 = K1.T @ Z @ K2
-    resZZT = np.trace(Z @ Z.T) # used for calculating residual
 
     L = 2 * (np.trace(K1TK1) * np.trace(K2TK2) + alpha) # Lipschitz constant is larger than largest eigenvalue, but not much larger and with rapid decay. The factor of 2 helps
+
+    resZZT = np.trace(Z @ Z.T) # used for calculating residual
+
     # Ver de simplificar los dos próximos renglones
     fac1 = (L - 2 * alpha) / L
     fac2 = 2 / L
     lastRes = np.inf
-
-    resida = np.full((iter_max, 1), np.nan) # Vector columna
 
     # Todo lo anterior es preparativo, recién ahora arranca la el algoritmo FISTA
     Y = S
@@ -99,13 +101,15 @@ def plot_map(T2, T1, S):
 
     fig, ax1 = plt.subplots()
 
-    ax1.contour(T2, T1, S, 1000)
+    ax1.contour(T2, T1, S, 300)
     ax1.set_xlabel(r'$T_2$ [ms]')
     ax1.set_ylabel(r'$T_1$ [ms]')
     ax1.set_xscale('log')
     ax1.set_yscale('log')
+    ax1.set_xlim(10**-3, 10**3)
+    ax1.set_ylim(10**-3, 10**4)
 
-    plt.savefig(f'RatesSpectrum')
+    plt.savefig(f'RatesSpectrum_500x500_-3x5')
     # Ver qué onda el tema de las diagonales cocientes de T1/T2
 
 def plot_proj(T2, T1, S):

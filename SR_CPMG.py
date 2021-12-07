@@ -18,23 +18,24 @@ def main():
     alpha = args.alpha #5E0
 
     Nx, Ny = 100, 100 # Number of bins in relaxation time grids
-    T1 = np.logspace(-3, 3, Nx)
-    T2 = np.logspace(-3, 5, Ny)
+    T1 = np.logspace(0, 4, Nx)
+    T2 = np.logspace(-3, 3, Ny)
 
-    rawData = pd.read_csv(File, header = None, delim_whitespace = True).to_numpy()[:, 0]
+    rawData = pd.read_csv(File, header = None, delim_whitespace = True).to_numpy()#[:, 0]
     # Re = rawData[:, 0]
     # Im = rawData[:, 1]
     # rawDecay = Re + Im * 1j # Complex signal
 
-    taus = File.split('.txt')[0]
-    tau1 = pd.read_csv(f'{taus+"_t1.dat"}', header = None, delim_whitespace = True).to_numpy()
-    tau2 = pd.read_csv(f'{taus+"_t2.dat"}', header = None, delim_whitespace = True).to_numpy()
+    fileRoot = File.split('.txt')[0]
+    tau1 = pd.read_csv(f'{fileRoot+"_t1.dat"}', header = None, delim_whitespace = True).to_numpy()
+    tau2 = pd.read_csv(f'{fileRoot+"_t2.dat"}', header = None, delim_whitespace = True).to_numpy()
     N1, N2 = len(tau1), len(tau2) # Number of data points in each dimension
 
     # Por acá haría falta la corrección de fase
-    data = np.reshape(rawData, (N2, N1))
+    # data = np.reshape(rawData, (N2, N1))
 
-    Z = data.T
+    # Z = data.T
+    Z = rawData
     K1 = 1 - np.exp(-tau1 / T1)
     K2 = np.exp(-tau2 / T2)
 
@@ -42,12 +43,11 @@ def main():
 
     S, resida = flint(K1, K2, Z, alpha, S) # Numeric Laplace inversion (NLI) con FISTA
 
-    np.savetxt("RatesSpectrum.csv", S, delimiter=',')
+    # np.savetxt("RatesSpectrum.csv", S, delimiter=',')
 
     plot_map(T2, T1, S)
 
     plot_proj(T2, T1, S)
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
