@@ -11,8 +11,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 from cycler import cycler
-from matplotlib import cm
-from matplotlib.ticker import LinearLocator
+from scipy.signal import find_peaks
+import matplotlib as mpl
 
 plt.rcParams["font.weight"] = "bold"
 plt.rcParams["font.size"] = 35
@@ -95,64 +95,39 @@ def NLI_FISTA(K1, K2, Z, alpha, S):
     K1TK1 = K1.T @ K1
     K2TK2 = K2.T @ K2
     K1TZK2 = K1.T @ Z @ K2
+    ZZT = np.trace(Z @ Z.T)
 
-    L = 2 * (np.trace(K1TK1) * np.trace(K2TK2) + alpha) # Lipschitz constant is larger than largest eigenvalue, but not much larger and with rapid decay. The factor of 2 helps
+    invL = 1 / (np.trace(K1TK1) * np.trace(K2TK2) + alpha)
+    factor = 1 - alpha * invL
 
-    resZZT = np.trace(Z @ Z.T) # used for calculating residual
 
-    # Ver de simplificar los dos próximos renglones
-    fac1 = (L - 2 * alpha) / L
-    fac2 = 2 / L
-    lastRes = np.inf
-
-    # Todo lo anterior es preparativo, recién ahora arranca la el algoritmo FISTA
     Y = S
     tstep = 1
-    iter_max = 100000
-    resida = np.full((iter_max, 1), np.nan) # Vector columna
+    lastRes = np.inf
 
-    for iter in range(iter_max):
+    for iter in range(100000):
         term2 = K1TZK2 - K1TK1 @ Y @ K2TK2
-        Snew = fac1 * Y + fac2 * term2
-        # Snew = np.maximum(0, Snew)
+        Snew = factor * Y + invL * term2
         Snew[Snew<0] = 0
 
         tnew = 0.5 * (1 + np.sqrt(1 + 4 * tstep**2))
-        fac3 = (tstep - 1) / tnew
-        Y = Snew + fac3 * (Snew - S)
+        tRatio = (tstep - 1) / tnew
+        Y = Snew + tRatio * (Snew - S)
         tstep = tnew
         S = Snew
 
-        # Don't calculate the residual every iteration; it takes much longer than the rest of the algorithm
         if iter % 500 == 0:
             TikhTerm = alpha * np.linalg.norm(S)**2
-            resid = resZZT - 2 * np.trace(S.T @ K1TZK2) + np.trace(S.T @ K1TK1 @ S @ K2TK2) + TikhTerm
-            resida[iter] = resid
-            resd = np.abs(resid - lastRes) / resid
-            lastRes = resid
-            # Show progress
-            print(f'iter = {iter} ; tstep = {tstep} ; trat = {fac3} ; L = {L} ; resid = {resid} ; resd = {resd}')
+            ObjFunc = ZZT - 2 * np.trace(S.T @ K1TZK2) + np.trace(S.T @ K1TK1 @ S @ K2TK2) + TikhTerm
 
-            if resd < 1E-5: # truncation threshold
+            Res = np.abs(ObjFunc - lastRes) / ObjFunc
+            lastRes = ObjFunc
+            print(f'# It = {iter} >>> Obj. Func. = {ObjFunc:.4f} >>> Residue = {Res:.6f}')
+
+            if Res < 1E-5:
                 break
 
-    return S, resida
-
-def plot_map(T1, T2, S, nLevel, fileRoot):
-    '''
-    hkjh
-    '''
-
-    fig, ax = plt.subplots()
-
-    ax.contour(T2, T1, S, nLevel)
-    ax.set_xlabel(r'$T_2$ [ms]')
-    ax.set_ylabel(r'$T_1$ [ms]')
-    ax.set_xscale('log')
-    ax.set_yscale('log')
-
-    plt.savefig(f'{fileRoot}_CharTimeSpectrum')
-    # Ver qué onda el tema de las diagonales cocientes de T1/T2
+    return S
 
 def plot_proj(T1, T2, S, fileRoot):
     '''
@@ -160,16 +135,54 @@ def plot_proj(T1, T2, S, fileRoot):
     '''
 
     projT1 = np.sum(S, axis=1)
+    peaks1, _ = find_peaks(projT1)
+    peaks1x, peaks1y = T1[peaks1], projT1[peaks1]
     projT2 = np.sum(S, axis=0)
+    peaks2, _ = find_peaks(projT2)
+    peaks2x, peaks2y = T2[peaks2], projT2[peaks2]
 
     fig, (ax1, ax2) = plt.subplots(1,2, figsize=(25, 10))
 
     ax1.plot(T1, projT1)
+    ax1.plot(peaks1x, peaks1y, lw = 0, marker=2, color='black')
     ax1.set_xlabel(r'$T_1$ [ms]')
     ax1.set_xscale('log')
 
     ax2.plot(T2, projT2)
+    ax2.plot(peaks2x, peaks2y, lw = 0, marker=2, color='black')
     ax2.set_xlabel(r'$T_2$ [ms]')
     ax2.set_xscale('log')
 
-    plt.savefig(f'{fileRoot}_Projections')
+    plt.savefig(f'{fileRoot}-1D_Spectra')
+
+    return peaks1x, peaks2x
+
+def plot_map(T1, T2, S, nLevel, fileRoot, peaks1x, peaks2x):
+    '''
+    hkjh
+    '''
+
+    fig, (ax1, ax2) = plt.subplots(1,2, figsize=(25, 10))
+
+    ax1.contour(T2, T1, S, nLevel, cmap='rainbow')
+    ax1.set_xlabel(r'$T_2$ [ms]')
+    ax1.set_ylabel(r'$T_1$ [ms]')
+    ax1.set_xscale('log')
+    ax1.set_yscale('log')
+    ax1.plot([0,1],[0,1], transform=ax1.transAxes, color='black', ls=':', alpha=0.6, zorder=-2)
+
+    ax2.contour(T2, T1, S, nLevel, cmap='rainbow')
+    for i in range(len(peaks1x)):
+        ax2.hlines(peaks1x[i], xmin = T2[0] , xmax = T2[-1], color='gray', ls=':')
+        ax2.annotate(f'   {peaks1x[i]:.2f}', xy = (T2[-1], peaks1x[i]), fontsize=15)
+    for i in range(len(peaks2x)):
+        ax2.vlines(peaks2x[i], ymin = T1[0] , ymax = T1[-1], color='gray', ls=':')
+        ax2.annotate(f'   {peaks2x[i]:.2f}', xy = (peaks2x[i], T1[-1]), fontsize=15, rotation = 60)
+    ax2.set_xlabel(r'$T_2$ [ms]')
+    ax2.set_ylabel(r'$T_1$ [ms]')
+    ax2.set_xscale('log')
+    ax2.set_yscale('log')
+    ax2.plot([0,1],[0,1], transform=ax2.transAxes, color='black', ls='-', alpha=0.7)
+
+    plt.savefig(f'{fileRoot}-2D_Spectrum')
+    # plt.show()

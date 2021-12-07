@@ -27,11 +27,11 @@ def main():
     np.savetxt(f"{fileRoot}-PhCorrZ.csv", Z, delimiter=',')
     plot_Z(tau1, tau2, Z, fileRoot)
 
-    S, resida = NLI_FISTA(K1, K2, Z, alpha, S0)
-    np.savetxt(f"{fileRoot}_CharTimeSpectrum.csv", S, delimiter=',')
+    S = NLI_FISTA(K1, K2, Z, alpha, S0)
+    np.savetxt(f"{fileRoot}-2D_Spectrum.csv", S, delimiter=',')
 
-    plot_map(T1, T2, S, nLevel, fileRoot)
-    plot_proj(T1, T2, S, fileRoot)
+    peaks1x, peaks2x = plot_proj(T1, T2, S, fileRoot)
+    plot_map(T1, T2, S, nLevel, fileRoot, peaks1x, peaks2x)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
