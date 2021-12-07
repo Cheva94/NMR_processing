@@ -18,9 +18,8 @@ def main():
     alpha = args.alpha #5E0
 
     Nx, Ny = 100, 100 # Number of bins in relaxation time grids
-    T1 = np.logspace(-3,4,Nx)
-    T2 = np.logspace(-3,3,Ny)
-    S = np.ones((Nx, Ny)) # Initial guess del espectro
+    T1 = np.logspace(-3, 3, Nx)
+    T2 = np.logspace(-3, 5, Ny)
 
     rawData = pd.read_csv(File, header = None, delim_whitespace = True).to_numpy()[:, 0]
     # Re = rawData[:, 0]
@@ -39,11 +38,15 @@ def main():
     K1 = 1 - np.exp(-tau1 / T1)
     K2 = np.exp(-tau2 / T2)
 
+    S = np.ones((Nx, Ny)) # Initial guess del espectro
+
     S, resida = flint(K1, K2, Z, alpha, S) # Numeric Laplace inversion (NLI) con FISTA
 
     np.savetxt("RatesSpectrum.csv", S, delimiter=',')
 
     plot_map(T2, T1, S)
+
+    plot_proj(T2, T1, S)
 
 
 if __name__ == "__main__":

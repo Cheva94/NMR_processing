@@ -67,7 +67,7 @@ def flint(K1, K2, Z, alpha, S):
     tstep = 1
 
     for iter in range(iter_max):
-        term2 = K1TZK2 - K1TK1 * Y * K2TK2
+        term2 = K1TZK2 - K1TK1 @ Y @ K2TK2
         Snew = fac1 * Y + fac2 * term2
         Snew = np.maximum(0, Snew)
 
@@ -78,9 +78,9 @@ def flint(K1, K2, Z, alpha, S):
         S = Snew
 
         # Don't calculate the residual every iteration; it takes much longer than the rest of the algorithm
-        if iter % 500:
+        if iter % 500 == 0:
             TikhTerm = alpha * np.linalg.norm(S)**2
-            resid = resZZT - 2 * np.trace(S.T * K1TZK2) + np.trace(S.T * K1TK1 * S * K2TK2) + TikhTerm
+            resid = resZZT - 2 * np.trace(S.T @ K1TZK2) + np.trace(S.T @ K1TK1 @ S @ K2TK2) + TikhTerm
             resida[iter] = resid
             resd = np.abs(resid - lastRes) / resid
             lastRes = resid
@@ -99,7 +99,7 @@ def plot_map(T2, T1, S):
 
     fig, ax1 = plt.subplots()
 
-    ax1.contour(T2, T1, S, 90)
+    ax1.contour(T2, T1, S, 1000)
     ax1.set_xlabel(r'$T_2$ [ms]')
     ax1.set_ylabel(r'$T_1$ [ms]')
     ax1.set_xscale('log')
@@ -108,15 +108,15 @@ def plot_map(T2, T1, S):
     plt.savefig(f'RatesSpectrum')
     # Ver qué onda el tema de las diagonales cocientes de T1/T2
 
-def plot_map(T2, T1, S):
+def plot_proj(T2, T1, S):
     '''
     sdasd
     '''
 
-    projT1 = np.sum(S, axis=0)
-    projT2 = np.sum(S, axis=1)
+    projT1 = np.sum(S, axis=1)
+    projT2 = np.sum(S, axis=0)
 
-    fig, (ax1, ax2) = plt.subplots(1,2)
+    fig, (ax1, ax2) = plt.subplots(1,2, figsize=(25, 10))
 
     ax1.plot(T1, projT1)
     ax1.set_xlabel(r'$T_1$ [ms]')
