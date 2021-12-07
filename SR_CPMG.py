@@ -8,46 +8,30 @@
 '''
 
 import argparse
-import numpy as np
-import pandas as pd
 from core.coreSR_CPMG import *
 
 def main():
 
     File = args.input
-    alpha = args.alpha #5E0
-
-    Nx, Ny = 100, 100 # Number of bins in relaxation time grids
-    T1 = np.logspace(0, 4, Nx)
-    T2 = np.logspace(-3, 3, Ny)
-
-    rawData = pd.read_csv(File, header = None, delim_whitespace = True).to_numpy()#[:, 0]
-    # Re = rawData[:, 0]
-    # Im = rawData[:, 1]
-    # rawDecay = Re + Im * 1j # Complex signal
+    alpha = args.TikhonovReg
+    Nx, Ny = args.RelaxationMesh[0], args.RelaxationMesh[1]
+    T1min, T1max = args.RangeT1[0], args.RangeT1[1]
+    T2min, T2max = args.RangeT2[0], args.RangeT2[1]
+    niniT1, niniT2 = args.niniValues[0], args.niniValues[1]
+    nLevel = args.ContourLevels
 
     fileRoot = File.split('.txt')[0]
-    tau1 = pd.read_csv(f'{fileRoot+"_t1.dat"}', header = None, delim_whitespace = True).to_numpy()
-    tau2 = pd.read_csv(f'{fileRoot+"_t2.dat"}', header = None, delim_whitespace = True).to_numpy()
-    N1, N2 = len(tau1), len(tau2) # Number of data points in each dimension
 
-    # Por acá haría falta la corrección de fase
-    # data = np.reshape(rawData, (N2, N1))
+    S0, T1, T2, tau1, tau2, K1, K2, Z = userfile(File, fileRoot, Nx, Ny, T1min, T1max, T2min, T2max, niniT1, niniT2)
 
-    # Z = data.T
-    Z = rawData
-    K1 = 1 - np.exp(-tau1 / T1)
-    K2 = np.exp(-tau2 / T2)
+    np.savetxt(f"{fileRoot}-PhCorrZ.csv", Z, delimiter=',')
+    plot_Z(tau1, tau2, Z, fileRoot)
 
-    S = np.ones((Nx, Ny)) # Initial guess del espectro
+    S, resida = NLI_FISTA(K1, K2, Z, alpha, S0)
+    np.savetxt(f"{fileRoot}_CharTimeSpectrum.csv", S, delimiter=',')
 
-    S, resida = flint(K1, K2, Z, alpha, S) # Numeric Laplace inversion (NLI) con FISTA
-
-    # np.savetxt("RatesSpectrum.csv", S, delimiter=',')
-
-    plot_map(T2, T1, S)
-
-    plot_proj(T2, T1, S)
+    plot_map(T1, T2, S, nLevel, fileRoot)
+    plot_proj(T1, T2, S, fileRoot)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -56,13 +40,17 @@ if __name__ == "__main__":
     #
     parser.add_argument('input', help = "Path to the inputs file.")
 
-    parser.add_argument('alpha', help = "Tikhonov regularization parameter.", type = float)
-    #
-    # parser.add_argument('exponential_fit', help = "Fits exponential decay. Must choose mono, bi or tri to fit with 1, 2 or 3 exponentials, respectively.")
-    #
-    # parser.add_argument('-back', '--background', help = "Substracts the file given to the input file. It is NOT assumed that the background is already processed.")
-    #
-    # parser.add_argument('-mH', '--proton_mass', help = "Mass of protons in the sample.", type = float)
+    parser.add_argument('-alpha', '--TikhonovReg', help = "Tikhonov regularization parameter.", type = float, default = 1)
+
+    parser.add_argument('-nLevel', '--ContourLevels', help = "Number of levels to use in the contour plot.", type = int, default = 100)
+
+    parser.add_argument('-mesh', '--RelaxationMesh', help = "Number of bins in relaxation time grids.", nargs = 2, type = int, default=[100, 100])
+
+    parser.add_argument('-T1', '--RangeT1', help = "Range to consider for T1 values.", nargs = 2, type = int, default=[-3, 3])
+
+    parser.add_argument('-T2', '--RangeT2', help = "Range to consider for T2 values.", nargs = 2, type = int, default=[-3, 3])
+
+    parser.add_argument('-nini', '--niniValues', help = "Number of values to avoid at the beginning of T1 and T2.", nargs = 2, type = int, default=[0, 0])
 
     args = parser.parse_args()
 
