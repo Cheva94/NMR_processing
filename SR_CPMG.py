@@ -22,7 +22,9 @@ def main():
 
     fileRoot = File.split('.txt')[0]
 
-    S0, T1, T2, tau1, tau2, K1, K2, Z = userfile(File, fileRoot, Nx, Ny, T1min, T1max, T2min, T2max, niniT1, niniT2)
+    S0, T1, T2, tau1, tau2, K1, K2, decay, N1, N2 = userfile(File, fileRoot, Nx, Ny, T1min, T1max, T2min, T2max, niniT1, niniT2)
+
+    Z = phase_correction(decay, N1, N2, niniT1, niniT2)
 
     np.savetxt(f"{fileRoot}-PhCorrZ.csv", Z, delimiter=',')
     plot_Z(tau1, tau2, Z, fileRoot)

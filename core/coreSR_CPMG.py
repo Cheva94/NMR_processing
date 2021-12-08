@@ -60,15 +60,35 @@ def userfile(File, fileRoot, Nx, Ny, T1min, T1max, T2min, T2max, niniT1, niniT2)
     K1 = 1 - np.exp(-tau1 / T1)
     K2 = np.exp(-tau2 / T2)
 
-    data = pd.read_csv(File, header = None, delim_whitespace = True).to_numpy()[:, 0]
-    # Re = data[:, 0]
-    # Im = data[:, 1]
-    # decay = Re + Im * 1j # Complex signal
-    # Por acá haría falta la corrección de fase
+    data = pd.read_csv(File, header = None, delim_whitespace = True).to_numpy()#[:, 0]
+    Re = data[:, 0]
+    Im = data[:, 1]
+    decay = Re + Im * 1j # Complex signal
 
-    Z = np.reshape(data, (N1, N2))[niniT2:, niniT1:]
+    # Z = np.reshape(data, (N1, N2))[niniT2:, niniT1:]
 
-    return S0, T1, T2, tau1, tau2, K1, K2, Z
+    # return S0, T1, T2, tau1, tau2, K1, K2, Z
+    return S0, T1, T2, tau1, tau2, K1, K2, decay, N1, N2
+
+def phase_correction(decay, N1, N2, niniT1, niniT2):
+    '''
+    Returns decay with phase correction (maximizing real part).
+    '''
+
+    Z = []
+
+    for k in range(N1):
+        initVal = {}
+        decay_k = decay[k*N2:(k+1)*N2]
+        for i in range(360):
+            tita = np.deg2rad(i)
+            decay_ph = decay_k * np.exp(1j * tita)
+            initVal[i] = decay_ph[0].real
+
+        decay_k = decay_k * np.exp(1j * np.deg2rad(max(initVal, key=initVal.get)))
+        Z.append(decay_k.real)
+
+    return np.reshape(Z, (N1, N2))[niniT2:, niniT1:]
 
 def plot_Z(tau1, tau2, Z, fileRoot):
     '''
