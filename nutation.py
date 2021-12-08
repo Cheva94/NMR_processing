@@ -1,4 +1,3 @@
-
 #!/usr/bin/python3.6
 '''
     Description: corrects phase of FID and normalizes it considering the receiver
