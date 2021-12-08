@@ -18,8 +18,7 @@ plt.rcParams["font.size"] = 35
 
 plt.rcParams["axes.labelweight"] = "bold"
 plt.rcParams["axes.linewidth"] = 5
-plt.rcParams["axes.prop_cycle"] = cycler('color', ['tab:orange',
-                                        'mediumseagreen', 'k', 'm', 'y'])
+plt.rcParams["axes.prop_cycle"] = cycler('color', ['tab:orange', 'mediumseagreen', 'k', 'm', 'y'])
 
 plt.rcParams['xtick.major.size'] = 10
 plt.rcParams['xtick.major.width'] = 5
