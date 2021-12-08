@@ -17,13 +17,18 @@ def main():
     nBin = args.RelaxationMesh
     T2min, T2max = args.RangeT2[0], args.RangeT2[1]
     niniT2 = args.niniValues
-    # nLevel = args.ContourLevels
+    mH = args.proton_mass
 
     fileRoot = File.split('.txt')[0]
 
-    S0, T2, tau, K, decay = userfile(File, fileRoot, nBin, T2min, T2max, niniT2)
+    S0, T2, tau, K, decay, nS, RG, RD, tEcho, nEcho = userfile(File, fileRoot, nBin, T2min, T2max, niniT2)
 
     Z = phase_correction(decay)
+
+    if mH == None:
+        decay = normalize(decay, RG)
+    else:
+        decay = normalize(decay, RG, mH)
 
     np.savetxt(f"{fileRoot}-PhCorrZ.csv", Z, delimiter=',')
     plot_Z(tau, Z, fileRoot)
@@ -48,6 +53,8 @@ if __name__ == "__main__":
     parser.add_argument('-T2', '--RangeT2', help = "Range to consider for T2 values.", nargs = 2, type = int, default=[0, 5])
 
     parser.add_argument('-nini', '--niniValues', help = "Number of values to avoid at the beginning of T2.", type = int, default=0)
+
+    parser.add_argument('-mH', '--proton_mass', help = "Mass of protons in the sample.", type = float)
 
     args = parser.parse_args()
 

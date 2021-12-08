@@ -63,7 +63,11 @@ def userfile(File, fileRoot, nBin, T2min, T2max, niniT2):
     Im = data[:, 2]
     decay = Re + Im * 1j # Complex signal
 
-    return S0, T2, tau[niniT2:], K, decay[niniT2:]
+    acq = fileRoot+'-acqs.txt'
+    acq = pd.read_csv(acq, header = None, delim_whitespace = True)
+    nS, RG, RD, tEcho, nEcho = acq.iloc[0, 1], acq.iloc[1, 1], acq.iloc[5, 1], 2 * acq.iloc[6, 1], acq.iloc[7, 1]
+
+    return S0, T2, tau[niniT2:], K, decay[niniT2:], nS, RG, RD, tEcho, nEcho
 
 def phase_correction(decay):
     '''
@@ -79,6 +83,15 @@ def phase_correction(decay):
     decay = decay * np.exp(1j * np.deg2rad(max(initVal, key=initVal.get)))
 
     return decay.real
+
+def normalize(decay, RG, mH=1):
+    '''
+    Normalizes the decay considering the receiver gain and the mass of protons.
+    '''
+
+    norm_fact = 1 / ((6.32589E-4 * np.exp(RG/9) - 0.0854) * mH)
+    return decay * norm_fact
+
 
 def plot_Z(tau, Z, fileRoot):
     '''
