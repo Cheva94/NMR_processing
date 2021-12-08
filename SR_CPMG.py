@@ -46,9 +46,9 @@ if __name__ == "__main__":
 
     parser.add_argument('-mesh', '--RelaxationMesh', help = "Number of bins in relaxation time grids.", nargs = 2, type = int, default=[100, 100])
 
-    parser.add_argument('-T1', '--RangeT1', help = "Range to consider for T1 values.", nargs = 2, type = int, default=[-3, 3])
+    parser.add_argument('-T1', '--RangeT1', help = "Range to consider for T1 values.", nargs = 2, type = int, default=[0, 5])
 
-    parser.add_argument('-T2', '--RangeT2', help = "Range to consider for T2 values.", nargs = 2, type = int, default=[-3, 3])
+    parser.add_argument('-T2', '--RangeT2', help = "Range to consider for T2 values.", nargs = 2, type = int, default=[0, 5])
 
     parser.add_argument('-nini', '--niniValues', help = "Number of values to avoid at the beginning of T1 and T2.", nargs = 2, type = int, default=[0, 0])
 

@@ -54,15 +54,16 @@ def userfile(File, fileRoot, nBin, T2min, T2max, niniT2):
 
     tau = data[:, 0] # In ms
     nP = len(tau)
-    tau = tau[niniT2:]
 
-    K = np.exp(-tau / T2)
+    K = np.zeros((nP, nBin))
+    for i in range(nP):
+        K[i, :] = np.exp(-tau[i] / T2)
 
-    Re = data[:, 0]
-    Im = data[:, 1]
+    Re = data[:, 1]
+    Im = data[:, 2]
     decay = Re + Im * 1j # Complex signal
 
-    return S0, T2, tau, K, decay
+    return S0, T2, tau[niniT2:], K, decay[niniT2:]
 
 def phase_correction(decay):
     '''
@@ -101,6 +102,9 @@ def NLI_FISTA(K, Z, alpha, S):
     Fast 2D NMR relaxation distribution estimation.
     '''
 
+    Z = np.reshape(Z, (len(Z), 1))
+    S = np.reshape(S, (len(S), 1))
+
     KTK = K.T @ K
     KTZ = K.T @ Z
     ZZT = np.trace(Z @ Z.T)
@@ -134,7 +138,7 @@ def NLI_FISTA(K, Z, alpha, S):
             if Res < 1E-5:
                 break
 
-    return S
+    return S[:, 0]
 
 def plot_spec(T2, S, fileRoot):
     '''
@@ -148,7 +152,8 @@ def plot_spec(T2, S, fileRoot):
 
     ax.plot(T2, S)
     ax.plot(peaksx, peaksy, lw = 0, marker=2, color='black')
-    ax.annotate(f'({peaksx:.2f}, {peaksy:.2f})', xy = (peaksx, peaksy), fontsize=15)
+    for i in range(len(peaksx)):
+        ax.annotate(f'({peaksx[i]:.2f}, {peaksy[i]:.2f})', xy = (peaksx[i], peaksy[i]), fontsize=15)
     ax.set_xlabel(r'$T_2$ [ms]')
     ax.set_xscale('log')
 

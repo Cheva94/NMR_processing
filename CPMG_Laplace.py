@@ -8,7 +8,7 @@
 '''
 
 import argparse
-from core.coreSR_CPMG import *
+from core.coreCPMG_Laplace import *
 
 def main():
 
@@ -29,6 +29,7 @@ def main():
     plot_Z(tau, Z, fileRoot)
 
     S = NLI_FISTA(K, Z, alpha, S0)
+
     np.savetxt(f"{fileRoot}-Spectrum.csv", S, delimiter=',')
 
     plot_spec(T2, S, fileRoot)
@@ -42,11 +43,9 @@ if __name__ == "__main__":
 
     parser.add_argument('-alpha', '--TikhonovReg', help = "Tikhonov regularization parameter.", type = float, default = 1)
 
-    # parser.add_argument('-nLevel', '--ContourLevels', help = "Number of levels to use in the contour plot.", type = int, default = 100)
-
     parser.add_argument('-mesh', '--RelaxationMesh', help = "Number of bins in relaxation time grids.", type = int, default=100)
 
-    parser.add_argument('-T2', '--RangeT2', help = "Range to consider for T2 values.", nargs = 2, type = int, default=[-3, 3])
+    parser.add_argument('-T2', '--RangeT2', help = "Range to consider for T2 values.", nargs = 2, type = int, default=[0, 5])
 
     parser.add_argument('-nini', '--niniValues', help = "Number of values to avoid at the beginning of T2.", type = int, default=0)
 
