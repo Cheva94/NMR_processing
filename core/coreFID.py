@@ -80,7 +80,7 @@ def normalize(FID, RG, mH=1):
     '''
     Normalizes FID considering the receiver gain and the mass of protons.
     '''
-    
+
     norm_fact = 1 / ((6.32589E-4 * np.exp(RG/9) - 0.0854) * mH)
     return FID * norm_fact
 
@@ -121,8 +121,9 @@ def spectrum(FID, nP, DW):
     Creates spectrum from FID signal and also its frequency axis.
     '''
 
-    freq = FT.fftshift(FT.fftfreq(nP, d=DW)) # Hz scale
-    spec = FT.fftshift(FT.fft(FID))
+    zf = FT.next_fast_len(2**5 * nP)
+    freq = FT.fftshift(FT.fftfreq(zf, d=DW)) # Hz scale
+    spec = FT.fftshift(FT.fft(FID, n = zf))
     max_peak = np.max(spec)
 
     return freq, spec, max_peak
