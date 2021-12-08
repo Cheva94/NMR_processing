@@ -50,7 +50,7 @@ def userfile(F):
     Im = data[:, 2]
     decay = Re + Im * 1j # Complex signal
 
-    acq = File.split('.txt')[0]+'-acqs.txt'
+    acq = F.split('.txt')[0]+'-acqs.txt'
     acq = pd.read_csv(acq, header = None, delim_whitespace = True)
     nS, RG, RD, tau, nEcho = acq.iloc[0, 1], acq.iloc[1, 1], acq.iloc[5, 1], acq.iloc[6, 1], acq.iloc[7, 1]
 

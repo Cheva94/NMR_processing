@@ -33,7 +33,7 @@ def main():
     np.savetxt(f"{fileRoot}-2D_Spectrum.csv", S, delimiter=',')
 
     peaks1x, peaks2x = plot_proj(T1, T2, S, fileRoot)
-    plot_map(T1, T2, S, nLevel, fileRoot, peaks1x, peaks2x)
+    plot_map(T1, T2, S, nLevel, fileRoot, peaks1x, peaks2x, T1min, T1max, T2min, T2max)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

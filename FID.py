@@ -17,52 +17,55 @@ from core.coreFID import *
 
 def main():
 
-    file = args.input
+    Files = args.input
     mH = args.proton_mass
     back = args.background
 
-    t, nP, DW, FID, nS, RD, RG = userfile(file)
-    FID = phase_correction(FID)
+    for file in Files:
+        print(f'Running file: {file}')
+        
+        t, nP, DW, FID, nS, RD, RG = userfile(file)
+        FID = phase_correction(FID)
 
-    if mH == None:
-        FID = normalize(FID, RG)
-    else:
-        FID = normalize(FID, RG, mH)
+        if mH == None:
+            FID = normalize(FID, RG)
+        else:
+            FID = normalize(FID, RG, mH)
 
-    if back == None:
-        fileRoot = file.split(".txt")[0]
-        plot_FID(t, FID, nS, RD, fileRoot)
-        out_FID(t, FID, fileRoot)
+        if back == None:
+            fileRoot = file.split(".txt")[0]
+            plot_FID(t, FID, nS, RD, fileRoot)
+            out_FID(t, FID, fileRoot)
 
-        freq, spec, max_peak = spectrum(FID, nP, DW)
-        plot_spec(freq, spec, max_peak, nS, RD, fileRoot)
-        out_spec(freq, spec, fileRoot)
+            freq, spec, max_peak = spectrum(FID, nP, DW)
+            plot_spec(freq, spec, max_peak, nS, RD, fileRoot)
+            out_spec(freq, spec, fileRoot)
 
-    else:
-        t_B, nP_B, DW_B, back, nS_B, RD_B, RG_B = userfile(back)
-        if nP != nP_B:
-            print('Both files must have same number of points. Quitting job.')
-            exit()
+        else:
+            t_B, nP_B, DW_B, back, nS_B, RD_B, RG_B = userfile(back)
+            if nP != nP_B:
+                print('Both files must have same number of points. Quitting job.')
+                exit()
 
-        back = phase_correction(back)
-        back = normalize(back, RG_B)
+            back = phase_correction(back)
+            back = normalize(back, RG_B)
 
-        FID = back_subs(FID, back)
+            FID = back_subs(FID, back)
 
-        fileRoot = file.split(".txt")[0]+'-BackSub'
-        plot_FID(t, FID, nS, RD, fileRoot)
-        out_FID(t, FID, fileRoot)
+            fileRoot = file.split(".txt")[0]+'-BackSub'
+            plot_FID(t, FID, nS, RD, fileRoot)
+            out_FID(t, FID, fileRoot)
 
-        freq, spec, max_peak = spectrum(FID, nP, DW)
-        plot_spec(freq, spec, max_peak, nS, RD, fileRoot)
-        out_spec(freq, spec, fileRoot)
+            freq, spec, max_peak = spectrum(FID, nP, DW)
+            plot_spec(freq, spec, max_peak, nS, RD, fileRoot)
+            out_spec(freq, spec, fileRoot)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser = argparse.ArgumentParser(description="Corrects phase of FID and normalizes it considering the receiver gain. It may also normalize by mass of 1H when given. Then plots FID and transforms it to get spectrum in Hz and ppm. All the processed data will be saved in ouput files (.csv). It may substract the background when given. \n\n Notes: doesn't normalize the background by it mass yet (only by RG).")
 
-    parser.add_argument('input', help = "Path to the input file.")
+    parser.add_argument('input', help = "Path to the input file.", nargs='+')
 
     parser.add_argument('-mH', '--proton_mass', help = "Mass of protons in the sample.", type = float)
 

@@ -177,10 +177,13 @@ def plot_proj(T1, T2, S, fileRoot):
 
     return peaks1x, peaks2x
 
-def plot_map(T1, T2, S, nLevel, fileRoot, peaks1x, peaks2x):
+def plot_map(T1, T2, S, nLevel, fileRoot, peaks1x, peaks2x, T1min, T1max, T2min, T2max):
     '''
     hkjh
     '''
+
+    mini = np.min([T1min, T2min])
+    maxi = np.max([T1max, T2max])
 
     fig, (ax1, ax2) = plt.subplots(1,2, figsize=(25, 10))
 
@@ -189,20 +192,20 @@ def plot_map(T1, T2, S, nLevel, fileRoot, peaks1x, peaks2x):
     ax1.set_ylabel(r'$T_1$ [ms]')
     ax1.set_xscale('log')
     ax1.set_yscale('log')
-    ax1.plot([0,1],[0,1], transform=ax1.transAxes, color='black', ls=':', alpha=0.6, zorder=-2)
+    ax1.plot([10.0**mini, 10.0**maxi], [10.0**mini, 10.0**maxi], color='black', ls=':', alpha=0.6, zorder=-2)
 
     ax2.contour(T2, T1, S, nLevel, cmap='rainbow')
     for i in range(len(peaks1x)):
-        ax2.hlines(peaks1x[i], xmin = T2[0] , xmax = T2[-1], color='gray', ls=':')
-        ax2.annotate(f'   {peaks1x[i]:.2f}', xy = (T2[-1], peaks1x[i]), fontsize=15)
+        ax2.hlines(peaks1x[i], xmin = 10.0**T2min , xmax = 10.0**T2max, color='gray', ls=':')
+        ax2.annotate(f'   {peaks1x[i]:.2f}', xy = (10.0**T2max, peaks1x[i]), fontsize=15)
     for i in range(len(peaks2x)):
-        ax2.vlines(peaks2x[i], ymin = T1[0] , ymax = T1[-1], color='gray', ls=':')
-        ax2.annotate(f'   {peaks2x[i]:.2f}', xy = (peaks2x[i], T1[-1]), fontsize=15, rotation = 60)
+        ax2.vlines(peaks2x[i], ymin = 10.0**T1min , ymax = 10.0**T1max, color='gray', ls=':')
+        ax2.annotate(f'   {peaks2x[i]:.2f}', xy = (peaks2x[i], 10.0**T1max), fontsize=15, rotation = 60)
     ax2.set_xlabel(r'$T_2$ [ms]')
     ax2.set_ylabel(r'$T_1$ [ms]')
     ax2.set_xscale('log')
     ax2.set_yscale('log')
-    ax2.plot([0,1],[0,1], transform=ax2.transAxes, color='black', ls='-', alpha=0.7)
+    ax2.plot([10.0**mini, 10.0**maxi], [10.0**mini, 10.0**maxi], color='black', ls='-', alpha=0.7, zorder=-2)
 
     plt.savefig(f'{fileRoot}-2D_Spectrum')
     # plt.show()
