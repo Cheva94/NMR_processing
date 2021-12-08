@@ -35,7 +35,7 @@ plt.rcParams["legend.shadow"] = True
 plt.rcParams["legend.fontsize"] = 30
 plt.rcParams["legend.edgecolor"] = 'black'
 
-plt.rcParams["figure.figsize"] = 12.5, 13.5
+plt.rcParams["figure.figsize"] = 12.5, 10
 plt.rcParams["figure.autolayout"] = True
 
 plt.rcParams["lines.linewidth"] = 4
@@ -155,10 +155,10 @@ def plot_proj(T1, T2, S, fileRoot):
     '''
 
     projT1 = np.sum(S, axis=1)
-    peaks1, _ = find_peaks(projT1)
+    peaks1, _ = find_peaks(projT1, distance = 10, height = 0.1)
     peaks1x, peaks1y = T1[peaks1], projT1[peaks1]
     projT2 = np.sum(S, axis=0)
-    peaks2, _ = find_peaks(projT2)
+    peaks2, _ = find_peaks(projT2, distance = 10, height = 0.1)
     peaks2x, peaks2y = T2[peaks2], projT2[peaks2]
 
     fig, (ax1, ax2) = plt.subplots(1,2, figsize=(25, 10))
@@ -177,6 +177,43 @@ def plot_proj(T1, T2, S, fileRoot):
 
     return peaks1x, peaks2x
 
+# def plot_map(T1, T2, S, nLevel, fileRoot, peaks1x, peaks2x, T1min, T1max, T2min, T2max):
+#     '''
+#     hkjh
+#     '''
+#
+#     mini = np.max([T1min, T2min])
+#     maxi = np.min([T1max, T2max])
+#
+#     fig, (ax1, ax2) = plt.subplots(1,2, figsize=(25, 10))
+#
+#     ax1.contour(T2, T1, S, nLevel, cmap='rainbow')
+#     ax1.set_xlabel(r'$T_2$ [ms]')
+#     ax1.set_ylabel(r'$T_1$ [ms]')
+#     ax1.set_xscale('log')
+#     ax1.set_yscale('log')
+#     ax1.plot([10.0**mini, 10.0**maxi], [10.0**mini, 10.0**maxi], color='black', ls=':', alpha=0.6, zorder=-2)
+#
+#     ax2.contour(T2, T1, S, nLevel, cmap='rainbow')
+#     for i in range(len(peaks1x)):
+#         ax2.hlines(peaks1x[i], xmin = 10.0**T2min , xmax = 10.0**T2max, color='gray', ls=':')
+#         ax2.annotate(f'   {peaks1x[i]:.2f}', xy = (10.0**T2max, peaks1x[i]), fontsize=15)
+#
+#         ax2.vlines(peaks2x[i], ymin = 10.0**T1min , ymax = 10.0**T1max, color='gray', ls=':')
+#         ax2.annotate(f'   {peaks2x[i]:.2f}', xy = (peaks2x[i], 10.0**T1max), fontsize=15, rotation = 60)
+#
+#         ax2.plot(T2, T2 * peaks1x[i] / peaks2x[i], ls='-', alpha=0.7, zorder=-2)
+#
+#     ax2.set_xlabel(r'$T_2$ [ms]')
+#     ax2.set_ylabel(r'$T_1$ [ms]')
+#     ax2.set_xscale('log')
+#     ax2.set_yscale('log')
+#     ax2.set_xlim(10.0**T2min, 10.0**T2max)
+#     ax2.set_ylim(10.0**T1min, 10.0**T1max)
+#     ax2.plot([10.0**mini, 10.0**maxi], [10.0**mini, 10.0**maxi], color='black', ls='-', alpha=0.7, zorder=-2)
+#
+#     plt.savefig(f'{fileRoot}-2D_Spectrum')
+
 def plot_map(T1, T2, S, nLevel, fileRoot, peaks1x, peaks2x, T1min, T1max, T2min, T2max):
     '''
     hkjh
@@ -185,27 +222,20 @@ def plot_map(T1, T2, S, nLevel, fileRoot, peaks1x, peaks2x, T1min, T1max, T2min,
     mini = np.max([T1min, T2min])
     maxi = np.min([T1max, T2max])
 
-    fig, (ax1, ax2) = plt.subplots(1,2, figsize=(25, 10))
+    fig, ax = plt.subplots()
 
-    ax1.contour(T2, T1, S, nLevel, cmap='rainbow')
-    ax1.set_xlabel(r'$T_2$ [ms]')
-    ax1.set_ylabel(r'$T_1$ [ms]')
-    ax1.set_xscale('log')
-    ax1.set_yscale('log')
-    ax1.plot([10.0**mini, 10.0**maxi], [10.0**mini, 10.0**maxi], color='black', ls=':', alpha=0.6, zorder=-2)
-
-    ax2.contour(T2, T1, S, nLevel, cmap='rainbow')
+    ax.plot([10.0**mini, 10.0**maxi], [10.0**mini, 10.0**maxi], color='black', ls='-', alpha=0.7, zorder=-2, label = r'$T_1$ = $T_2$')
     for i in range(len(peaks1x)):
-        ax2.hlines(peaks1x[i], xmin = 10.0**T2min , xmax = 10.0**T2max, color='gray', ls=':')
-        ax2.annotate(f'   {peaks1x[i]:.2f}', xy = (10.0**T2max, peaks1x[i]), fontsize=15)
-    for i in range(len(peaks2x)):
-        ax2.vlines(peaks2x[i], ymin = 10.0**T1min , ymax = 10.0**T1max, color='gray', ls=':')
-        ax2.annotate(f'   {peaks2x[i]:.2f}', xy = (peaks2x[i], 10.0**T1max), fontsize=15, rotation = 60)
-    ax2.set_xlabel(r'$T_2$ [ms]')
-    ax2.set_ylabel(r'$T_1$ [ms]')
-    ax2.set_xscale('log')
-    ax2.set_yscale('log')
-    ax2.plot([10.0**mini, 10.0**maxi], [10.0**mini, 10.0**maxi], color='black', ls='-', alpha=0.7, zorder=-2)
+        ratio = peaks1x[i] / peaks2x[i]
+        ax.plot(T2, ratio * T2, ls='-', alpha=0.7, zorder=-2, label=fr'$T_1$ = {ratio:.2f} $T_2$')
+    
+    ax.contour(T2, T1, S, nLevel, cmap='rainbow')
+    ax.set_xlabel(r'$T_2$ [ms]')
+    ax.set_ylabel(r'$T_1$ [ms]')
+    ax.set_xscale('log')
+    ax.set_yscale('log')
+    ax.set_xlim(10.0**T2min, 10.0**T2max)
+    ax.set_ylim(10.0**T1min, 10.0**T1max)
+    ax.legend(loc='lower right')
 
     plt.savefig(f'{fileRoot}-2D_Spectrum')
-    # plt.show()

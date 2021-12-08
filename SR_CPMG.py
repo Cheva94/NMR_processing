@@ -34,6 +34,9 @@ def main():
 
     peaks1x, peaks2x = plot_proj(T1, T2, S, fileRoot)
     plot_map(T1, T2, S, nLevel, fileRoot, peaks1x, peaks2x, T1min, T1max, T2min, T2max)
+    print('\n\n\nThe peaks are located at: \n')
+    for k in range(len(peaks1x)):
+        print(f'\t\t\t(T1 ; T2) = ({peaks1x[k]:.2f} ; {peaks2x[k]:.2f})')
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
