@@ -182,8 +182,8 @@ def plot_map(T1, T2, S, nLevel, fileRoot, peaks1x, peaks2x, T1min, T1max, T2min,
     hkjh
     '''
 
-    mini = np.min([T1min, T2min])
-    maxi = np.max([T1max, T2max])
+    mini = np.max([T1min, T2min])
+    maxi = np.min([T1max, T2max])
 
     fig, (ax1, ax2) = plt.subplots(1,2, figsize=(25, 10))
 
