@@ -19,6 +19,7 @@ def main():
     T2min, T2max = args.RangeT2[0], args.RangeT2[1]
     niniT1, niniT2 = args.niniValues[0], args.niniValues[1]
     nLevel = args.ContourLevels
+    show = args.plotShow
 
     fileRoot = File.split('.txt')[0]
 
@@ -33,10 +34,7 @@ def main():
     np.savetxt(f"{fileRoot}-2D_Spectrum.csv", S, delimiter=',')
 
     peaks1x, peaks2x = plot_proj(T1, T2, S, fileRoot)
-    plot_map(T1, T2, S, nLevel, fileRoot, peaks1x, peaks2x, T1min, T1max, T2min, T2max)
-    print('\n\n\nThe peaks are located at: \n')
-    for k in range(len(peaks1x)):
-        print(f'\t\t\t(T1 ; T2) = ({peaks1x[k]:.2f} ; {peaks2x[k]:.2f})')
+    plot_map(T1, T2, S, nLevel, fileRoot, peaks1x, peaks2x, T1min, T1max, T2min, T2max, show)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -56,6 +54,8 @@ if __name__ == "__main__":
     parser.add_argument('-T2', '--RangeT2', help = "Range to consider for T2 values.", nargs = 2, type = int, default=[0, 5])
 
     parser.add_argument('-nini', '--niniValues', help = "Number of values to avoid at the beginning of T1 and T2.", nargs = 2, type = int, default=[0, 0])
+
+    parser.add_argument('-show', '--plotShow', default='off')
 
     args = parser.parse_args()
 

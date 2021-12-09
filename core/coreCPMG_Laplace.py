@@ -158,7 +158,7 @@ def plot_spec(T2, S, fileRoot):
     sdasd
     '''
 
-    peaks, _ = find_peaks(S)
+    peaks, _ = find_peaks(S, distance = 20, height = 0.05)
     peaksx, peaksy = T2[peaks], S[peaks]
 
     fig, ax = plt.subplots()
@@ -171,3 +171,4 @@ def plot_spec(T2, S, fileRoot):
     ax.set_xscale('log')
 
     plt.savefig(f'{fileRoot}-Spectrum')
+    # plt.show()
