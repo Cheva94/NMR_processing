@@ -41,12 +41,12 @@ plt.rcParams["lines.linewidth"] = 4
 plt.rcParams["lines.markersize"] = 20
 plt.rcParams["lines.linestyle"] = '-'
 
-def userfile(File):
+def userfile(file):
     '''
     Extracts data from the .txt input file given by the user.
     '''
 
-    data = pd.read_csv(File, header = None, delim_whitespace = True).to_numpy()
+    data = pd.read_csv(file, header = None, delim_whitespace = True, comment='#').to_numpy()
 
     t = data[:, 0] # In ms
     DW = t[1] - t[0] # Dwell time
@@ -57,15 +57,15 @@ def userfile(File):
     Im = data[:, 2]
     FID = Re + Im * 1j # Complex signal
 
-    acq = File.split('.txt')[0]+'-acqs'+'.txt'
+    acq = file.split('.txt')[0]+'-acqs.txt'
     acq = pd.read_csv(acq, header = None, delim_whitespace = True)
     nS, RG, RD = acq.iloc[0, 1], acq.iloc[1, 1], acq.iloc[5, 1]
 
     return t, nP, DW, FID, nS, RD, RG
 
-def phase_correction(FID):
+def PhCorrNorm(FID, RG, m):
     '''
-    Returns FID with phase correction (maximizing real part).
+    Returns FID with phase correction (maximizing real part). Then normalizes it
     '''
 
     initVal = {}
@@ -74,20 +74,18 @@ def phase_correction(FID):
         FID_ph = FID * np.exp(1j * tita)
         initVal[i] = FID_ph[0].real
 
-    return FID * np.exp(1j * np.deg2rad(max(initVal, key=initVal.get)))
+    Norm = 1 / ((6.32589E-4 * np.exp(RG/9) - 0.0854) * m)
 
-def normalize(FID, RG, mH=1):
-    '''
-    Normalizes FID considering the receiver gain and the mass of protons.
-    '''
-
-    norm_fact = 1 / ((6.32589E-4 * np.exp(RG/9) - 0.0854) * mH)
-    return FID * norm_fact
+    return FID * np.exp(1j * np.deg2rad(max(initVal, key=initVal.get))) * Norm
 
 def plot_FID(t, FID, nS, RD, fileRoot):
     '''
     Plots normalized FID (real and imaginary parts).
     '''
+
+    L = FID[0:5].real
+    mean = sum(L) / 5
+    SD = (sum([((x - mean) ** 2) for x in L]) / 5) ** 0.5
 
     fig, (ax1, ax2) = plt.subplots(2, 1, gridspec_kw={'height_ratios': [3, 1]})
 
@@ -95,26 +93,26 @@ def plot_FID(t, FID, nS, RD, fileRoot):
     ax1.set_xlabel('t [ms]')
     ax1.set_ylabel(r'$M_R$')
     ax1.set_title(f'nS={nS} ; RD = {RD}')
-    ax1.text(0.98,0.98, fr'$M_R (0)$ = {FID[0].real:.2f}', ha='right',
+    ax1.text(0.98,0.98, fr'$M_R (0; 5)$ = ({mean:.2f} $\pm$ {SD:.2f})', ha='right',
             va='top', transform=ax1.transAxes)
 
     ax2.plot(t, FID.imag, label='Im', color='mediumseagreen')
     ax2.xaxis.tick_top()
     ax2.set_ylabel(r'$M_I$')
-    ax2.text(0.98,0.02, fr'$M_I (0)$ = {FID[0].imag:.2f}', ha='right',
+    ax2.text(0.98,0.02, fr'$M_I (0; 1)$ = {FID[0].imag:.2f}', ha='right',
             va='bottom', transform=ax2.transAxes)
 
-    plt.savefig(f'{fileRoot}-NormPhCorr')
+    plt.savefig(f'proc_{fileRoot}-Temp')
 
 def out_FID(t, FID, fileRoot):
     '''
     Generates output file with normalized and phase corrected FID.
     '''
 
-    with open(f'{fileRoot}-NormPhCorr.csv', 'w') as f:
+    with open(f'proc_{fileRoot}-Temp.csv', 'w') as f:
         f.write("t [ms], Re[FID], Im[FID] \n")
         for i in range(len(t)):
-            f.write(f'{t[i]:.4f}, {FID.real[i]:.4f}, {FID.imag[i]:.4f} \n')
+            f.write(f'{t[i]:.6f}, {FID.real[i]:.6f}, {FID.imag[i]:.6f} \n')
 
 def spectrum(FID, nP, DW):
     '''
@@ -134,34 +132,22 @@ def plot_spec(freq, spec, max_peak, nS, RD, fileRoot):
     '''
 
     spec /= max_peak
-
-    fig, axs = plt.subplots(2, 2, gridspec_kw={'height_ratios': [3, 1]}, figsize= (25, 13.5))
-
-    axs[0,0].plot(freq, spec.real)
-    axs[0,0].set_xlim(-2, 2)
-    axs[0,0].xaxis.set_minor_locator(AutoMinorLocator())
-    axs[0,0].set_xlabel(r'$\nu$ [Hz]')
-    axs[0,0].set_ylabel(r'$M_R$')
-
-    axs[1,0].plot(freq, spec.imag, color='mediumseagreen')
-    axs[1,0].set_xlim(-2, 2)
-    axs[1,0].xaxis.set_minor_locator(AutoMinorLocator())
-    axs[1,0].set_ylabel(r'$M_I$')
-    axs[1,0].xaxis.tick_top()
-
     CS = freq / 20
 
-    axs[0,1].plot(CS, spec.real)
-    axs[0,1].set_xlim(-0.2, 0.2)
-    axs[0,1].xaxis.set_minor_locator(AutoMinorLocator())
-    axs[0,1].set_xlabel(r'$\delta$ [ppm]')
-    axs[0,1].set_ylabel(r'$M_R$')
+    fig, axs = plt.subplots(2, 1, gridspec_kw={'height_ratios': [3, 1]})
 
-    axs[1,1].plot(CS, spec.imag, color='mediumseagreen')
-    axs[1,1].set_xlim(-0.2, 0.2)
-    axs[1,1].xaxis.set_minor_locator(AutoMinorLocator())
-    axs[1,1].set_ylabel(r'$M_I$')
-    axs[1,1].xaxis.tick_top()
+    axs[0].plot(CS, spec.real)
+    axs[0].set_xlim(-0.2, 0.2)
+    axs[0].xaxis.set_minor_locator(AutoMinorLocator())
+    axs[0].set_xlabel(r'$\delta$ [ppm]')
+    axs[0].set_ylabel(r'$M_R$')
+    axs[0].vline(x=0)
+
+    axs[1].plot(CS, spec.imag, color='mediumseagreen')
+    axs[1].set_xlim(-0.2, 0.2)
+    axs[1].xaxis.set_minor_locator(AutoMinorLocator())
+    axs[1].set_ylabel(r'$M_I$')
+    axs[1].xaxis.tick_top()
 
     fig.suptitle(f'nS={nS} ; RD = {RD} ; Peak = {max_peak.real:.2f}')
     plt.savefig(f'{fileRoot}-Spectrum')
@@ -175,7 +161,7 @@ def out_spec(freq, spec, fileRoot):
     with open(f'{fileRoot}-Spectrum.csv', 'w') as f:
         f.write("Freq [Hz], CS [ppm], Re[spec], Im[spec] \n")
         for i in range(len(freq)):
-            f.write(f'{freq[i]:.4f}, {CS[i]:.4f}, {spec.real[i]:.4f}, {spec.imag[i]:.4f} \n')
+            f.write(f'{freq[i]:.6f}, {CS[i]:.6f}, {spec.real[i]:.6f}, {spec.imag[i]:.6f} \n')
 
 def back_subs(FID, back):
     '''
