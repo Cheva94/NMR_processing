@@ -141,7 +141,7 @@ def plot_spec(freq, spec, max_peak, nS, RD, fileRoot):
     axs[0].xaxis.set_minor_locator(AutoMinorLocator())
     axs[0].set_xlabel(r'$\delta$ [ppm]')
     axs[0].set_ylabel(r'$M_R$')
-    axs[0].vline(x=0)
+    axs[0].axvline(x=0, color='gray', ls=':', lw=2)
 
     axs[1].plot(CS, spec.imag, color='mediumseagreen')
     axs[1].set_xlim(-0.2, 0.2)
@@ -150,7 +150,7 @@ def plot_spec(freq, spec, max_peak, nS, RD, fileRoot):
     axs[1].xaxis.tick_top()
 
     fig.suptitle(f'nS={nS} ; RD = {RD} ; Peak = {max_peak.real:.2f}')
-    plt.savefig(f'{fileRoot}-Spectrum')
+    plt.savefig(f'proc_{fileRoot}-Freq')
 
 def out_spec(freq, spec, fileRoot):
     '''
@@ -158,7 +158,7 @@ def out_spec(freq, spec, fileRoot):
     '''
 
     CS = freq / 20
-    with open(f'{fileRoot}-Spectrum.csv', 'w') as f:
+    with open(f'proc_{fileRoot}-Freq.csv', 'w') as f:
         f.write("Freq [Hz], CS [ppm], Re[spec], Im[spec] \n")
         for i in range(len(freq)):
             f.write(f'{freq[i]:.6f}, {CS[i]:.6f}, {spec.real[i]:.6f}, {spec.imag[i]:.6f} \n')
