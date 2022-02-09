@@ -102,7 +102,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument('input', help = "Path to the nutation files.", nargs = '+')
-    parser.add_argument('output', help = "Path for the output file.")
+    parser.add_argument('output', help = "Path for the output files.")
     parser.add_argument('-p0', '--InitVal', help = 'Initial guess for parameters: offset, amplitude, decayRate, phShift, period.', nargs = 5, type = float)
 
     args = parser.parse_args()
