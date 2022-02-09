@@ -1,7 +1,5 @@
-#!/usr/bin/python3.6
-
+#!/usr/bin/python3.8
 '''
-    Description: core functions for CPMG.py.
     Written by: Ignacio J. Chevallier-Boutell.
     Dated: November, 2021.
 '''
@@ -36,47 +34,37 @@ plt.rcParams["figure.autolayout"] = True
 
 plt.rcParams["lines.linestyle"] = '-'
 
-def userfile(F):
-    '''
-    Extracts data from the .txt input file given by the user.
-    '''
-
-    data = pd.read_csv(F, header = None, delim_whitespace = True).to_numpy()
+def CPMG_file(File):
+    data = pd.read_csv(File, header = None, delim_whitespace = True, comment='#').to_numpy()
 
     t = data[:, 0] # In ms
-    nP = len(t) # Number of points
 
     Re = data[:, 1]
     Im = data[:, 2]
-    decay = Re + Im * 1j # Complex signal
+    signal = Re + Im * 1j # Complex signal
 
-    acq = F.split('.txt')[0]+'-acqs.txt'
-    acq = pd.read_csv(acq, header = None, delim_whitespace = True)
-    nS, RG, RD, tau, nEcho = acq.iloc[0, 1], acq.iloc[1, 1], acq.iloc[5, 1], acq.iloc[6, 1], acq.iloc[7, 1]
+    pAcq = pd.read_csv(File.split('.txt')[0]+'-acqs.txt', header = None, delim_whitespace = True)
 
-    return t, nP, decay, nS, RG, RD, 2*tau, nEcho
+    nS, RG, p90, att, RD, tEcho, nEcho = pAcq.iloc[0, 1], pAcq.iloc[1, 1], pAcq.iloc[2, 1], pAcq.iloc[4, 1], pAcq.iloc[5, 1], 2*pAcq.iloc[6, 1], pAcq.iloc[7, 1]
 
-def phase_correction(decay):
-    '''
-    Returns decay with phase correction (maximizing real part).
-    '''
+    return t, signal, nS, RG, p90, att, RD, tEcho, nEcho
 
+def PhCorr(signal):
     initVal = {}
     for i in range(360):
         tita = np.deg2rad(i)
-        decay_ph = decay * np.exp(1j * tita)
-        initVal[i] = decay_ph[0].real
+        signal_ph = signal * np.exp(1j * tita)
+        initVal[i] = signal_ph[0].real
 
-    decay = decay * np.exp(1j * np.deg2rad(max(initVal, key=initVal.get)))
-    return decay.real
+    signal = signal * np.exp(1j * np.deg2rad(max(initVal, key=initVal.get)))
+    return signal.real
 
-def normalize(decay, RG, mH=1):
-    '''
-    Normalizes the decay considering the receiver gain and the mass of protons.
-    '''
-
-    norm_fact = 1 / ((6.32589E-4 * np.exp(RG/9) - 0.0854) * mH)
-    return decay * norm_fact
+def Norm(decay, RGnorm, RG, m):
+    if RGnorm == "off":
+        Norm = 1 / m
+    elif RGnorm == 'on':
+        Norm = 1 / ((6.32589E-4 * np.exp(RG/9) - 0.0854) * m)
+    return decay * Norm
 
 def r_square(x, y, f, popt):
     '''
@@ -89,15 +77,6 @@ def r_square(x, y, f, popt):
 
     return 1 - ss_res / ss_tot
 
-def chi_square(x, y_obs, f, popt):
-    '''
-    Determines the X^2 when fitting.
-    '''
-    y_exp = f(x, *popt)
-    residuals = y_obs - y_exp
-
-    return np.sum(residuals**2 / y_exp)
-
 ################################################################################
 ######################## Monoexponential section
 ################################################################################
@@ -106,29 +85,22 @@ def exp_1(t, M0, T2):
     return M0 * np.exp(- t / T2)
 
 def fit_1(t, decay):
-    '''
-    Fits monoexponential.
-    '''
-
-    popt, pcov = curve_fit(exp_1, t, decay, bounds=(0, np.inf))
+    popt, pcov = curve_fit(exp_1, t, decay, bounds=(0, np.inf), p0=[70, 2000])
     perr = np.sqrt(np.diag(pcov))
 
     r2 = r_square(t, decay, exp_1, popt)
-    chi2 = chi_square(t, decay, exp_1, popt)
 
     M0, T2 = popt[0], popt[1]
     M0_SD, T2_SD = perr[0], perr[1]
 
-    return popt, r2, chi2, M0, T2, M0_SD, T2_SD
+    return popt, r2, M0, T2, M0_SD, T2_SD
 
-def plot_1(t, decay, popt, tEcho, fileRoot):
-    '''
-    Creates plot for monoexponential.
-    '''
-
+def plot_1(t, decay, popt, tEcho, Out, nS, RG, RGnorm, p90, att, RD, nEcho, r2):
     t_seg = t * 0.001
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(25, 10))
+
+    fig.suptitle(f'nS={nS} | RG = {RG} dB ({RGnorm}) | RD = {RD} s | p90 = {p90} us | Atten = {att} dB | Ecos = {nEcho} | tE = {tEcho} ms | R2 = {r2:.3f}', fontsize='small')
 
     ax1.plot(t_seg, decay, label='data')
     ax1.plot(t_seg, exp_1(t, *popt), label='mono')
@@ -142,23 +114,19 @@ def plot_1(t, decay, popt, tEcho, fileRoot):
     ax2.set_ylabel('log(M)')
     ax2.legend()
 
-    fig.suptitle(fr'$T_E$={tEcho:.2f} ms')
+    plt.savefig(f'{Out}')
 
-    plt.savefig(f'{fileRoot}-exp1')
+def out_1(t, decay, tEcho, Out, r2, M0, T2, M0_SD, T2_SD, nS, RG, RGnorm, p90, att, RD, nEcho):
+    with open(f'{Out}.csv', 'w') as f:
+        f.write("nS, RG [dB], RGnorm, p90 [us], Attenuation [dB], RD [s], tEcho [ms], nEcho \n")
+        f.write(f'{nS}, {RG}, {RGnorm}, {p90}, {att}, {RD}, {tEcho}, {nEcho} \n\n')
 
-def out_1(t, decay, tEcho, fileRoot, r2, chi2, M0, T2, M0_SD, T2_SD):
-    '''
-    Generates one output file with phase corrected CPMG and another one with the fitting parameters in the monoexponential case.
-    '''
+        f.write("M0, M0-SD, T2 [ms], T2-SD [ms], R2, tEcho [ms] \n")
+        f.write(f'{M0:.4f}, {M0_SD:.4f}, {T2:.4f}, {T2_SD:.4f}, {r2:.4f}, {tEcho:.4f} \n\n')
 
-    with open(f'{fileRoot}-PhCorr.csv', 'w') as f:
         f.write("t [ms], decay \n")
         for i in range(len(t)):
             f.write(f'{t[i]:.4f}, {decay[i]:.4f} \n')
-
-    with open(f'{fileRoot}-exp1.csv', 'w') as f:
-        f.write("M0, M0-SD, T2 [ms], T2-SD [ms], R2, Chi2, tEcho [ms] \n")
-        f.write(f'{M0:.4f}, {M0_SD:.4f}, {T2:.4f}, {T2_SD:.4f}, {r2:.4f}, {chi2:.4f}, {tEcho:.4f}')
 
 ################################################################################
 ######################## Biexponential section
@@ -168,29 +136,22 @@ def exp_2(t, M0_1, T2_1, M0_2, T2_2):
     return M0_1 * np.exp(- t / T2_1) + M0_2 * np.exp(- t / T2_2)
 
 def fit_2(t, decay):
-    '''
-    Fits biexponential.
-    '''
-
-    popt, pcov = curve_fit(exp_2, t, decay, bounds=(0, np.inf))
+    popt, pcov = curve_fit(exp_2, t, decay, bounds=(0, np.inf), p0=[70, 2000, 30, 1000])
     perr = np.sqrt(np.diag(pcov))
 
     r2 = r_square(t, decay, exp_2, popt)
-    chi2 = chi_square(t, decay, exp_2, popt)
 
     M0_1, T2_1, M0_2, T2_2 = popt[0], popt[1], popt[2], popt[3]
     M0_1_SD, T2_1_SD, M0_2_SD, T2_2_SD = perr[0], perr[1], perr[2], perr[3]
 
-    return popt, r2, chi2, M0_1, T2_1, M0_2, T2_2, M0_1_SD, T2_1_SD, M0_2_SD, T2_2_SD
+    return popt, r2, M0_1, T2_1, M0_2, T2_2, M0_1_SD, T2_1_SD, M0_2_SD, T2_2_SD
 
-def plot_2(t, decay, popt, tEcho, fileRoot):
-    '''
-    Creates plot for biexponential.
-    '''
-
+def plot_2(t, decay, popt, tEcho, Out, nS, RG, RGnorm, p90, att, RD, nEcho, r2):
     t_seg = t * 0.001
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(25, 10))
+
+    fig.suptitle(f'nS={nS} | RG = {RG} dB ({RGnorm}) | RD = {RD} s | p90 = {p90} us | Atten = {att} dB | Ecos = {nEcho} | tE = {tEcho} ms | R2 = {r2:.3f}', fontsize='small')
 
     ax1.plot(t_seg, decay, label='data')
     ax1.plot(t_seg, exp_2(t, *popt), label='bi')
@@ -204,23 +165,19 @@ def plot_2(t, decay, popt, tEcho, fileRoot):
     ax2.set_ylabel('log(M)')
     ax2.legend()
 
-    fig.suptitle(fr'$T_E$={tEcho:.2f} ms')
+    plt.savefig(f'{Out}')
 
-    plt.savefig(f'{fileRoot}-exp2')
+def out_2(t, decay, tEcho, Out, r2, M0_1, T2_1, M0_2, T2_2, M0_1_SD, T2_1_SD, M0_2_SD, T2_2_SD, nS, RG, RGnorm, p90, att, RD, nEcho):
+    with open(f'{Out}.csv', 'w') as f:
+        f.write("nS, RG [dB], RGnorm, p90 [us], Attenuation [dB], RD [s], tEcho [ms], nEcho \n")
+        f.write(f'{nS}, {RG}, {RGnorm}, {p90}, {att}, {RD}, {tEcho}, {nEcho} \n\n')
 
-def out_2(t, decay, tEcho, fileRoot, r2, chi2, M0_1, T2_1, M0_2, T2_2, M0_1_SD, T2_1_SD, M0_2_SD, T2_2_SD):
-    '''
-    Generates one output file with phase corrected CPMG and another one with the fitting parameters in the biexponential case.
-    '''
+        f.write("M0_1, M0_1-SD, T2_1 [ms], T2_1-SD [ms], M0_2, M0_2-SD, T2_2 [ms], T2_2-SD [ms], R2, tEcho [ms] \n")
+        f.write(f'{M0_1:.4f}, {M0_1_SD:.4f}, {T2_1:.4f}, {T2_1_SD:.4f}, {M0_2:.4f}, {M0_2_SD:.4f}, {T2_2:.4f}, {T2_2_SD:.4f}, {r2:.4f}, {tEcho:.4f} \n\n')
 
-    with open(f'{fileRoot}-PhCorr.csv', 'w') as f:
         f.write("t [ms], decay \n")
         for i in range(len(t)):
             f.write(f'{t[i]:.4f}, {decay[i]:.4f} \n')
-
-    with open(f'{fileRoot}-exp2.csv', 'w') as f:
-        f.write("M0_1, M0_1-SD, T2_1 [ms], T2_1-SD [ms], M0_2, M0_2-SD, T2_2 [ms], T2_2-SD [ms], R2, Chi2, tEcho [ms] \n")
-        f.write(f'{M0_1:.4f}, {M0_1_SD:.4f}, {T2_1:.4f}, {T2_1_SD:.4f}, {M0_2:.4f}, {M0_2_SD:.4f}, {T2_2:.4f}, {T2_2_SD:.4f}, {r2:.4f}, {chi2:.4f}, {tEcho:.4f}')
 
 ################################################################################
 ######################## Triexponential section
@@ -230,29 +187,22 @@ def exp_3(t, M0_1, T2_1, M0_2, T2_2, M0_3, T2_3):
     return M0_1 * np.exp(- t / T2_1) + M0_2 * np.exp(- t / T2_2) + M0_3 * np.exp(- t / T2_3)
 
 def fit_3(t, decay):
-    '''
-    Fits triexponential.
-    '''
-
-    popt, pcov = curve_fit(exp_3, t, decay, bounds=(0, np.inf))
+    popt, pcov = curve_fit(exp_3, t, decay, bounds=(0, np.inf), p0=[70, 2000, 30, 1000, 10, 200])
     perr = np.sqrt(np.diag(pcov))
 
     r2 = r_square(t, decay, exp_3, popt)
-    chi2 = chi_square(t, decay, exp_3, popt)
 
     M0_1, T2_1, M0_2, T2_2, M0_3, T2_3 = popt[0], popt[1], popt[2], popt[3], popt[4], popt[5]
     M0_1_SD, T2_1_SD, M0_2_SD, T2_2_SD, M0_3_SD, T2_3_SD = perr[0], perr[1], perr[2], perr[3], perr[4], perr[5]
 
-    return popt, r2, chi2, M0_1, T2_1, M0_2, T2_2, M0_3, T2_3, M0_1_SD, T2_1_SD, M0_2_SD, T2_2_SD, M0_3_SD, T2_3_SD
+    return popt, r2, M0_1, T2_1, M0_2, T2_2, M0_3, T2_3, M0_1_SD, T2_1_SD, M0_2_SD, T2_2_SD, M0_3_SD, T2_3_SD
 
-def plot_3(t, decay, popt, tEcho, fileRoot):
-    '''
-    Creates plot for triexponential.
-    '''
-
+def plot_3(t, decay, popt, tEcho, Out, nS, RG, RGnorm, p90, att, RD, nEcho, r2):
     t_seg = t * 0.001
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(25, 10))
+
+    fig.suptitle(f'nS={nS} | RG = {RG} dB ({RGnorm}) | RD = {RD} s | p90 = {p90} us | Atten = {att} dB | Ecos = {nEcho} | tE = {tEcho} ms | R2 = {r2:.3f}', fontsize='small')
 
     ax1.plot(t_seg, decay, label='data')
     ax1.plot(t_seg, exp_3(t, *popt), label='tri')
@@ -266,20 +216,16 @@ def plot_3(t, decay, popt, tEcho, fileRoot):
     ax2.set_ylabel('log(M)')
     ax2.legend()
 
-    fig.suptitle(fr'$T_E$={tEcho:.2f} ms')
+    plt.savefig(f'{Out}')
 
-    plt.savefig(f'{fileRoot}-exp3')
+def out_3(t, decay, tEcho, Out, r2, M0_1, T2_1, M0_2, T2_2, M0_3, T2_3, M0_1_SD, T2_1_SD, M0_2_SD, T2_2_SD, M0_3_SD, T2_3_SD, nS, RG, RGnorm, p90, att, RD, nEcho):
+    with open(f'{Out}.csv', 'w') as f:
+        f.write("nS, RG [dB], RGnorm, p90 [us], Attenuation [dB], RD [s], tEcho [ms], nEcho \n")
+        f.write(f'{nS}, {RG}, {RGnorm}, {p90}, {att}, {RD}, {tEcho}, {nEcho} \n\n')
 
-def out_3(t, decay, tEcho, fileRoot, r2, chi2, M0_1, T2_1, M0_2, T2_2, M0_3, T2_3, M0_1_SD, T2_1_SD, M0_2_SD, T2_2_SD, M0_3_SD, T2_3_SD):
-    '''
-    Generates one output file with phase corrected CPMG and another one with the fitting parameters in the triexponential case.
-    '''
+        f.write("M0_1, M0_1-SD, T2_1 [ms], T2_1-SD [ms], M0_2, M0_2-SD, T2_2 [ms], T2_2-SD [ms], M0_3, M0_3-SD, T2_3 [ms], T2_3-SD [ms], R2, tEcho [ms] \n")
+        f.write(f'{M0_1:.4f}, {M0_1_SD:.4f}, {T2_1:.4f}, {T2_1_SD:.4f}, {M0_2:.4f}, {M0_2_SD:.4f}, {T2_2:.4f}, {T2_2_SD:.4f}, {M0_3:.4f}, {M0_3_SD:.4f}, {T2_3:.4f}, {T2_3_SD:.4f}, {r2:.4f}, {tEcho:.4f} \n\n')
 
-    with open(f'{fileRoot}-PhCorr.csv', 'w') as f:
         f.write("t [ms], decay \n")
         for i in range(len(t)):
             f.write(f'{t[i]:.4f}, {decay[i]:.4f} \n')
-
-    with open(f'{fileRoot}-exp3.csv', 'w') as f:
-        f.write("M0_1, M0_1-SD, T2_1 [ms], T2_1-SD [ms], M0_2, M0_2-SD, T2_2 [ms], T2_2-SD [ms], M0_3, M0_3-SD, T2_3 [ms], T2_3-SD [ms], R2, Chi2, tEcho [ms] \n")
-        f.write(f'{M0_1:.4f}, {M0_1_SD:.4f}, {T2_1:.4f}, {T2_1_SD:.4f}, {M0_2:.4f}, {M0_2_SD:.4f}, {T2_2:.4f}, {T2_2_SD:.4f}, {M0_3:.4f}, {M0_3_SD:.4f}, {T2_3:.4f}, {T2_3_SD:.4f}, {r2:.4f}, {chi2:.4f}, {tEcho:.4f}')
