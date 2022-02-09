@@ -1,7 +1,5 @@
-#!/usr/bin/python3.6
-
+#!/usr/bin/python3.8
 '''
-    Description: core functions for CPMG_tempEvol.py.
     Written by: Ignacio J. Chevallier-Boutell.
     Dated: November, 2021.
 '''
@@ -37,23 +35,13 @@ plt.rcParams["figure.autolayout"] = True
 
 plt.rcParams["lines.linestyle"] = '-'
 
-def t_arrays(fileRoot, t_wait, nFiles):
-    '''
-    Array with experimental time tEvol (time between CPMG experiments) and decay time.
-    '''
-
-    tDecay = pd.read_csv(f'{fileRoot}_001.txt', header = None, delim_whitespace = True).to_numpy()[:, 0]
-
+def t_arrays(t_wait, File, nF):
+    tDecay = pd.read_csv(f'{File}', header = None, delim_whitespace = True, comment='#').to_numpy()[:, 0]
     tEvol = [i * t_wait for i in range(nFiles)]
-
     return tEvol, tDecay
 
 def decay_phCorr(input):
-    '''
-    Returns decay with phase correction (maximizing real part).
-    '''
-
-    data = pd.read_csv(input, header = None, delim_whitespace = True).to_numpy()
+    data = pd.read_csv(input, header = None, delim_whitespace = True, comment='#').to_numpy()
 
     Re = data[:, 1]
     Im = data[:, 2]
@@ -72,12 +60,8 @@ def decay_phCorr(input):
 def div_ceil(a, b):
     return int(np.ceil((a + b - 1) / b))
 
-def plot_decay(fileRoot, tEvol, t_wait):
-    '''
-    Plots one decay every hour of experiment, comparting evolution in time.
-    '''
-
-    A = pd.read_csv(f'{fileRoot}-evolPhCorr.csv').to_numpy()
+def plot_decay(Out, tEvol, t_wait):
+    A = pd.read_csv(f'{Out}-Decay.csv', comment='#')).to_numpy()
     exps = np.shape(A)[1]-1
     hour = 60/t_wait
     count = [10*i for i in range(div_ceil(exps, hour))]
@@ -102,7 +86,7 @@ def plot_decay(fileRoot, tEvol, t_wait):
     ax2.set_xlabel('t [s]')
     ax2.set_ylabel('log(M)')
 
-    plt.savefig(f'{fileRoot}-evolPhCorr')
+    plt.savefig(f'{Out}-Decay')
 
 ################################################################################
 ######################## Monoexponential section
@@ -112,11 +96,7 @@ def exp_1(t, M0, T2):
     return M0 * np.exp(- t / T2)
 
 def fit_1(t, decay):
-    '''
-    Fits monoexponential.
-    '''
-
-    popt, pcov = curve_fit(exp_1, t, decay, bounds=(0, np.inf))
+    popt, pcov = curve_fit(exp_1, t, decay, bounds=(0, np.inf), p0=[70, 2000])
     perr = np.sqrt(np.diag(pcov))
 
     M0, T2 = popt[0], popt[1]
@@ -124,11 +104,7 @@ def fit_1(t, decay):
 
     return M0, T2, M0_SD, T2_SD
 
-def out_1(tEvol, tDecay, Files, fileRoot, nFiles):
-    '''
-    Extracts all the information and puts it together in two .csv files. Also plots evolution of fits (0, 25, 50, 75 and 100 %).
-    '''
-
+def out_1(tEvol, tDecay, Files, Out, nFiles):
     params = []
     count = 1
     dataDecay = pd.DataFrame(tDecay, columns=['t [ms]'])
@@ -158,26 +134,22 @@ def out_1(tEvol, tDecay, Files, fileRoot, nFiles):
 
             fig.suptitle(f'File {count}: Evolution = {tEvol[count-1]/60:.0f} h ; Progress = {int(evolCounter*100)} %')
 
-            plt.savefig(f'{fileRoot}-evolExp1-{str(evolCounter).replace(".", ",")}')
+            plt.savefig(f'{Out}-evolExp1-{str(evolCounter).replace(".", ",")}')
 
             evolCounter += 0.25
 
         count += 1
 
-    dataDecay.to_csv(f'{fileRoot}-evolPhCorr.csv', index=False)
+    dataDecay.to_csv(f'{Out}-Decay.csv', index=False)
 
     params = np.array(params)
-    with open(f'{fileRoot}-evolExp1.csv', 'w') as f:
+    with open(f'{Out}-evolExp1.csv', 'w') as f:
         f.write("t [min], MO, M0-SD, T2 [ms], T2-SD [ms] \n")
         for exp in range(len(Files)):
             f.write(f'{tEvol[exp]}, {params[exp,0]:.4f}, {params[exp,1]:.4f}, {params[exp,2]:.4f}, {params[exp,3]:.4f} \n')
 
-def plot_param1(fileRoot):
-    '''
-    Plots evolution of parameters in the monoexponential case.
-    '''
-
-    A = pd.read_csv(f'{fileRoot}-evolExp1.csv').to_numpy()
+def plot_param1(Out):
+    A = pd.read_csv(f'{Out}-evolExp1.csv', comment='#').to_numpy()
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(25, 10))
 
@@ -193,7 +165,7 @@ def plot_param1(fileRoot):
     ax2.set_ylabel('T2 [ms]')
     ax2.set_title(f'Comp. 1')
 
-    plt.savefig(f'{fileRoot}-evolExp1')
+    plt.savefig(f'{Out}-evolExp1')
 
 ################################################################################
 ######################## Biexponential section
@@ -203,11 +175,7 @@ def exp_2(t, M0_1, T2_1, M0_2, T2_2):
     return M0_1 * np.exp(- t / T2_1) + M0_2 * np.exp(- t / T2_2)
 
 def fit_2(t, decay):
-    '''
-    Fits biexponential.
-    '''
-
-    popt, pcov = curve_fit(exp_2, t, decay, bounds=(0, np.inf))
+    popt, pcov = curve_fit(exp_2, t, decay, bounds=(0, np.inf), p0=[70, 2000, 30, 1000])
     perr = np.sqrt(np.diag(pcov))
 
     T2s =  {'1':popt[1], '2':popt[3]}
@@ -222,11 +190,7 @@ def fit_2(t, decay):
 
     return M0_1, T2_1, M0_2, T2_2, M0_1_SD, T2_1_SD, M0_2_SD, T2_2_SD
 
-def out_2(tEvol, tDecay, Files, fileRoot, nFiles):
-    '''
-    Extracts all the information and puts it together in two .csv files. Also plots evolution of fits (0, 25, 50, 75 and 100 %).
-    '''
-
+def out_2(tEvol, tDecay, Files, Out, nFiles):
     params = []
     count = 1
     dataDecay = pd.DataFrame(tDecay, columns=['t [ms]'])
@@ -256,26 +220,22 @@ def out_2(tEvol, tDecay, Files, fileRoot, nFiles):
 
             fig.suptitle(f'File {count}: Evolution = {tEvol[count-1]/60:.0f} h ; Progress = {int(evolCounter*100)} %')
 
-            plt.savefig(f'{fileRoot}-evolExp2-{str(evolCounter).replace(".", ",")}')
+            plt.savefig(f'{Out}-evolExp2-{str(evolCounter).replace(".", ",")}')
 
             evolCounter += 0.25
 
         count += 1
 
-    dataDecay.to_csv(f'{fileRoot}-evolPhCorr.csv', index=False)
+    dataDecay.to_csv(f'{Out}-Decay.csv', index=False)
 
     params = np.array(params)
-    with open(f'{fileRoot}-evolExp2.csv', 'w') as f:
+    with open(f'{Out}-evolExp2.csv', 'w') as f:
         f.write("t [min], MO_1, M0_1-SD, T2_1 [ms], T2_1-SD [ms], MO_2, M0_2-SD, T2_2 [ms], T2_2-SD [ms] \n")
         for exp in range(len(Files)):
             f.write(f'{tEvol[exp]}, {params[exp,0]:.4f}, {params[exp,1]:.4f}, {params[exp,2]:.4f}, {params[exp,3]:.4f}, {params[exp,4]:.4f}, {params[exp,5]:.4f}, {params[exp,6]:.4f}, {params[exp,7]:.4f} \n')
 
-def plot_param2(fileRoot):
-    '''
-    Plots evolution of parameters in the biexponential case.
-    '''
-
-    A = pd.read_csv(f'{fileRoot}-evolExp2.csv').to_numpy()
+def plot_param2(Out):
+    A = pd.read_csv(f'{Out}-evolExp2.csv', comment='#').to_numpy()
 
     fig, axs = plt.subplots(2, 2, figsize=(25, 20))
 
@@ -301,7 +261,7 @@ def plot_param2(fileRoot):
     axs[1,1].set_ylabel('T2 [ms]')
     axs[1,1].set_title(f'Comp. 2')
 
-    plt.savefig(f'{fileRoot}-evolExp2')
+    plt.savefig(f'{Out}-evolExp2')
 
     B = A[:, 5] / A[:, 1]
 
@@ -311,7 +271,7 @@ def plot_param2(fileRoot):
     ax.set_xlabel('t [h]')
     ax.set_ylabel('M0_2 / M0_1')
 
-    plt.savefig(f'{fileRoot}-evolExp2-M0ratio')
+    plt.savefig(f'{Out}-evolExp2-M0ratio')
 
 ################################################################################
 ######################## Triexponential section
@@ -321,11 +281,7 @@ def exp_3(t, M0_1, T2_1, M0_2, T2_2, M0_3, T2_3):
     return M0_1 * np.exp(- t / T2_1) + M0_2 * np.exp(- t / T2_2) + M0_3 * np.exp(- t / T2_3)
 
 def fit_3(t, decay):
-    '''
-    Fits triexponential.
-    '''
-
-    popt, pcov = curve_fit(exp_3, t, decay, bounds=(0, np.inf))
+    popt, pcov = curve_fit(exp_3, t, decay, bounds=(0, np.inf), p0=[70, 2000, 30, 1000, 10, 200])
     perr = np.sqrt(np.diag(pcov))
 
     T2s =  {'1':popt[1], '2':popt[3], '3':popt[5]}
@@ -342,12 +298,7 @@ def fit_3(t, decay):
 
     return M0_1, T2_1, M0_2, T2_2, M0_3, T2_3, M0_1_SD, T2_1_SD, M0_2_SD, T2_2_SD, M0_3_SD, T2_3_SD
 
-def out_3(tEvol, tDecay, Files, fileRoot, nFiles):
-    '''
-    Extracts all the information and puts it together in two .csv files.
-    Also plots evolution of fits (0, 25, 50, 75 and 100 %).
-    '''
-
+def out_3(tEvol, tDecay, Files, Out, nFiles):
     params = []
     count = 1
     dataDecay = pd.DataFrame(tDecay, columns=['t [ms]'])
@@ -377,25 +328,21 @@ def out_3(tEvol, tDecay, Files, fileRoot, nFiles):
 
             fig.suptitle(f'File {count}: Evolution = {tEvol[count-1]/60:.0f} h ; Progress = {int(evolCounter*100)} %')
 
-            plt.savefig(f'{fileRoot}-evolExp3-{str(evolCounter).replace(".", ",")}')
+            plt.savefig(f'{Out}-evolExp3-{str(evolCounter).replace(".", ",")}')
 
             evolCounter += 0.25
 
         count += 1
 
     params = np.array(params)
-    dataDecay.to_csv(f'{fileRoot}-evolPhCorr.csv', index=False)
-    with open(f'{fileRoot}-evolExp3.csv', 'w') as f:
+    dataDecay.to_csv(f'{Out}-Decay.csv', index=False)
+    with open(f'{Out}-evolExp3.csv', 'w') as f:
         f.write("t [min], MO_1, M0_1-SD, T2_1 [ms], T2_1-SD [ms], MO_2, M0_2-SD, T2_2 [ms], T2_2-SD [ms], MO_3, M0_3-SD, T2_3 [ms], T2_3-SD [ms] \n")
         for exp in range(len(Files)):
             f.write(f'{tEvol[exp]}, {params[exp,0]:.4f}, {params[exp,1]:.4f}, {params[exp,2]:.4f}, {params[exp,3]:.4f}, {params[exp,4]:.4f}, {params[exp,5]:.4f}, {params[exp,6]:.4f}, {params[exp,7]:.4f}, {params[exp,8]:.4f}, {params[exp,9]:.4f}, {params[exp,10]:.4f}, {params[exp,11]:.4f} \n')
 
-def plot_param3(fileRoot):
-    '''
-    Plots evolution of parameters in the triexponential case.
-    '''
-
-    A = pd.read_csv(f'{fileRoot}-evolExp3.csv').to_numpy()
+def plot_param3(Out):
+    A = pd.read_csv(f'{Out}-evolExp3.csv', comment='#').to_numpy()
 
     fig, axs = plt.subplots(3, 2, figsize=(25, 30))
 
@@ -431,4 +378,4 @@ def plot_param3(fileRoot):
     axs[2,1].set_ylabel('T2 [ms]')
     axs[2,1].set_title(f'Comp. 3')
 
-    plt.savefig(f'{fileRoot}-evolExp3')
+    plt.savefig(f'{Out}-evolExp3')

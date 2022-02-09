@@ -1,11 +1,5 @@
-#!/usr/bin/python3.6
-
+#!/usr/bin/python3.8
 '''
-    Description: corrects phase of CPMG decay and fits it considering 1, 2 or 3
-    exponentials and the temporal evolution of parameters. Then plots one decay
-    per hour in semilog scale. Also one fit for quarter of experiment progress.
-    All the processed data will be also saved in ouput files (.csv).
-
     Written by: Ignacio J. Chevallier-Boutell.
     Dated: November, 2021.
 '''
@@ -15,45 +9,36 @@ from core.coremonitoring_exp import *
 
 def main():
 
-    CPMGs = args.input
-    nFiles = len(CPMGs)
+    FileArr = args.input
+    Out = args.output
     exp = args.exponential_fit
     t_wait = args.t_wait
-    back = args.background
 
-    fileRoot = CPMGs[0].split('_0')[0]
-    tEvol, tDecay = t_arrays(fileRoot, t_wait, nFiles)
+    nF = len(FileArr)
+    tEvol, tDecay = t_arrays(t_wait, FileArr[0], nF)
 
-    if back == None:
-        if exp == 'mono':
-            out_1(tEvol, tDecay, CPMGs, fileRoot, nFiles)
-            plot_decay(fileRoot, tEvol, t_wait)
-            plot_param1(fileRoot)
-        elif exp == 'bi':
-            out_2(tEvol, tDecay, CPMGs, fileRoot, nFiles)
-            plot_decay(fileRoot, tEvol, t_wait)
-            plot_param2(fileRoot)
-        elif exp == 'tri':
-            out_3(tEvol, tDecay, CPMGs, fileRoot, nFiles)
-            plot_decay(fileRoot, tEvol, t_wait)
-            plot_param3(fileRoot)
-        else:
-            print('Must choose number of components to fit: mono, bi or tri.')
+    if exp == 'mono':
+        out_1(tEvol, tDecay, FileArr, Out, nF)
+        plot_decay(Out, tEvol, t_wait)
+        plot_param1(Out)
+    elif exp == 'bi':
+        out_2(tEvol, tDecay, FileArr, Out, nF)
+        plot_decay(Out, tEvol, t_wait)
+        plot_param2(Out)
+    elif exp == 'tri':
+        out_3(tEvol, tDecay, FileArr, Out, nF)
+        plot_decay(Out, tEvol, t_wait)
+        plot_param3(Out)
     else:
-        print('WIP')
+        print('Must choose number of components to fit: mono, bi or tri.')
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
-    parser = argparse.ArgumentParser(description='Corrects phase of CPMG decay and fits it considering 1, 2 or 3 exponentials, considering temporal evolution of parameters. Then plots one decay per hour in semilog scale. Also one fit for quarter of experiment progress. All the processed data will be also saved in ouput files (.csv).')
-
-    parser.add_argument('input', help = "Path to the inputs file.", nargs = '+')
-
+    parser.add_argument('input', help = "Path to the CPMG files.", nargs='+')
+    parser.add_argument('output', help = "Path for the output files.")
     parser.add_argument('t_wait', help = "Waiting time (in minutes) between CPMG experiments.", type=int)
-
     parser.add_argument('exponential_fit', help = "Fits exponential decay. Must choose mono, bi or tri to fit with 1, 2 or 3 exponentials, respectively.")
-
-    parser.add_argument('-back', '--background', help = "Substracts the file given to the input file. It is NOT assumed that the background is already processed.")
 
     args = parser.parse_args()
 

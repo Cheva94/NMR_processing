@@ -67,10 +67,6 @@ def Norm(decay, RGnorm, RG, m):
     return decay * Norm
 
 def r_square(x, y, f, popt):
-    '''
-    Determines the R^2 when fitting.
-    '''
-
     residuals = y - f(x, *popt)
     ss_res = np.sum(residuals ** 2)
     ss_tot = np.sum((y - np.mean(y)) ** 2)
