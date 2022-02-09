@@ -19,11 +19,17 @@ def main():
     t, signal, nP, DW, nS, RG, p90, att, RD = FID_file(File)
     signal = PhCorrNorm(signal, RGnorm, RG, m)
 
+    with open(f'{Out}.csv', 'w') as f:
+        f.write("nS, RG [dB], RGnorm, p90 [us], Attenuation [dB], RD [s] \n")
+        f.write(f'{nS}, {RG}, {RGnorm}, {p90}, {att}, {RD} \n\n')
+
+        f.write("t [ms], Re[FID], Im[FID] \n")
+        for i in range(len(t)):
+            f.write(f'{t[i]:.6f}, {signal.real[i]:.6f}, {signal.imag[i]:.6f} \n')
+
+    plot(t, signal, nP, DW, nS, RGnorm, RG, p90, att, RD, Out)
+
     # if back == None:
-
-    FID(t, signal, nS, RGnorm, RG, p90, att, RD, Out)
-    spectrum(signal, nP, DW, nS, RGnorm, RG, p90, att, RD, Out)
-
     # else:
     #     t_B, nP_B, DW_B, back, nS_B, RD_B, RG_B = userfile(back)
     #     if nP != nP_B:

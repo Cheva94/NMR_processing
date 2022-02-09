@@ -33,7 +33,7 @@ plt.rcParams["legend.shadow"] = True
 plt.rcParams["legend.fontsize"] = 30
 plt.rcParams["legend.edgecolor"] = 'black'
 
-plt.rcParams["figure.figsize"] = 12.5, 13.5
+plt.rcParams["figure.figsize"] = 25, 10
 plt.rcParams["figure.autolayout"] = True
 
 plt.rcParams["lines.linewidth"] = 4
@@ -70,75 +70,35 @@ def PhCorrNorm(signal, RGnorm, RG, m):
 
     return signal * np.exp(1j * np.deg2rad(max(initVal, key=initVal.get))) * Norm
 
-def FID(t, signal, nS, RGnorm, RG, p90, att, RD, Out):
-    fid0ReArr = signal[0:5].real
-    fid0Re = sum(fid0ReArr) / 5
-    fid0Re_SD = (sum([((x - fid0Re) ** 2) for x in fid0ReArr]) / 5) ** 0.5
+def plot(t, signal, nP, DW, nS, RGnorm, RG, p90, att, RD, Out):
+    fid0Arr = signal[0:5].real
+    fid0 = sum(fid0Arr) / 5
+    fid0_SD = (sum([((x - fid0) ** 2) for x in fid0Arr]) / 5) ** 0.5
 
-    fid0ImArr = signal[0:5].imag
-    fid0Im = sum(fid0ImArr) / 5
-    fid0Im_SD = (sum([((x - fid0Im) ** 2) for x in fid0ImArr]) / 5) ** 0.5
-
-    fig, (ax1, ax2) = plt.subplots(2, 1, gridspec_kw={'height_ratios': [3, 1]})
-
-    ax1.set_title(f'nS={nS} ; RG = {RG} dB ({RGnorm}) ; RD = {RD} s \n p90 = {p90} us ; Atten = {att} dB')
-
-    ax1.plot(t, signal.real)
-    ax1.set_xlabel('t [ms]')
-    ax1.set_ylabel(r'$M_R$')
-    ax1.text(0.98,0.98, fr'$M_R (0; 5)$ = ({fid0Re:.2f} $\pm$ {fid0Re_SD:.2f})', ha='right', va='top', transform=ax1.transAxes)
-
-    ax2.plot(t, signal.imag, color='mediumseagreen')
-    ax2.xaxis.tick_top()
-    ax2.set_ylabel(r'$M_I$')
-    ax2.text(0.98,0.02, fr'$M_I (0; 5)$ = ({fid0Im:.2f} $\pm$ {fid0Im_SD:.2f})', ha='right', va='bottom', transform=ax2.transAxes)
-
-    plt.savefig(f'{Out}-DomTemp')
-
-    with open(f'{Out}-DomTemp.csv', 'w') as f:
-        f.write("nS, RG [dB], RGnorm, p90 [us], Attenuation [dB], RD [s] \n")
-        f.write(f'{nS}, {RG}, {RGnorm}, {p90}, {att}, {RD} \n\n')
-
-        f.write("t [ms], Re[FID], Im[FID] \n")
-        for i in range(len(t)):
-            f.write(f'{t[i]:.6f}, {signal.real[i]:.6f}, {signal.imag[i]:.6f} \n')
-
-def spectrum(signal, nP, DW, nS, RGnorm, RG, p90, att, RD, Out):
     zf = FT.next_fast_len(2**5 * nP)
     freq = FT.fftshift(FT.fftfreq(zf, d=DW)) # Hz scale
     spec = FT.fftshift(FT.fft(signal, n = zf))
     max_peak = np.max(spec)
-
-    specNorm = spec / max_peak
+    spec /= max_peak
     CS = freq / 20
 
-    fig, axs = plt.subplots(2, 1, gridspec_kw={'height_ratios': [3, 1]})
+    fig, (ax1, ax2) = plt.subplots(1, 2)
 
-    axs[0].set_title(f'nS={nS} ; RG = {RG} dB ({RGnorm}) ; RD = {RD} s \n p90 = {p90} us ; Atten = {att} dB')
+    fig.suptitle(f'nS={nS} | RG = {RG} dB ({RGnorm}) | RD = {RD} s | p90 = {p90} us | Atten = {att} dB', fontsize='small')
 
-    axs[0].plot(CS, specNorm.real)
-    axs[0].set_xlim(-0.1, 0.1)
-    axs[0].xaxis.set_minor_locator(AutoMinorLocator())
-    axs[0].set_xlabel(r'$\delta$ [ppm]')
-    axs[0].set_ylabel(r'$M_R$')
-    axs[0].axvline(x=0, color='gray', ls=':', lw=2)
-    axs[0].text(0.98,0.98, f'Peak = {max_peak.real:.2f}', ha='right', va='top', transform=axs[0].transAxes, fontsize='small')
+    ax1.plot(t, signal.real)
+    ax1.set_xlabel('t [ms]')
+    ax1.set_ylabel('M')
+    ax1.text(0.98,0.98, fr'$M_R (0)$ = ({fid0:.2f} $\pm$ {fid0_SD:.2f})', ha='right', va='top', transform=ax1.transAxes, fontsize='small')
 
-    axs[1].plot(CS, specNorm.imag, color='mediumseagreen')
-    axs[1].set_xlim(-0.1, 0.1)
-    axs[1].xaxis.set_minor_locator(AutoMinorLocator())
-    axs[1].set_ylabel(r'$M_I$')
-    axs[1].xaxis.tick_top()
+    ax2.plot(CS, spec.real)
+    ax2.set_xlim(-0.1, 0.1)
+    ax2.xaxis.set_minor_locator(AutoMinorLocator())
+    ax2.set_xlabel(r'$\delta$ [ppm]')
+    ax2.axvline(x=0, color='gray', ls=':', lw=2)
+    ax2.text(0.98,0.98, f'Peak = {max_peak.real:.2f}', ha='right', va='top', transform=ax2.transAxes, fontsize='small')
 
-    plt.savefig(f'{Out}-DomFreq')
-
-    with open(f'{Out}-DomFreq.csv', 'w') as f:
-        f.write("nS, RG [dB], RGnorm, p90 [us], Attenuation [dB], RD [s] \n")
-        f.write(f'{nS}, {RG}, {RGnorm}, {p90}, {att}, {RD} \n\n')
-
-        f.write("Freq [Hz], CS [ppm], Re[spec], Im[spec] \n")
-        for i in range(len(freq)):
-            f.write(f'{freq[i]:.6f}, {CS[i]:.6f}, {spec.real[i]:.6f}, {spec.imag[i]:.6f} \n')
+    plt.savefig(f'{Out}')
 
 # def back_subs(FID, back):
 #     '''
