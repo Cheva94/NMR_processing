@@ -2,7 +2,6 @@
 '''
     Written by: Ignacio J. Chevallier-Boutell.
     Dated: February, 2022.
-    Log: doesn't normalize the background by it mass yet (only by RG).
 '''
 
 import argparse
