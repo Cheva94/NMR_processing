@@ -24,7 +24,7 @@ def main():
     signalArr = np.reshape(signalArr, (nF, len(t))).T
     signalMean = signalArr.mean(axis=1)
 
-    with open(f'{Out}.csv', 'w') as f:
+    with open(f'{Out}.txt', 'w') as f:
         for k in range(len(t)):
             f.write(f'{t[k]:.6f}    {signalMean.real[k]:.6f}    {signalMean.imag[k]:.6f} \n')
 

@@ -56,19 +56,21 @@ def FID_file(File):
 
     return t, signal, nP, DW, nS, RG, p90, att, RD
 
-def PhCorrNorm(signal, RGnorm, RG, m):
+def PhCorr(signal):
     initVal = {}
     for i in range(360):
         tita = np.deg2rad(i)
         signal_ph = signal * np.exp(1j * tita)
         initVal[i] = signal_ph[0].real
 
+    return signal * np.exp(1j * np.deg2rad(max(initVal, key=initVal.get)))
+
+def Norm(signal, RGnorm, RG, m):
     if RGnorm == "off":
         Norm = 1 / m
     elif RGnorm == 'on':
         Norm = 1 / ((6.32589E-4 * np.exp(RG/9) - 0.0854) * m)
-
-    return signal * np.exp(1j * np.deg2rad(max(initVal, key=initVal.get))) * Norm
+    return signal * Norm
 
 def plot(t, signal, nP, DW, nS, RGnorm, RG, p90, att, RD, Out):
     fid0Arr = signal[0:5].real
@@ -99,13 +101,3 @@ def plot(t, signal, nP, DW, nS, RGnorm, RG, p90, att, RD, Out):
     ax2.text(0.98,0.98, f'Peak = {max_peak.real:.2f}', ha='right', va='top', transform=ax2.transAxes, fontsize='small')
 
     plt.savefig(f'{Out}')
-
-# def back_subs(FID, back):
-#     '''
-#     Substract the given background to the FID.
-#     '''
-#
-#     Re = FID.real - back.real
-#     Im = FID.imag - back.imag
-#
-#     return Re + Im * 1j
