@@ -16,15 +16,16 @@ def main():
     RGnorm = args.RGnorm
     show = args.ShowPlot
     Back = args.background
+    nini = args.niniValues
 
     if Back == None:
-        t, signal, nS, RG, p90, att, RD, tEcho, nEcho = CPMG_file(File)
+        t, signal, nS, RG, p90, att, RD, tEcho, nEcho = CPMG_file(File, nini)
         decay = PhCorr(signal)
     else:
-        t, signal, nS, RG, p90, att, RD, tEcho, nEcho = CPMG_file(File)
+        t, signal, nS, RG, p90, att, RD, tEcho, nEcho = CPMG_file(File, nini)
         decay = PhCorr(signal)
 
-        _, back, _, _, _, _, _, _, _, _ = CPMG_file(Back)
+        _, back, _, _, _, _, _, _, _, _ = CPMG_file(Back, nini)
         back = PhCorr(back)
 
         decay -= back
@@ -62,6 +63,7 @@ if __name__ == "__main__":
     parser.add_argument('-RGnorm', '--RGnorm', help = "Normalize by RG. Default: on", default = "on")
     parser.add_argument('-show', '--ShowPlot', help = "Show plots. Default: off", default = 'off')
     parser.add_argument('-back', '--background', help = "Path to de FID background file.")
+    parser.add_argument('-nini', '--niniValues', help = "Number of values to avoid at the beginning of T2.", type = int, default=0)
 
     args = parser.parse_args()
 

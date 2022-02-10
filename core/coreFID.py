@@ -40,12 +40,12 @@ plt.rcParams["lines.linewidth"] = 4
 plt.rcParams["lines.markersize"] = 20
 plt.rcParams["lines.linestyle"] = '-'
 
-def FID_file(File):
+def FID_file(File, nini):
     data = pd.read_csv(File, header = None, delim_whitespace = True, comment='#').to_numpy()
 
     t = data[:, 0] # In ms
     DW = t[1] - t[0] # Dwell time
-    nP = len(t) # Number of points
+    nP = len(t) - nini # Number of points
 
     Re = data[:, 1]
     Im = data[:, 2]
@@ -54,7 +54,7 @@ def FID_file(File):
     pAcq = pd.read_csv(File.split(".txt")[0]+'-acqs.txt', header = None, delim_whitespace = True)
     nS, RG, p90, att, RD = pAcq.iloc[0, 1], pAcq.iloc[1, 1], pAcq.iloc[2, 1], pAcq.iloc[4, 1], pAcq.iloc[5, 1]
 
-    return t, signal, nP, DW, nS, RG, p90, att, RD
+    return t[nini:], signal[nini:], nP, DW, nS, RG, p90, att, RD
 
 def PhCorr(signal):
     initVal = {}
@@ -94,7 +94,7 @@ def plot(t, signal, nP, DW, nS, RGnorm, RG, p90, att, RD, Out, Back, m):
     ax1.text(0.98,0.98, fr'$M_R (0)$ = ({fid0:.2f} $\pm$ {fid0_SD:.2f})', ha='right', va='top', transform=ax1.transAxes, fontsize='small')
 
     ax2.plot(CS, spec.real)
-    ax2.set_xlim(-0.4, 0.4)
+    ax2.set_xlim(-0.1, 0.1)
     ax2.set_ylim(-0.2, 1.2)
     ax2.xaxis.set_minor_locator(AutoMinorLocator())
     ax2.set_xlabel(r'$\delta$ [ppm]')

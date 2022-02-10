@@ -34,7 +34,7 @@ plt.rcParams["figure.autolayout"] = True
 
 plt.rcParams["lines.linestyle"] = '-'
 
-def CPMG_file(File):
+def CPMG_file(File, nini):
     data = pd.read_csv(File, header = None, delim_whitespace = True, comment='#').to_numpy()
 
     t = data[:, 0] # In ms
@@ -45,9 +45,9 @@ def CPMG_file(File):
 
     pAcq = pd.read_csv(File.split('.txt')[0]+'-acqs.txt', header = None, delim_whitespace = True)
 
-    nS, RG, p90, att, RD, tEcho, nEcho = pAcq.iloc[0, 1], pAcq.iloc[1, 1], pAcq.iloc[2, 1], pAcq.iloc[4, 1], pAcq.iloc[5, 1], 2*pAcq.iloc[6, 1], pAcq.iloc[7, 1]
+    nS, RG, p90, att, RD, tEcho, nEcho = pAcq.iloc[0, 1], pAcq.iloc[1, 1], pAcq.iloc[2, 1], pAcq.iloc[4, 1], pAcq.iloc[5, 1], 2*pAcq.iloc[6, 1], pAcq.iloc[7, 1]-nini
 
-    return t, signal, nS, RG, p90, att, RD, tEcho, nEcho
+    return t[nini:], signal[nini:], nS, RG, p90, att, RD, tEcho, nEcho
 
 def PhCorr(signal):
     initVal = {}

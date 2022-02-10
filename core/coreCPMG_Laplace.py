@@ -42,7 +42,7 @@ plt.rcParams["lines.linestyle"] = '-'
 def CPMG_file(File, T2min, T2max, niniT2):
     data = pd.read_csv(File, header = None, delim_whitespace = True, comment='#').to_numpy()
     tau = data[:, 0] # In ms
-    nP = len(tau)
+    nP = len(tau) - niniT2
 
     Re = data[:, 1]
     Im = data[:, 2]

@@ -15,20 +15,21 @@ def main():
     RGnorm = args.RGnorm
     show = args.ShowPlot
     Back = args.background
+    nini = args.niniValues
 
     if Back == None:
-        t, signal, nP, DW, nS, RG, p90, att, RD = FID_file(File)
+        t, signal, nP, DW, nS, RG, p90, att, RD = FID_file(File, nini)
         signal = PhCorr(signal)
 
     else:
-        t, signal, nP, DW, nS, RG, p90, att, RD = FID_file(File)
+        t, signal, nP, DW, nS, RG, p90, att, RD = FID_file(File, nini)
         signal = PhCorr(signal)
 
-        _, Back, _, _, _, _, _, _, _ = FID_file(Back)
-        Back = PhCorr(Back)
+        _, back, _, _, _, _, _, _, _ = FID_file(Back, nini)
+        back = PhCorr(back)
 
-        Re = signal.real - Back.real
-        Im = signal.imag - Back.imag
+        Re = signal.real - back.real
+        Im = signal.imag - back.imag
 
         signal = Re + Im * 1j
 
@@ -59,6 +60,7 @@ if __name__ == "__main__":
     parser.add_argument('-RGnorm', '--RGnorm', help = "Normalize by RG. Default: on", default = "on")
     parser.add_argument('-show', '--ShowPlot', help = "Show plots. Default: off", default = 'off')
     parser.add_argument('-back', '--background', help = "Path to de FID background file.")
+    parser.add_argument('-nini', '--niniValues', help = "Number of values to avoid at the beginning of T2.", type = int, default=0)
 
     args = parser.parse_args()
 
