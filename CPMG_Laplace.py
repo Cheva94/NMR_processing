@@ -65,8 +65,8 @@ if __name__ == "__main__":
 
     parser.add_argument('input', help = "Path to the CPMG file.")
     parser.add_argument('output', help = "Path for the output files.")
-    parser.add_argument('alpha', help = "Tikhonov regularization parameter.", type = float)
-    parser.add_argument('T2Range', help = "Range to consider for T2 values.", nargs = 2, type = int)
+    parser.add_argument('-alpha', '--alpha', help = "Tikhonov regularization parameter.", type = float, default = 0.01)
+    parser.add_argument('-T2', '--T2Range', help = "Range to consider for T2 values.", nargs = 2, type = int, default = [0, 5])
     parser.add_argument('-nini', '--niniValues', help = "Number of values to avoid at the beginning of T2.", type = int, default=0)
     parser.add_argument('-m', '--mass', help = "Sample mass in g.", type = float, default = 1)
     parser.add_argument('-show', '--ShowPlot', help = "Show plots. Default: off", default = 'off')

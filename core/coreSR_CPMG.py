@@ -81,7 +81,7 @@ def Norm(Z, RGnorm, m):
     if RGnorm == None:
         Norm = 1 / m
     else:
-        Norm = 1 / ((6.32589E-4 * np.exp(RG/9) - 0.0854) * m)
+        Norm = 1 / ((6.32589E-4 * np.exp(RGnorm/9) - 0.0854) * m)
     return Z * Norm
 
 def NLI_FISTA(K1, K2, Z, alpha, S):
@@ -161,11 +161,13 @@ def plot_proj(T1, T2, S, Out):
 
     return peaks1x, peaks2x
 
-def plot_map(T1, T2, S, nLevel, Out, peaks1x, peaks2x, T1min, T1max, T2min, T2max):
+def plot_map(T1, T2, S, nLevel, Out, peaks1x, peaks2x, T1min, T1max, T2min, T2max, RGnorm, alpha, Back, m):
     mini = np.max([T1min, T2min])
     maxi = np.min([T1max, T2max])
 
     fig, ax = plt.subplots()
+
+    fig.suptitle(f'RG = {RGnorm} dB | Alpha = {alpha} \n BG = {Back} | m = {m}', fontsize='small')
 
     ax.plot([10.0**mini, 10.0**maxi], [10.0**mini, 10.0**maxi], color='black', ls='-', alpha=0.7, zorder=-2, label = r'$T_1$ = $T_2$')
     for i in range(len(peaks1x)):
@@ -184,4 +186,4 @@ def plot_map(T1, T2, S, nLevel, Out, peaks1x, peaks2x, T1min, T1max, T2min, T2ma
     ax.set_yscale('log')
     ax.legend(loc='lower right')
 
-    plt.savefig(f'{Out}-DomRates2D)
+    plt.savefig(f'{Out}-DomRates2D')

@@ -36,12 +36,12 @@ def main():
     Z = Norm(Z, RGnorm, m)
     S = NLI_FISTA(K1, K2, Z, alpha, S0)
 
-    np.savetxt(f"{Out}-DomTemp.csv", Z, delimiter=',')
+    # np.savetxt(f"{Out}-DomTemp.csv", Z, delimiter=',')
     np.savetxt(f"{Out}-DomRates.csv", S, delimiter=',')
 
     plot_Z(tau1, tau2, Z, Out)
     peaks1x, peaks2x = plot_proj(T1, T2, S, Out)
-    plot_map(T1, T2, S, nLevel, Out, peaks1x, peaks2x, T1min, T1max, T2min, T2max)
+    plot_map(T1, T2, S, nLevel, Out, peaks1x, peaks2x, T1min, T1max, T2min, T2max, RGnorm, alpha, Back, m)
 
     if show == 'on':
         plt.show()
@@ -51,15 +51,15 @@ if __name__ == "__main__":
 
     parser.add_argument('input', help = "Path to the SR-CPMG file.")
     parser.add_argument('output', help = "Path for the output files.")
-    parser.add_argument('alpha', help = "Tikhonov regularization parameter.", type = float)
-    parser.add_argument('T1Range', help = "Range to consider for T1 values.", nargs = 2, type = int)
-    parser.add_argument('T2Range', help = "Range to consider for T2 values.", nargs = 2, type = int)
-    parser.add_argument('-nini', '--niniValues', help = "Number of values to avoid at the beginning of T2.", type = int, default=0)
+    parser.add_argument('-alpha', '--alpha', help = "Tikhonov regularization parameter.", type = float, default = 0.01)
+    parser.add_argument('-T1', '--T1Range', help = "Range to consider for T1 values.", nargs = 2, type = int, default = [0, 5])
+    parser.add_argument('-T2', '--T2Range', help = "Range to consider for T2 values.", nargs = 2, type = int, default = [0, 5])
     parser.add_argument('-m', '--mass', help = "Sample mass.", type = float, default = 1)
     parser.add_argument('-nLevel', '--ContourLevels', help = "Number of levels to use in the contour plot.", type = int, default = 100)
     parser.add_argument('-nini', '--niniValues', help = "Number of values to avoid at the beginning of T1 and T2.", nargs = 2, type = int, default=[0, 0])
     parser.add_argument('-show', '--ShowPlot', help = "Show plots.", default = 'off')
     parser.add_argument('-RGnorm', '--RGnorm', help = "Normalize by RG.", type = int)
+    parser.add_argument('-back', '--background', help = "Path to de FID background file.")
 
     args = parser.parse_args()
 
