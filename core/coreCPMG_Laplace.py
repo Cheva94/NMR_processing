@@ -1,8 +1,5 @@
-#!/usr/bin/python3.6
-
+#!/usr/bin/python3.8
 '''
-    Description: core functions for SR_CPMG.py.
-
     Written by: Ignacio J. Chevallier-Boutell.
     Dated: December, 2021.
 '''
@@ -42,11 +39,7 @@ plt.rcParams["lines.linewidth"] = 4
 plt.rcParams["lines.markersize"] = 20
 plt.rcParams["lines.linestyle"] = '-'
 
-def userfile(File, fileRoot, nBin, T2min, T2max, niniT2):
-    '''
-    Extracts data from the .txt input file given by the user.
-    '''
-
+def CPMG_file(File, Out, nBin, T2min, T2max, niniT2):
     S0 = np.ones(nBin)
     T2 = np.logspace(T2min, T2max, nBin)
 
@@ -63,17 +56,13 @@ def userfile(File, fileRoot, nBin, T2min, T2max, niniT2):
     Im = data[:, 2]
     decay = Re + Im * 1j # Complex signal
 
-    acq = fileRoot+'-acqs.txt'
+    acq = Out+'-acqs.txt'
     acq = pd.read_csv(acq, header = None, delim_whitespace = True)
     nS, RG, RD, tEcho, nEcho = acq.iloc[0, 1], acq.iloc[1, 1], acq.iloc[5, 1], 2 * acq.iloc[6, 1], acq.iloc[7, 1]
 
     return S0, T2, tau[niniT2:], K, decay[niniT2:], nS, RG, RD, tEcho, nEcho
 
 def phase_correction(decay):
-    '''
-    Returns decay with phase correction (maximizing real part).
-    '''
-
     initVal = {}
     for i in range(360):
         tita = np.deg2rad(i)
@@ -85,19 +74,11 @@ def phase_correction(decay):
     return decay.real
 
 def normalize(decay, RG, mH=1):
-    '''
-    Normalizes the decay considering the receiver gain and the mass of protons.
-    '''
-
     norm_fact = 1 / ((6.32589E-4 * np.exp(RG/9) - 0.0854) * mH)
     return decay * norm_fact
 
 
-def plot_Z(tau, Z, fileRoot):
-    '''
-    adasda
-    '''
-
+def plot_Z(tau, Z, Out):
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(25, 10))
 
     ax1.plot(tau, Z)
@@ -108,13 +89,9 @@ def plot_Z(tau, Z, fileRoot):
     ax2.set_xlabel(r'$\tau$ [ms]')
     ax2.set_ylabel('log(M)')
 
-    plt.savefig(f'{fileRoot}-PhCorrZ')
+    plt.savefig(f'{Out}-PhCorrZ')
 
 def NLI_FISTA(K, Z, alpha, S):
-    '''
-    Fast 2D NMR relaxation distribution estimation.
-    '''
-
     Z = np.reshape(Z, (len(Z), 1))
     S = np.reshape(S, (len(S), 1))
 
@@ -153,11 +130,7 @@ def NLI_FISTA(K, Z, alpha, S):
 
     return S[:, 0]
 
-def plot_spec(T2, S, fileRoot):
-    '''
-    sdasd
-    '''
-
+def plot_spec(T2, S, Out):
     peaks, _ = find_peaks(S, distance = 20, height = 0.05)
     peaksx, peaksy = T2[peaks], S[peaks]
 
@@ -170,5 +143,5 @@ def plot_spec(T2, S, fileRoot):
     ax.set_xlabel(r'$T_2$ [ms]')
     ax.set_xscale('log')
 
-    plt.savefig(f'{fileRoot}-Spectrum')
+    plt.savefig(f'{Out}-Spectrum')
     # plt.show()
