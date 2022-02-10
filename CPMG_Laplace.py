@@ -46,8 +46,8 @@ def main():
             f.write(f'{tau[i]:.6f}, {Z[i]:.6f} \n')
 
     with open(f'{Out}-DomRates.csv', 'w') as f:
-        f.write("nS, RG [dB], RGnorm, p90 [us], Attenuation [dB], RD [s], tEcho [ms], nEcho, Back, m [g] \n")
-        f.write(f'{nS}, {RG}, {RGnorm}, {p90}, {att}, {RD}, {tEcho}, {nEcho}, {Back}, {m} \n\n')
+        f.write("nS, RG [dB], RGnorm, p90 [us], Attenuation [dB], RD [s], tEcho [ms], nEcho, Back, m [g], Alpha \n")
+        f.write(f'{nS}, {RG}, {RGnorm}, {p90}, {att}, {RD}, {tEcho}, {nEcho}, {Back}, {m}, {alpha} \n\n')
 
         f.write("T2 [ms], Spectrum \n")
         for i in range(len(T2)):
