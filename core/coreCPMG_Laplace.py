@@ -39,7 +39,7 @@ plt.rcParams["lines.linewidth"] = 4
 plt.rcParams["lines.markersize"] = 20
 plt.rcParams["lines.linestyle"] = '-'
 
-def CPMG_file(File, Out, T2min, T2max, niniT2):
+def CPMG_file(File, T2min, T2max, niniT2):
     data = pd.read_csv(File, header = None, delim_whitespace = True, comment='#').to_numpy()
     tau = data[:, 0] # In ms
     nP = len(tau)
@@ -137,7 +137,7 @@ def plot_spec(T2, S, Out, alpha, nS, RG, RGnorm, p90, att, RD, tEcho, nEcho, Bac
     peaksx, peaksy = T2[peaks], S[peaks]
 
     fig, ax = plt.subplots()
-    
+
     fig.suptitle(f'nS={nS} | RG = {RG} dB ({RGnorm}) | RD = {RD} s | p90 = {p90} us | Atten = {att} dB | Ecos = {nEcho} | tE = {tEcho} ms | Alpha = {alpha} | BG = {Back} | m = {m}', fontsize='small')
 
     ax.plot(T2, S)

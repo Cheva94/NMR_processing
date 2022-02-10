@@ -1,8 +1,5 @@
-#!/usr/bin/python3.6
-
+#!/usr/bin/python3.8
 '''
-    Description: core functions for SR_CPMG.py.
-
     Written by: Ignacio J. Chevallier-Boutell.
     Dated: December, 2021.
 '''
@@ -42,17 +39,19 @@ plt.rcParams["lines.linewidth"] = 4
 plt.rcParams["lines.markersize"] = 20
 plt.rcParams["lines.linestyle"] = '-'
 
-def userfile(File, fileRoot, Nx, Ny, T1min, T1max, T2min, T2max, niniT1, niniT2):
-    '''
-    Extracts data from the .txt input file given by the user.
-    '''
+def SRCPMG_file(File, T1min, T1max, T2min, T2max, niniT1, niniT2):
+    data = pd.read_csv(File, header = None, delim_whitespace = True, comment='#').to_numpy()#[:, 0]
+    Re = data[:, 0]
+    Im = data[:, 1]
+    signal = Re + Im * 1j # Complex signal
 
+    Nx = Ny = 150
     S0 = np.ones((Nx, Ny))
     T1 = np.logspace(T1min, T1max, Nx)
     T2 = np.logspace(T2min, T2max, Ny)
 
-    tau1 = pd.read_csv(f'{fileRoot+"_t1.dat"}', header = None, delim_whitespace = True).to_numpy()
-    tau2 = pd.read_csv(f'{fileRoot+"_t2.dat"}', header = None, delim_whitespace = True).to_numpy()
+    tau1 = pd.read_csv(File.split('.txt')[0]+"_t1.dat", header = None, delim_whitespace = True).to_numpy()
+    tau2 = pd.read_csv(File.split('.txt')[0]+"_t2.dat", header = None, delim_whitespace = True).to_numpy()
     N1, N2 = len(tau1), len(tau2)
     tau1 = tau1[niniT1:]
     tau2 = tau2[niniT2:]
@@ -60,55 +59,32 @@ def userfile(File, fileRoot, Nx, Ny, T1min, T1max, T2min, T2max, niniT1, niniT2)
     K1 = 1 - np.exp(-tau1 / T1)
     K2 = np.exp(-tau2 / T2)
 
-    data = pd.read_csv(File, header = None, delim_whitespace = True).to_numpy()#[:, 0]
-    Re = data[:, 0]
-    Im = data[:, 1]
-    decay = Re + Im * 1j # Complex signal
+    return S0, T1, T2, tau1, tau2, K1, K2, signal, N1, N2
 
-    return S0, T1, T2, tau1, tau2, K1, K2, decay, N1, N2
-
-def phase_correction(decay, N1, N2, niniT1, niniT2):
-    '''
-    Returns decay with phase correction (maximizing real part).
-    '''
-
+def PhCorr(signal, N1, N2, niniT1, niniT2):
     Z = []
 
     for k in range(N1):
         initVal = {}
-        decay_k = decay[k*N2:(k+1)*N2]
+        signal_k = signal[k*N2:(k+1)*N2]
         for i in range(360):
             tita = np.deg2rad(i)
-            decay_ph = decay_k * np.exp(1j * tita)
-            initVal[i] = decay_ph[0].real
+            signal_ph = signal_k * np.exp(1j * tita)
+            initVal[i] = signal_ph[0].real
 
-        decay_k = decay_k * np.exp(1j * np.deg2rad(max(initVal, key=initVal.get)))
-        Z.append(decay_k.real)
+        signal_k = signal_k * np.exp(1j * np.deg2rad(max(initVal, key=initVal.get)))
+        Z.append(signal_k.real)
 
     return np.reshape(Z, (N1, N2))[niniT1:, niniT2:]
 
-def plot_Z(tau1, tau2, Z, fileRoot):
-    '''
-    adasda
-    '''
-
-    fig, (ax1, ax2) = plt.subplots(1,2, figsize=(25, 10))
-
-    ax1.scatter(tau1, Z[:, 0], s = 30)
-    ax1.set_xlabel(r'$\tau_1$ [ms]')
-    ax1.set_ylabel('SR')
-
-    ax2.scatter(tau2, Z[-1, :], s = 2)
-    ax2.set_xlabel(r'$\tau_2$ [ms]')
-    ax2.set_ylabel('CPMG')
-
-    plt.savefig(f'{fileRoot}-PhCorrZ')
+def Norm(Z, RGnorm, m):
+    if RGnorm == None:
+        Norm = 1 / m
+    else:
+        Norm = 1 / ((6.32589E-4 * np.exp(RG/9) - 0.0854) * m)
+    return Z * Norm
 
 def NLI_FISTA(K1, K2, Z, alpha, S):
-    '''
-    Fast 2D NMR relaxation distribution estimation.
-    '''
-
     K1TK1 = K1.T @ K1
     K2TK2 = K2.T @ K2
     K1TZK2 = K1.T @ Z @ K2
@@ -146,11 +122,20 @@ def NLI_FISTA(K1, K2, Z, alpha, S):
 
     return S
 
-def plot_proj(T1, T2, S, fileRoot):
-    '''
-    sdasd
-    '''
+def plot_Z(tau1, tau2, Z, Out):
+    fig, (ax1, ax2) = plt.subplots(1,2, figsize=(25, 10))
 
+    ax1.scatter(tau1, Z[:, 0], s = 30)
+    ax1.set_xlabel(r'$\tau_1$ [ms]')
+    ax1.set_ylabel('SR')
+
+    ax2.scatter(tau2, Z[-1, :], s = 2)
+    ax2.set_xlabel(r'$\tau_2$ [ms]')
+    ax2.set_ylabel('CPMG')
+
+    plt.savefig(f'{Out}-DomTemp')
+
+def plot_proj(T1, T2, S, Out):
     projT1 = np.sum(S, axis=1)
     peaks1, _ = find_peaks(projT1, height = 0.05, distance = 5)
     peaks1x, peaks1y = T1[peaks1], projT1[peaks1]
@@ -170,17 +155,13 @@ def plot_proj(T1, T2, S, fileRoot):
     ax2.set_xlabel(r'$T_2$ [ms]')
     ax2.set_xscale('log')
 
-    plt.savefig(f'{fileRoot}-1D_Spectra')
-    np.savetxt(f"{fileRoot}-1D_Spectra_T1.csv", projT1)
-    np.savetxt(f"{fileRoot}-1D_Spectra_T2.csv", projT1)
+    plt.savefig(f'{Out}-DomRates1D')
+    np.savetxt(f"{Out}-DomRates1D_T1.csv", projT1)
+    np.savetxt(f"{Out}-DomRates1D_T2.csv", projT1)
 
     return peaks1x, peaks2x
 
-def plot_map(T1, T2, S, nLevel, fileRoot, peaks1x, peaks2x, T1min, T1max, T2min, T2max, show='off'):
-    '''
-    hkjh
-    '''
-
+def plot_map(T1, T2, S, nLevel, Out, peaks1x, peaks2x, T1min, T1max, T2min, T2max):
     mini = np.max([T1min, T2min])
     maxi = np.min([T1max, T2max])
 
@@ -203,6 +184,4 @@ def plot_map(T1, T2, S, nLevel, fileRoot, peaks1x, peaks2x, T1min, T1max, T2min,
     ax.set_yscale('log')
     ax.legend(loc='lower right')
 
-    plt.savefig(f'{fileRoot}-2D_Spectrum')
-    if show == 'on':
-        plt.show()
+    plt.savefig(f'{Out}-DomRates2D)

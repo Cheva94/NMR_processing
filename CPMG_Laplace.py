@@ -20,13 +20,13 @@ def main():
     niniT2 = args.niniValues
 
     if Back == None:
-        S0, T2, tau, K, decay, nS, RG, p90, att, RD, tEcho, nEcho = CPMG_file(File, Out, nBin, T2min, T2max, niniT2)
+        S0, T2, tau, K, decay, nS, RG, p90, att, RD, tEcho, nEcho = CPMG_file(File, nBin, T2min, T2max, niniT2)
         Z = PhCorr(decay)
     else:
-        S0, T2, tau, K, decay, nS, RG, p90, att, RD, tEcho, nEcho = CPMG_file(File, Out, nBin, T2min, T2max, niniT2)
+        S0, T2, tau, K, decay, nS, RG, p90, att, RD, tEcho, nEcho = CPMG_file(File, nBin, T2min, T2max, niniT2)
         Z = PhCorr(decay)
 
-        _, _, _, _, back, _, _, _, _, _, _, _ = CPMG_file(Back, Out, nBin, T2min, T2max, niniT2)
+        _, _, _, _, back, _, _, _, _, _, _, _ = CPMG_file(Back, nBin, T2min, T2max, niniT2)
         back = PhCorr(back)
 
         Z -= back
@@ -59,7 +59,6 @@ def main():
     if show == 'on':
         plt.show()
 
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
@@ -69,7 +68,9 @@ if __name__ == "__main__":
     parser.add_argument('T2Range', help = "Range to consider for T2 values.", nargs = 2, type = int)
     parser.add_argument('-nini', '--niniValues', help = "Number of values to avoid at the beginning of T2.", type = int, default=0)
     parser.add_argument('-m', '--mass', help = "Sample mass.", type = float, default = 1)
-
+    parser.add_argument('-show', '--ShowPlot', help = "Show plots.", default = 'off')
+    parser.add_argument('-RGnorm', '--RGnorm', help = "Normalize by RG.", default = "off")
+    
     args = parser.parse_args()
 
     main()
