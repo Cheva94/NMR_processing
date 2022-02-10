@@ -9,36 +9,57 @@ from core.coreCPMG_Laplace import *
 
 def main():
 
-    Files = args.input
-    alpha = args.TikhonovReg
-    nBin = args.RelaxationMesh
-    T2min, T2max = args.RangeT2[0], args.RangeT2[1]
+    File = args.input
+    Out = args.output
+    m = args.mass
+    RGnorm = args.RGnorm
+    show = args.ShowPlot
+    Back = args.background
+    alpha = args.alpha
+    T2min, T2max = args.T2Range[0], args.T2Range[1]
     niniT2 = args.niniValues
-    mH = args.proton_mass
 
-    S0, T2, tau, K, decay, nS, RG, RD, tEcho, nEcho = CPMG_file(File, Out, nBin, T2min, T2max, niniT2)
-
-    Z = phase_correction(decay)
-
-    if mH == None:
-        decay = normalize(decay, RG)
+    if Back == None:
+        S0, T2, tau, K, decay, nS, RG, p90, att, RD, tEcho, nEcho = CPMG_file(File, Out, nBin, T2min, T2max, niniT2)
+        Z = PhCorr(decay)
     else:
-        decay = normalize(decay, RG, mH)
+        S0, T2, tau, K, decay, nS, RG, p90, att, RD, tEcho, nEcho = CPMG_file(File, Out, nBin, T2min, T2max, niniT2)
+        Z = PhCorr(decay)
 
-    np.savetxt(f"{Out}-PhCorrZ.csv", Z, delimiter=',')
-    plot_Z(tau, Z, Out)
+        _, _, _, _, Back, _, _, _, _, _, _, _ = CPMG_file(Back, Out, nBin, T2min, T2max, niniT2)
+        Back = PhCorr(Back)
 
+        Z -= Back
+
+    Z = Norm(Z, RGnorm, RG, m)
     S = NLI_FISTA(K, Z, alpha, S0)
 
-    np.savetxt(f"{Out}-Spectrum.csv", S, delimiter=',')
+    with open(f'{Out}-DomTemp.csv', 'w') as f:
+        f.write("nS, RG [dB], RGnorm, p90 [us], Attenuation [dB], RD [s], tEcho [ms], nEcho \n")
+        f.write(f'{nS}, {RG}, {RGnorm}, {p90}, {att}, {RD}, {tEcho}, {nEcho} \n\n')
 
-    plot_spec(T2, S, Out)
+        f.write("t [ms], Decay \n")
+        for i in range(len(tau)):
+            f.write(f'{tau[i]:.6f}, {Z[i]:.6f} \n')
+
+    with open(f'{Out}-DomRates.csv', 'w') as f:
+        f.write("nS, RG [dB], RGnorm, p90 [us], Attenuation [dB], RD [s], tEcho [ms], nEcho \n")
+        f.write(f'{nS}, {RG}, {RGnorm}, {p90}, {att}, {RD}, {tEcho}, {nEcho} \n\n')
+
+        f.write("T2 [ms], Spectrum \n")
+        for i in range(len(T2)):
+            f.write(f'{T2[i]:.6f}, {S[i]:.6f} \n')
+
+    plot_Z(tau, Z, Out)
+    plot_spec(T2, S, Out, alpha)
+
+    if show == 'on':
+        plt.show()
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
-    # parser = argparse.ArgumentParser(description="Corrects phase of CPMG decay and normalizes it considering the receiver gain. It may also normalize by mass of 1H when given. Then fits it considering 1, 2 or 3 exponentials. Finally it plots the decay in normal and semilog scales with the fitting. All the processed data will be also saved in ouput files (.csv). It may substract the background when given. \n\n Notes: doesn't normalize the background by it mass yet (only by RG).")
-    #
     parser.add_argument('input', help = "Path to the CPMG file.")
     parser.add_argument('output', help = "Path for the output files.")
     parser.add_argument('alpha', help = "Tikhonov regularization parameter.", type = float)

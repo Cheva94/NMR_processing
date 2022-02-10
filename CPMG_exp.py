@@ -24,7 +24,7 @@ def main():
         t, signal, nS, RG, p90, att, RD, tEcho, nEcho = CPMG_file(File)
         decay = PhCorr(signal)
 
-        _, signal, _, _, _, _, _, _, _, _ = CPMG_file(Back)
+        _, Back, _, _, _, _, _, _, _, _ = CPMG_file(Back)
         Back = PhCorr(Back)
 
         decay -= Back

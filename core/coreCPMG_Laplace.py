@@ -39,30 +39,29 @@ plt.rcParams["lines.linewidth"] = 4
 plt.rcParams["lines.markersize"] = 20
 plt.rcParams["lines.linestyle"] = '-'
 
-def CPMG_file(File, Out, nBin, T2min, T2max, niniT2):
-    S0 = np.ones(nBin)
-    T2 = np.logspace(T2min, T2max, nBin)
-
-    data = pd.read_csv(File, header = None, delim_whitespace = True).to_numpy()
-
+def CPMG_file(File, Out, T2min, T2max, niniT2):
+    data = pd.read_csv(File, header = None, delim_whitespace = True, comment='#').to_numpy()
     tau = data[:, 0] # In ms
     nP = len(tau)
-
-    K = np.zeros((nP, nBin))
-    for i in range(nP):
-        K[i, :] = np.exp(-tau[i] / T2)
 
     Re = data[:, 1]
     Im = data[:, 2]
     decay = Re + Im * 1j # Complex signal
 
-    acq = Out+'-acqs.txt'
-    acq = pd.read_csv(acq, header = None, delim_whitespace = True)
-    nS, RG, RD, tEcho, nEcho = acq.iloc[0, 1], acq.iloc[1, 1], acq.iloc[5, 1], 2 * acq.iloc[6, 1], acq.iloc[7, 1]
+    nBin = 150
+    S0 = np.ones(nBin)
+    T2 = np.logspace(T2min, T2max, nBin)
+    K = np.zeros((nP, nBin))
 
-    return S0, T2, tau[niniT2:], K, decay[niniT2:], nS, RG, RD, tEcho, nEcho
+    for i in range(nP):
+        K[i, :] = np.exp(-tau[i] / T2)
 
-def phase_correction(decay):
+    pAcq = pd.read_csv(File.split(".txt")[0]+'-acqs.txt', header = None, delim_whitespace = True)
+    nS, RG, p90, att, RD, tEcho, nEcho = pAcq.iloc[0, 1], pAcq.iloc[1, 1], pAcq.iloc[2, 1], pAcq.iloc[4, 1], pAcq.iloc[5, 1], 2*pAcq.iloc[6, 1], pAcq.iloc[7, 1]
+
+    return S0, T2, tau[niniT2:], K, decay[niniT2:], nS, RG, p90, att, RD, tEcho, nEcho
+
+def PhCorr(decay):
     initVal = {}
     for i in range(360):
         tita = np.deg2rad(i)
@@ -73,23 +72,12 @@ def phase_correction(decay):
 
     return decay.real
 
-def normalize(decay, RG, mH=1):
-    norm_fact = 1 / ((6.32589E-4 * np.exp(RG/9) - 0.0854) * mH)
-    return decay * norm_fact
-
-
-def plot_Z(tau, Z, Out):
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(25, 10))
-
-    ax1.plot(tau, Z)
-    ax1.set_xlabel(r'$\tau$ [ms]')
-    ax1.set_ylabel('M')
-
-    ax2.semilogy(tau, Z)
-    ax2.set_xlabel(r'$\tau$ [ms]')
-    ax2.set_ylabel('log(M)')
-
-    plt.savefig(f'{Out}-PhCorrZ')
+def Norm(Z, RGnorm, RG, m):
+    if RGnorm == "off":
+        Norm = 1 / m
+    elif RGnorm == 'on':
+        Norm = 1 / ((6.32589E-4 * np.exp(RG/9) - 0.0854) * m)
+    return Z * Norm
 
 def NLI_FISTA(K, Z, alpha, S):
     Z = np.reshape(Z, (len(Z), 1))
@@ -130,11 +118,28 @@ def NLI_FISTA(K, Z, alpha, S):
 
     return S[:, 0]
 
-def plot_spec(T2, S, Out):
+def plot_Z(tau, Z, Out):
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(25, 10))
+
+    fig.suptitle(f'nS={nS} | RG = {RG} dB ({RGnorm}) | RD = {RD} s | p90 = {p90} us | Atten = {att} dB | Ecos = {nEcho} | tE = {tEcho} ms', fontsize='small')
+
+    ax1.plot(tau, Z)
+    ax1.set_xlabel(r'$\tau$ [ms]')
+    ax1.set_ylabel('M')
+
+    ax2.semilogy(tau, Z)
+    ax2.set_xlabel(r'$\tau$ [ms]')
+    ax2.set_ylabel('log(M)')
+
+    plt.savefig(f'{Out}-DomTemp')
+
+def plot_spec(T2, S, Out, alpha):
     peaks, _ = find_peaks(S, distance = 20, height = 0.05)
     peaksx, peaksy = T2[peaks], S[peaks]
 
     fig, ax = plt.subplots()
+
+    fig.suptitle(f'nS={nS} | RG = {RG} dB ({RGnorm}) | RD = {RD} s | p90 = {p90} us | Atten = {att} dB | Ecos = {nEcho} | tE = {tEcho} ms | Alpha = {alpha}', fontsize='small')
 
     ax.plot(T2, S)
     ax.plot(peaksx, peaksy, lw = 0, marker=2, color='black')
@@ -143,5 +148,4 @@ def plot_spec(T2, S, Out):
     ax.set_xlabel(r'$T_2$ [ms]')
     ax.set_xscale('log')
 
-    plt.savefig(f'{Out}-Spectrum')
-    # plt.show()
+    plt.savefig(f'{Out}-DomRates')
