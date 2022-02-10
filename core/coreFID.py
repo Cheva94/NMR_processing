@@ -72,7 +72,7 @@ def Norm(signal, RGnorm, RG, m):
         Norm = 1 / ((6.32589E-4 * np.exp(RG/9) - 0.0854) * m)
     return signal * Norm
 
-def plot(t, signal, nP, DW, nS, RGnorm, RG, p90, att, RD, Out):
+def plot(t, signal, nP, DW, nS, RGnorm, RG, p90, att, RD, Out, Back, m):
     fid0Arr = signal[0:5].real
     fid0 = sum(fid0Arr) / 5
     fid0_SD = (sum([((x - fid0) ** 2) for x in fid0Arr]) / 5) ** 0.5
@@ -86,7 +86,7 @@ def plot(t, signal, nP, DW, nS, RGnorm, RG, p90, att, RD, Out):
 
     fig, (ax1, ax2) = plt.subplots(1, 2)
 
-    fig.suptitle(f'nS={nS} | RG = {RG} dB ({RGnorm}) | RD = {RD} s | p90 = {p90} us | Atten = {att} dB', fontsize='small')
+    fig.suptitle(f'nS={nS} | RG = {RG} dB ({RGnorm}) | RD = {RD} s | p90 = {p90} us | Atten = {att} dB | BG = {Back} | m = {m}', fontsize='small')
 
     ax1.plot(t, signal.real)
     ax1.set_xlabel('t [ms]')

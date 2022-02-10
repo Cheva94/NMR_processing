@@ -47,8 +47,8 @@ def main():
     F_array = args.input
     Out = args.output
     p0 = args.InitVal
+
     t, M = [], []
-    A = []
 
     for F in F_array:
         data = pd.read_csv(F, header = None, delim_whitespace = True).to_numpy()

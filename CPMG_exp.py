@@ -24,25 +24,28 @@ def main():
         t, signal, nS, RG, p90, att, RD, tEcho, nEcho = CPMG_file(File)
         decay = PhCorr(signal)
 
-        _, Back, _, _, _, _, _, _, _, _ = CPMG_file(Back)
-        Back = PhCorr(Back)
+        _, back, _, _, _, _, _, _, _, _ = CPMG_file(Back)
+        back = PhCorr(back)
 
-        decay -= Back
+        decay -= back
 
     decay = Norm(decay, RGnorm, RG, m)
 
+    if Back != None:
+        Back = "Yes"
+        
     if exp == 'mono':
         popt, r2, M0, T2, M0_SD, T2_SD = fit_1(t, decay)
-        out_1(t, decay, tEcho, Out, r2, M0, T2, M0_SD, T2_SD, nS, RG, RGnorm, p90, att, RD, nEcho)
-        plot_1(t, decay, popt, tEcho, Out, nS, RG, RGnorm, p90, att, RD, nEcho, r2)
+        out_1(t, decay, tEcho, Out, r2, M0, T2, M0_SD, T2_SD, nS, RG, RGnorm, p90, att, RD, nEcho, Back, m)
+        plot_1(t, decay, popt, tEcho, Out, nS, RG, RGnorm, p90, att, RD, nEcho, r2, Back, m)
     elif exp == 'bi':
         popt, r2, M0_1, T2_1, M0_2, T2_2, M0_1_SD, T2_1_SD, M0_2_SD, T2_2_SD = fit_2(t, decay)
-        out_2(t, decay, tEcho, Out, r2, M0_1, T2_1, M0_2, T2_2, M0_1_SD, T2_1_SD, M0_2_SD, T2_2_SD, nS, RG, RGnorm, p90, att, RD, nEcho)
-        plot_2(t, decay, popt, tEcho, Out, nS, RG, RGnorm, p90, att, RD, nEcho, r2)
+        out_2(t, decay, tEcho, Out, r2, M0_1, T2_1, M0_2, T2_2, M0_1_SD, T2_1_SD, M0_2_SD, T2_2_SD, nS, RG, RGnorm, p90, att, RD, nEcho, Back, m)
+        plot_2(t, decay, popt, tEcho, Out, nS, RG, RGnorm, p90, att, RD, nEcho, r2, Back, m)
     elif exp == 'tri':
         popt, r2, M0_1, T2_1, M0_2, T2_2, M0_3, T2_3, M0_1_SD, T2_1_SD, M0_2_SD, T2_2_SD, M0_3_SD, T2_3_SD = fit_3(t, decay)
-        out_3(t, decay, tEcho, Out, r2, M0_1, T2_1, M0_2, T2_2, M0_3, T2_3, M0_1_SD, T2_1_SD, M0_2_SD, T2_2_SD, M0_3_SD, T2_3_SD, nS, RG, RGnorm, p90, att, RD, nEcho)
-        plot_3(t, decay, popt, tEcho, Out, nS, RG, RGnorm, p90, att, RD, nEcho, r2)
+        out_3(t, decay, tEcho, Out, r2, M0_1, T2_1, M0_2, T2_2, M0_3, T2_3, M0_1_SD, T2_1_SD, M0_2_SD, T2_2_SD, M0_3_SD, T2_3_SD, nS, RG, RGnorm, p90, att, RD, nEcho, Back, m)
+        plot_3(t, decay, popt, tEcho, Out, nS, RG, RGnorm, p90, att, RD, nEcho, r2, Back, m)
     else:
         print('Must choose number of components to fit: mono, bi or tri.')
 

@@ -26,31 +26,34 @@ def main():
         S0, T2, tau, K, decay, nS, RG, p90, att, RD, tEcho, nEcho = CPMG_file(File, Out, nBin, T2min, T2max, niniT2)
         Z = PhCorr(decay)
 
-        _, _, _, _, Back, _, _, _, _, _, _, _ = CPMG_file(Back, Out, nBin, T2min, T2max, niniT2)
-        Back = PhCorr(Back)
+        _, _, _, _, back, _, _, _, _, _, _, _ = CPMG_file(Back, Out, nBin, T2min, T2max, niniT2)
+        back = PhCorr(back)
 
-        Z -= Back
+        Z -= back
 
     Z = Norm(Z, RGnorm, RG, m)
     S = NLI_FISTA(K, Z, alpha, S0)
 
+    if Back != None:
+        Back = "Yes"
+
     with open(f'{Out}-DomTemp.csv', 'w') as f:
-        f.write("nS, RG [dB], RGnorm, p90 [us], Attenuation [dB], RD [s], tEcho [ms], nEcho \n")
-        f.write(f'{nS}, {RG}, {RGnorm}, {p90}, {att}, {RD}, {tEcho}, {nEcho} \n\n')
+        f.write("nS, RG [dB], RGnorm, p90 [us], Attenuation [dB], RD [s], tEcho [ms], nEcho, Back, m [g] \n")
+        f.write(f'{nS}, {RG}, {RGnorm}, {p90}, {att}, {RD}, {tEcho}, {nEcho}, {Back}, {m} \n\n')
 
         f.write("t [ms], Decay \n")
         for i in range(len(tau)):
             f.write(f'{tau[i]:.6f}, {Z[i]:.6f} \n')
 
     with open(f'{Out}-DomRates.csv', 'w') as f:
-        f.write("nS, RG [dB], RGnorm, p90 [us], Attenuation [dB], RD [s], tEcho [ms], nEcho \n")
-        f.write(f'{nS}, {RG}, {RGnorm}, {p90}, {att}, {RD}, {tEcho}, {nEcho} \n\n')
+        f.write("nS, RG [dB], RGnorm, p90 [us], Attenuation [dB], RD [s], tEcho [ms], nEcho, Back, m [g] \n")
+        f.write(f'{nS}, {RG}, {RGnorm}, {p90}, {att}, {RD}, {tEcho}, {nEcho}, {Back}, {m} \n\n')
 
         f.write("T2 [ms], Spectrum \n")
         for i in range(len(T2)):
             f.write(f'{T2[i]:.6f}, {S[i]:.6f} \n')
 
-    plot_Z(tau, Z, Out)
+    plot_Z(tau, Z, Out, nS, RG, RGnorm, p90, att, RD, tEcho, nEcho, Back, m)
     plot_spec(T2, S, Out, alpha)
 
     if show == 'on':

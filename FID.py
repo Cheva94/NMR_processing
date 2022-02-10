@@ -34,15 +34,18 @@ def main():
 
     signal = Norm(signal, RGnorm, RG, m)
 
+    if Back != None:
+        Back = "Yes"
+
     with open(f'{Out}.csv', 'w') as f:
-        f.write("nS, RG [dB], RGnorm, p90 [us], Attenuation [dB], RD [s] \n")
-        f.write(f'{nS}, {RG}, {RGnorm}, {p90}, {att}, {RD} \n\n')
+        f.write("nS, RG [dB], RGnorm, p90 [us], Attenuation [dB], RD [s], Back, m [g] \n")
+        f.write(f'{nS}, {RG}, {RGnorm}, {p90}, {att}, {RD}, {Back}, {m} \n\n')
 
         f.write("t [ms], Re[FID], Im[FID] \n")
         for i in range(len(t)):
             f.write(f'{t[i]:.6f}, {signal.real[i]:.6f}, {signal.imag[i]:.6f} \n')
 
-    plot(t, signal, nP, DW, nS, RGnorm, RG, p90, att, RD, Out)
+    plot(t, signal, nP, DW, nS, RGnorm, RG, p90, att, RD, Out, Back, m)
 
     if show == 'on':
         plt.show()
