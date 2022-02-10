@@ -121,7 +121,7 @@ def NLI_FISTA(K, Z, alpha, S):
 def plot_Z(tau, Z, Out, nS, RG, RGnorm, p90, att, RD, tEcho, nEcho, Back, m):
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(25, 10))
 
-    fig.suptitle(f'nS={nS} | RG = {RG} dB ({RGnorm}) | RD = {RD} s | p90 = {p90} us | Atten = {att} dB | Ecos = {nEcho} | tE = {tEcho} ms | BG = {Back} | m = {m}', fontsize='small')
+    fig.suptitle(f'nS={nS} | RG = {RG} dB ({RGnorm}) | RD = {RD} s | p90 = {p90} us | Atten = {att} dB \n Ecos = {nEcho} | tE = {tEcho:.1f} ms | BG = {Back} | m = {m}', fontsize='small')
     ax1.plot(tau, Z)
     ax1.set_xlabel(r'$\tau$ [ms]')
     ax1.set_ylabel('M')
@@ -132,13 +132,14 @@ def plot_Z(tau, Z, Out, nS, RG, RGnorm, p90, att, RD, tEcho, nEcho, Back, m):
 
     plt.savefig(f'{Out}-DomTemp')
 
-def plot_spec(T2, S, Out, alpha, nS, RG, RGnorm, p90, att, RD, tEcho, nEcho, Back, m):
-    peaks, _ = find_peaks(S, distance = 20, height = 0.05)
+def plot_distrib(T2, S, Out, alpha, nS, RG, RGnorm, p90, att, RD, tEcho, nEcho, Back, m):
+    # peaks, _ = find_peaks(S, distance = 20, height = 0.05)
+    peaks, _ = find_peaks(S, distance = 20, height = 0.01)
     peaksx, peaksy = T2[peaks], S[peaks]
 
     fig, ax = plt.subplots()
 
-    fig.suptitle(f'nS={nS} | RG = {RG} dB ({RGnorm}) | RD = {RD} s | p90 = {p90} us | Atten = {att} dB | Ecos = {nEcho} | tE = {tEcho} ms | Alpha = {alpha} | BG = {Back} | m = {m}', fontsize='small')
+    fig.suptitle(f'nS={nS} | RG = {RG} dB ({RGnorm}) | RD = {RD} s \n p90 = {p90} us | Atten = {att} dB \n Ecos = {nEcho} | tE = {tEcho:.1f} ms | Alpha = {alpha} \n BG = {Back} | m = {m}', fontsize='small')
 
     ax.plot(T2, S)
     ax.plot(peaksx, peaksy, lw = 0, marker=2, color='black')

@@ -55,9 +55,9 @@ if __name__ == "__main__":
 
     parser.add_argument('input', help = "Path to the FID file.")
     parser.add_argument('output', help = "Path for the output files.")
-    parser.add_argument('-m', '--mass', help = "Sample mass.", type = float, default = 1)
-    parser.add_argument('-RGnorm', '--RGnorm', help = "Normalize by RG.", default = "off")
-    parser.add_argument('-show', '--ShowPlot', help = "Show plots.", default = 'off')
+    parser.add_argument('-m', '--mass', help = "Sample mass in g.", type = float, default = 1)
+    parser.add_argument('-RGnorm', '--RGnorm', help = "Normalize by RG. Default: on", default = "on")
+    parser.add_argument('-show', '--ShowPlot', help = "Show plots. Default: off", default = 'off')
     parser.add_argument('-back', '--background', help = "Path to de FID background file.")
 
     args = parser.parse_args()

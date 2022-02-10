@@ -94,7 +94,8 @@ def plot(t, signal, nP, DW, nS, RGnorm, RG, p90, att, RD, Out, Back, m):
     ax1.text(0.98,0.98, fr'$M_R (0)$ = ({fid0:.2f} $\pm$ {fid0_SD:.2f})', ha='right', va='top', transform=ax1.transAxes, fontsize='small')
 
     ax2.plot(CS, spec.real)
-    ax2.set_xlim(-0.1, 0.1)
+    ax2.set_xlim(-0.4, 0.4)
+    ax2.set_ylim(-0.2, 1.2)
     ax2.xaxis.set_minor_locator(AutoMinorLocator())
     ax2.set_xlabel(r'$\delta$ [ppm]')
     ax2.axvline(x=0, color='gray', ls=':', lw=2)

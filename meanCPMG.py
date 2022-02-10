@@ -18,7 +18,7 @@ def main():
 
     for F in FileArr:
         t, signal = CPMG_file(F)
-        signal = PhCorrNorm(signal)
+        signal = PhCorr(signal)
         signalArr.append(signal)
 
     signalArr = np.reshape(signalArr, (nF, len(t))).T

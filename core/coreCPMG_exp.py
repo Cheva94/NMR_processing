@@ -91,12 +91,12 @@ def fit_1(t, decay):
 
     return popt, r2, M0, T2, M0_SD, T2_SD
 
-def plot_1(t, decay, popt, tEcho, Out, nS, RG, RGnorm, p90, att, RD, nEcho, r2, Back, m):
+def plot_1(t, decay, popt, tEcho, Out, nS, RG, RGnorm, p90, att, RD, nEcho, r2, Back, m, M0, T2):
     t_seg = t * 0.001
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(25, 10))
 
-    fig.suptitle(f'nS={nS} | RG = {RG} dB ({RGnorm}) | RD = {RD} s | p90 = {p90} us | Atten = {att} dB | Ecos = {nEcho} | tE = {tEcho} ms | R2 = {r2:.4f} | BG = {Back} | m = {m}', fontsize='small')
+    fig.suptitle(f'nS={nS} | RG = {RG} dB ({RGnorm}) | RD = {RD} s | p90 = {p90} us | Atten = {att} dB \n Ecos = {nEcho} | tE = {tEcho:.1f} ms | R2 = {r2:.4f} | BG = {Back} | m = {m} \n Pares (M0; T2 [ms]) = ({M0:.4f} ; {T2:.4f})', fontsize='small')
 
     ax1.plot(t_seg, decay, label='data')
     ax1.plot(t_seg, exp_1(t, *popt), label='mono')
@@ -116,10 +116,10 @@ def out_1(t, decay, tEcho, Out, r2, M0, T2, M0_SD, T2_SD, nS, RG, RGnorm, p90, a
 
     with open(f'{Out}.csv', 'w') as f:
         f.write("nS, RG [dB], RGnorm, p90 [us], Attenuation [dB], RD [s], tEcho [ms], nEcho, Back, m [g] \n")
-        f.write(f'{nS}, {RG}, {RGnorm}, {p90}, {att}, {RD}, {tEcho}, {nEcho}, {Back}, {m} \n\n')
+        f.write(f'{nS}, {RG}, {RGnorm}, {p90}, {att}, {RD}, {tEcho:.1f}, {nEcho}, {Back}, {m} \n\n')
 
         f.write("M0, M0-SD, T2 [ms], T2-SD [ms], R2, tEcho [ms] \n")
-        f.write(f'{M0:.4f}, {M0_SD:.4f}, {T2:.4f}, {T2_SD:.4f}, {r2:.4f}, {tEcho:.4f} \n\n')
+        f.write(f'{M0:.4f}, {M0_SD:.4f}, {T2:.4f}, {T2_SD:.4f}, {r2:.4f} \n\n')
 
         f.write("t [ms], decay \n")
         for i in range(len(t)):
@@ -143,13 +143,13 @@ def fit_2(t, decay):
 
     return popt, r2, M0_1, T2_1, M0_2, T2_2, M0_1_SD, T2_1_SD, M0_2_SD, T2_2_SD
 
-def plot_2(t, decay, popt, tEcho, Out, nS, RG, RGnorm, p90, att, RD, nEcho, r2, Back, m):
+def plot_2(t, decay, popt, tEcho, Out, nS, RG, RGnorm, p90, att, RD, nEcho, r2, Back, m, M0_1, T2_1, M0_2, T2_2):
 
     t_seg = t * 0.001
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(25, 10))
 
-    fig.suptitle(f'nS={nS} | RG = {RG} dB ({RGnorm}) | RD = {RD} s | p90 = {p90} us | Atten = {att} dB | Ecos = {nEcho} | tE = {tEcho} ms | R2 = {r2:.4f} | BG = {Back} | m = {m}', fontsize='small')
+    fig.suptitle(f'nS={nS} | RG = {RG} dB ({RGnorm}) | RD = {RD} s | p90 = {p90} us | Atten = {att} dB \n Ecos = {nEcho} | tE = {tEcho:.1f} ms | R2 = {r2:.4f} | BG = {Back} | m = {m} \n Pares (M0; T2 [ms]) = ({M0_1:.4f} ; {T2_1:.4f}) | ({M0_2:.4f} ; {T2_2:.4f})', fontsize='small')
 
     ax1.plot(t_seg, decay, label='data')
     ax1.plot(t_seg, exp_2(t, *popt), label='bi')
@@ -169,10 +169,10 @@ def out_2(t, decay, tEcho, Out, r2, M0_1, T2_1, M0_2, T2_2, M0_1_SD, T2_1_SD, M0
 
     with open(f'{Out}.csv', 'w') as f:
         f.write("nS, RG [dB], RGnorm, p90 [us], Attenuation [dB], RD [s], tEcho [ms], nEcho, Back, m [g] \n")
-        f.write(f'{nS}, {RG}, {RGnorm}, {p90}, {att}, {RD}, {tEcho}, {nEcho}, {Back}, {m} \n\n')
+        f.write(f'{nS}, {RG}, {RGnorm}, {p90}, {att}, {RD}, {tEcho:.1f}, {nEcho}, {Back}, {m} \n\n')
 
         f.write("M0_1, M0_1-SD, T2_1 [ms], T2_1-SD [ms], M0_2, M0_2-SD, T2_2 [ms], T2_2-SD [ms], R2, tEcho [ms] \n")
-        f.write(f'{M0_1:.4f}, {M0_1_SD:.4f}, {T2_1:.4f}, {T2_1_SD:.4f}, {M0_2:.4f}, {M0_2_SD:.4f}, {T2_2:.4f}, {T2_2_SD:.4f}, {r2:.4f}, {tEcho:.4f} \n\n')
+        f.write(f'{M0_1:.4f}, {M0_1_SD:.4f}, {T2_1:.4f}, {T2_1_SD:.4f}, {M0_2:.4f}, {M0_2_SD:.4f}, {T2_2:.4f}, {T2_2_SD:.4f}, {r2:.4f} \n\n')
 
         f.write("t [ms], decay \n")
         for i in range(len(t)):
@@ -196,13 +196,13 @@ def fit_3(t, decay):
 
     return popt, r2, M0_1, T2_1, M0_2, T2_2, M0_3, T2_3, M0_1_SD, T2_1_SD, M0_2_SD, T2_2_SD, M0_3_SD, T2_3_SD
 
-def plot_3(t, decay, popt, tEcho, Out, nS, RG, RGnorm, p90, att, RD, nEcho, r2, Back, m):
+def plot_3(t, decay, popt, tEcho, Out, nS, RG, RGnorm, p90, att, RD, nEcho, r2, Back, m, M0_1, T2_1, M0_2, T2_2, M0_3, T2_3):
 
     t_seg = t * 0.001
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(25, 10))
 
-    fig.suptitle(f'nS={nS} | RG = {RG} dB ({RGnorm}) | RD = {RD} s | p90 = {p90} us | Atten = {att} dB | Ecos = {nEcho} | tE = {tEcho} ms | R2 = {r2:.4f} | BG = {Back} | m = {m}', fontsize='small')
+    fig.suptitle(f'nS={nS} | RG = {RG} dB ({RGnorm}) | RD = {RD} s | p90 = {p90} us | Atten = {att} dB \n Ecos = {nEcho} | tE = {tEcho:.1f} ms | R2 = {r2:.4f} | BG = {Back} | m = {m} \n Pares (M0; T2 [ms]) = ({M0_1:.4f} ; {T2_1:.4f}) | ({M0_2:.4f} ; {T2_2:.4f}) | ({M0_3:.4f} ; {T2_3:.4f})', fontsize='small')
 
     ax1.plot(t_seg, decay, label='data')
     ax1.plot(t_seg, exp_3(t, *popt), label='tri')
@@ -222,10 +222,10 @@ def out_3(t, decay, tEcho, Out, r2, M0_1, T2_1, M0_2, T2_2, M0_3, T2_3, M0_1_SD,
 
     with open(f'{Out}.csv', 'w') as f:
         f.write("nS, RG [dB], RGnorm, p90 [us], Attenuation [dB], RD [s], tEcho [ms], nEcho, Back, m [g] \n")
-        f.write(f'{nS}, {RG}, {RGnorm}, {p90}, {att}, {RD}, {tEcho}, {nEcho}, {Back}, {m} \n\n')
+        f.write(f'{nS}, {RG}, {RGnorm}, {p90}, {att}, {RD}, {tEcho:.1f}, {nEcho}, {Back}, {m} \n\n')
 
         f.write("M0_1, M0_1-SD, T2_1 [ms], T2_1-SD [ms], M0_2, M0_2-SD, T2_2 [ms], T2_2-SD [ms], M0_3, M0_3-SD, T2_3 [ms], T2_3-SD [ms], R2, tEcho [ms] \n")
-        f.write(f'{M0_1:.4f}, {M0_1_SD:.4f}, {T2_1:.4f}, {T2_1_SD:.4f}, {M0_2:.4f}, {M0_2_SD:.4f}, {T2_2:.4f}, {T2_2_SD:.4f}, {M0_3:.4f}, {M0_3_SD:.4f}, {T2_3:.4f}, {T2_3_SD:.4f}, {r2:.4f}, {tEcho:.4f} \n\n')
+        f.write(f'{M0_1:.4f}, {M0_1_SD:.4f}, {T2_1:.4f}, {T2_1_SD:.4f}, {M0_2:.4f}, {M0_2_SD:.4f}, {T2_2:.4f}, {T2_2_SD:.4f}, {M0_3:.4f}, {M0_3_SD:.4f}, {T2_3:.4f}, {T2_3_SD:.4f}, {r2:.4f} \n\n')
 
         f.write("t [ms], decay \n")
         for i in range(len(t)):
