@@ -37,7 +37,7 @@ plt.rcParams["lines.linestyle"] = '-'
 
 def t_arrays(t_wait, File, nF):
     tDecay = pd.read_csv(f'{File}', header = None, delim_whitespace = True, comment='#').to_numpy()[:, 0]
-    tEvol = [i * t_wait for i in range(nFiles)]
+    tEvol = [i * t_wait for i in range(nF)]
     return tEvol, tDecay
 
 def decay_phCorr(input):
@@ -61,7 +61,7 @@ def div_ceil(a, b):
     return int(np.ceil((a + b - 1) / b))
 
 def plot_decay(Out, tEvol, t_wait):
-    A = pd.read_csv(f'{Out}-Decay.csv', comment='#')).to_numpy()
+    A = pd.read_csv(f'{Out}-Decay.csv').to_numpy()
     exps = np.shape(A)[1]-1
     hour = 60/t_wait
     count = [10*i for i in range(div_ceil(exps, hour))]
@@ -104,11 +104,11 @@ def fit_1(t, decay):
 
     return M0, T2, M0_SD, T2_SD
 
-def out_1(tEvol, tDecay, Files, Out, nFiles):
+def out_1(tEvol, tDecay, Files, Out, nF):
     params = []
     count = 1
     dataDecay = pd.DataFrame(tDecay, columns=['t [ms]'])
-    evolFiles = [int(nFiles * i) for i in [0.25, 0.5, 0.75, 1]]
+    evolFiles = [int(nF * i) for i in [0.25, 0.5, 0.75, 1]]
     evolCounter = 0
     t_seg = tDecay * 0.001
 
@@ -190,11 +190,11 @@ def fit_2(t, decay):
 
     return M0_1, T2_1, M0_2, T2_2, M0_1_SD, T2_1_SD, M0_2_SD, T2_2_SD
 
-def out_2(tEvol, tDecay, Files, Out, nFiles):
+def out_2(tEvol, tDecay, Files, Out, nF):
     params = []
     count = 1
     dataDecay = pd.DataFrame(tDecay, columns=['t [ms]'])
-    evolFiles = [int(nFiles * i) for i in [0.25, 0.5, 0.75, 1]]
+    evolFiles = [int(nF * i) for i in [0.25, 0.5, 0.75, 1]]
     evolCounter = 0
     t_seg = tDecay * 0.001
 
@@ -227,6 +227,7 @@ def out_2(tEvol, tDecay, Files, Out, nFiles):
         count += 1
 
     dataDecay.to_csv(f'{Out}-Decay.csv', index=False)
+
 
     params = np.array(params)
     with open(f'{Out}-evolExp2.csv', 'w') as f:
@@ -298,11 +299,11 @@ def fit_3(t, decay):
 
     return M0_1, T2_1, M0_2, T2_2, M0_3, T2_3, M0_1_SD, T2_1_SD, M0_2_SD, T2_2_SD, M0_3_SD, T2_3_SD
 
-def out_3(tEvol, tDecay, Files, Out, nFiles):
+def out_3(tEvol, tDecay, Files, Out, nF):
     params = []
     count = 1
     dataDecay = pd.DataFrame(tDecay, columns=['t [ms]'])
-    evolFiles = [int(nFiles * i) for i in [0.25, 0.5, 0.75, 1]]
+    evolFiles = [int(nF * i) for i in [0.25, 0.5, 0.75, 1]]
     evolCounter = 0
     t_seg = tDecay * 0.001
 
