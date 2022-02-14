@@ -39,6 +39,9 @@ def main():
     # np.savetxt(f"{Out}-DomTemp.csv", Z, delimiter=',')
     np.savetxt(f"{Out}-DomRates.csv", S, delimiter=',')
 
+    if Back != None:
+        Back = "Yes"
+        
     plot_Z(tau1, tau2, Z, Out)
     peaks1x, peaks2x = plot_proj(T1, T2, S, Out)
     plot_map(T1, T2, S, nLevel, Out, peaks1x, peaks2x, T1min, T1max, T2min, T2max, RGnorm, alpha, Back, m)

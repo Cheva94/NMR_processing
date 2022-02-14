@@ -133,8 +133,8 @@ def plot_Z(tau, Z, Out, nS, RG, RGnorm, p90, att, RD, tEcho, nEcho, Back, m):
     plt.savefig(f'{Out}-DomTemp')
 
 def plot_distrib(T2, S, Out, alpha, nS, RG, RGnorm, p90, att, RD, tEcho, nEcho, Back, m):
-    # peaks, _ = find_peaks(S, distance = 20, height = 0.05)
-    peaks, _ = find_peaks(S, distance = 20, height = 0.01)
+    peaks, _ = find_peaks(S, distance = 20, height = 0.05)
+    # peaks, _ = find_peaks(S, distance = 20, height = 0.01)
     peaksx, peaksy = T2[peaks], S[peaks]
 
     fig, ax = plt.subplots()
@@ -144,7 +144,7 @@ def plot_distrib(T2, S, Out, alpha, nS, RG, RGnorm, p90, att, RD, tEcho, nEcho, 
     ax.plot(T2, S)
     ax.plot(peaksx, peaksy, lw = 0, marker=2, color='black')
     for i in range(len(peaksx)):
-        ax.annotate(f'({peaksx[i]:.2f}, {peaksy[i]:.2f})', xy = (peaksx[i], peaksy[i]), fontsize=15)
+        ax.annotate(f'({peaksx[i]:.2f}, {peaksy[i]:.2f})', xy = (peaksx[i], peaksy[i]), fontsize=30)
     ax.set_xlabel(r'$T_2$ [ms]')
     ax.set_xscale('log')
 
