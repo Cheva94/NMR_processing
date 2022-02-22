@@ -73,9 +73,10 @@ def Norm(signal, RGnorm, RG, m):
     return signal * Norm
 
 def plot(t, signal, nP, DW, nS, RGnorm, RG, p90, att, RD, Out, Back, m):
-    fid0Arr = signal[0:5].real
-    fid0 = sum(fid0Arr) / 5
-    fid0_SD = (sum([((x - fid0) ** 2) for x in fid0Arr]) / 5) ** 0.5
+    points = 4
+    fid0Arr = signal[0:points].real
+    fid0 = sum(fid0Arr) / points
+    fid0_SD = (sum([((x - fid0) ** 2) for x in fid0Arr]) / points) ** 0.5
 
     zf = FT.next_fast_len(2**5 * nP)
     freq = FT.fftshift(FT.fftfreq(zf, d=DW)) # Hz scale

@@ -133,8 +133,7 @@ def plot_Z(tau, Z, Out, nS, RG, RGnorm, p90, att, RD, tEcho, nEcho, Back, m):
     plt.savefig(f'{Out}-DomTemp')
 
 def plot_distrib(T2, S, Out, alpha, nS, RG, RGnorm, p90, att, RD, tEcho, nEcho, Back, m):
-    peaks, _ = find_peaks(S, distance = 20, height = 0.05)
-    # peaks, _ = find_peaks(S, distance = 20, height = 0.01)
+    peaks, _ = find_peaks(S, distance = 20)
     peaksx, peaksy = T2[peaks], S[peaks]
 
     fig, ax = plt.subplots()

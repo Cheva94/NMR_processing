@@ -1,12 +1,13 @@
-#!/usr/bin/python3.6
-
+#!/usr/bin/python3.8
 '''
-    Description: plots several FIDs together. They all must be already processed.
     Written by: Ignacio J. Chevallier-Boutell.
     Dated: November, 2021.
 '''
 
 import argparse
+import matplotlib.pyplot as plt
+from cycler import cycler
+import pandas as pd
 
 plt.rcParams["font.weight"] = "bold"
 plt.rcParams["font.size"] = 35
@@ -39,13 +40,17 @@ plt.rcParams["lines.linestyle"] = '-'
 
 def main():
 
-    Files = args.input
-    Labels = args.labels
-    Saving = args.output
+    # Files = args.input
+    # Labels = args.labels
+    # Saving = args.output
+
+    Files = '/home/cheva/tesis_EXP-CARiACT_Q3/proc_SenialVsAgitacion/SinAgitacion'
+    Labels = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10']
+    Saving = 'SinAgitacion_FIDs'
 
     fig, ax = plt.subplots()
-    for i in range(len(Files)):
-        data = read_csv(f'{Files[i]}').to_numpy()
+    for i in range(len(Labels)):
+        data = pd.read_csv(f'{Files}{Labels[i]}_FID.csv').to_numpy()
         ax.plot(data[:, 0], data[:, 1], label=Labels[i])
 
     ax.set_xlabel('t [ms]')
@@ -54,16 +59,14 @@ def main():
     plt.savefig(f'{Saving}')
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-
-    parser = argparse.ArgumentParser(description='Plots several FIDs together.')
-
-    parser.add_argument('input', help = "Path to the input file.", nargs = '+')
-
-    parser.add_argument('labels', help = "Labels to be used in the plot.", nargs = '+')
-
-    parser.add_argument('output', help = "Path for the output file.")
-
-    args = parser.parse_args()
+    # parser = argparse.ArgumentParser()
+    #
+    # parser = argparse.ArgumentParser(description='Plots several FIDs together.')
+    #
+    # parser.add_argument('input', help = "Path to the input file.", nargs = '+')
+    # parser.add_argument('-L', '--labels', help = "Labels to be used in the plot.", nargs = '+')
+    # parser.add_argument('-O', '--output', help = "Path for the output file.")
+    #
+    # args = parser.parse_args()
 
     main()
