@@ -137,33 +137,45 @@ def plot_Z(tau1, tau2, Z, Out):
 
 def plot_proj(T1, T2, S, Out):
     projT1 = np.sum(S, axis=1)
-    peaks1, _ = find_peaks(projT1)
+    # peaks1, _ = find_peaks(projT1, height=0.1)
+    peaks1, _ = find_peaks(projT1, height=0.05)
     peaks1x, peaks1y = T1[peaks1], projT1[peaks1]
     projT2 = np.sum(S, axis=0)
-    peaks2, _ = find_peaks(projT2)
+    # peaks2, _ = find_peaks(projT2, height=0.1)
+    peaks2, _ = find_peaks(projT2, height=0.1)
     peaks2x, peaks2y = T2[peaks2], projT2[peaks2]
 
     fig, (ax1, ax2) = plt.subplots(1,2, figsize=(25, 10))
 
     if np.max(peaks1y) < np.max(projT1)/4:
         ymax = 1.1 * np.max(peaks1y)
+    else:
+        ymax = None
+
     ax1.plot(T1, projT1)
     ax1.plot(peaks1x, peaks1y, lw = 0, marker=2, color='black')
-    for i in range(len(peaks1x)):
-        ax1.annotate(f'({peaks1x[i]:.2f}, {peaks1y[i]:.2f})', xy = (peaks1x[i], peaks1y[i]), fontsize=30)
+    # for i in range(len(peaks1x)):
+    #     ax1.annotate(f'({peaks1x[i]:.2f}, {peaks1y[i]:.2f})', xy = (peaks1x[i], peaks1y[i]), fontsize=30)
     ax1.set_xlabel(r'$T_1$ [ms]')
     ax1.set_xscale('log')
+    # ax1.set_ylim(bottom=-0.005, top=ymax)
     ax1.set_ylim(bottom=-0.05, top=ymax)
+    # ax1.set_ylim(bottom=-0.5, top=ymax)
 
     if np.max(peaks2y) < np.max(projT2)/4:
         ymax = 1.1 * np.max(peaks2y)
+    else:
+        ymax = None
+
     ax2.plot(T2, projT2)
     ax2.plot(peaks2x, peaks2y, lw = 0, marker=2, color='black')
-    for i in range(len(peaks2x)):
-        ax2.annotate(f'({peaks2x[i]:.2f}, {peaks2y[i]:.2f})', xy = (peaks2x[i], peaks2y[i]), fontsize=30)
+        # for i in range(len(peaks2x)):
+        #     ax2.annotate(f'({peaks2x[i]:.2f}, {peaks2y[i]:.2f})', xy = (peaks2x[i], peaks2y[i]), fontsize=30)
     ax2.set_xlabel(r'$T_2$ [ms]')
     ax2.set_xscale('log')
+    # ax2.set_ylim(bottom=-0.005, top=ymax)
     ax2.set_ylim(bottom=-0.05, top=ymax)
+    # ax2.set_ylim(bottom=-0.5, top=ymax)
 
     plt.savefig(f'{Out}-DomRates1D')
     np.savetxt(f"{Out}-DomRates1D_T1.csv", projT1)
