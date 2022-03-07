@@ -1,4 +1,4 @@
-#!/usr/bin/python3.8
+#!/usr/bin/python3.9
 '''
     Written by: Ignacio J. Chevallier-Boutell.
     Dated: December, 2021.
@@ -41,7 +41,7 @@ def main():
 
     if Back != None:
         Back = "Yes"
-        
+
     plot_Z(tau1, tau2, Z, Out)
     peaks1x, peaks2x = plot_proj(T1, T2, S, Out)
     plot_map(T1, T2, S, nLevel, Out, peaks1x, peaks2x, T1min, T1max, T2min, T2max, RGnorm, alpha, Back, m)
