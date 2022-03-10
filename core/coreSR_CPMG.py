@@ -138,11 +138,13 @@ def plot_Z(tau1, tau2, Z, Out):
 def plot_proj(T1, T2, S, Out):
     projT1 = np.sum(S, axis=1)
     # peaks1, _ = find_peaks(projT1, height=0.1)
-    peaks1, _ = find_peaks(projT1, height=0.05)
+    # peaks1, _ = find_peaks(projT1, height=0.05)
+    peaks1, _ = find_peaks(projT1, height=0.005)
     peaks1x, peaks1y = T1[peaks1], projT1[peaks1]
     projT2 = np.sum(S, axis=0)
     # peaks2, _ = find_peaks(projT2, height=0.1)
-    peaks2, _ = find_peaks(projT2, height=0.1)
+    # peaks2, _ = find_peaks(projT2, height=0.05)
+    peaks2, _ = find_peaks(projT2, height=0.005)
     peaks2x, peaks2y = T2[peaks2], projT2[peaks2]
 
     fig, (ax1, ax2) = plt.subplots(1,2, figsize=(25, 10))
