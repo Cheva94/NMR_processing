@@ -37,13 +37,15 @@ def main():
     if Back != None:
         Back = "Yes"
 
+    cumT2 = np.cumsum(S)
+
     with open(f'{Out}.csv', 'w') as f:
         f.write("nS, RG [dB], RGnorm, p90 [us], Attenuation [dB], RD [s], tEcho [ms], nEcho, Back, m [g] \n")
         f.write(f'{nS}, {RG}, {RGnorm}, {p90}, {att}, {RD}, {tEcho:.1f}, {nEcho}, {Back}, {m} \n\n')
 
-        f.write("T2 [ms], Distribution \n")
+        f.write("T2 [ms], Distribution, Cumulative \n")
         for i in range(len(T2)):
-            f.write(f'{T2[i]:.6f}, {S[i]:.6f} \n')
+            f.write(f'{T2[i]:.6f}, {S[i]:.6f}, {cumT2[i]:.6f} \n')
 
         f.write("\n\nt [ms], Decay \n")
         for i in range(len(tau)):
