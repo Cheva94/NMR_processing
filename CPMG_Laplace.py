@@ -37,21 +37,17 @@ def main():
     if Back != None:
         Back = "Yes"
 
-    with open(f'{Out}-DomTemp.csv', 'w') as f:
+    with open(f'{Out}.csv', 'w') as f:
         f.write("nS, RG [dB], RGnorm, p90 [us], Attenuation [dB], RD [s], tEcho [ms], nEcho, Back, m [g] \n")
         f.write(f'{nS}, {RG}, {RGnorm}, {p90}, {att}, {RD}, {tEcho:.1f}, {nEcho}, {Back}, {m} \n\n')
-
-        f.write("t [ms], Decay \n")
-        for i in range(len(tau)):
-            f.write(f'{tau[i]:.6f}, {Z[i]:.6f} \n')
-
-    with open(f'{Out}-DomRates.csv', 'w') as f:
-        f.write("nS, RG [dB], RGnorm, p90 [us], Attenuation [dB], RD [s], tEcho [ms], nEcho, Back, m [g], Alpha \n")
-        f.write(f'{nS}, {RG}, {RGnorm}, {p90}, {att}, {RD}, {tEcho:.1f}, {nEcho}, {Back}, {m}, {alpha} \n\n')
 
         f.write("T2 [ms], Distribution \n")
         for i in range(len(T2)):
             f.write(f'{T2[i]:.6f}, {S[i]:.6f} \n')
+
+        f.write("\n\nt [ms], Decay \n")
+        for i in range(len(tau)):
+            f.write(f'{tau[i]:.6f}, {Z[i]:.6f} \n')
 
     plot_Z(tau, Z, Out, nS, RG, RGnorm, p90, att, RD, tEcho, nEcho, Back, m)
     plot_distrib(T2, S, Out, alpha, nS, RG, RGnorm, p90, att, RD, tEcho, nEcho, Back, m)

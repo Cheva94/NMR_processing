@@ -10,6 +10,9 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import AutoMinorLocator
 from cycler import cycler
 import scipy.fft as FT
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes
+import warnings
+warnings.filterwarnings("ignore")
 
 plt.rcParams["font.weight"] = "bold"
 plt.rcParams["font.size"] = 35
@@ -33,7 +36,7 @@ plt.rcParams["legend.shadow"] = True
 plt.rcParams["legend.fontsize"] = 30
 plt.rcParams["legend.edgecolor"] = 'black'
 
-plt.rcParams["figure.figsize"] = 25, 10
+plt.rcParams["figure.figsize"] = 50, 20
 plt.rcParams["figure.autolayout"] = True
 
 plt.rcParams["lines.linewidth"] = 4
@@ -73,7 +76,7 @@ def Norm(signal, RGnorm, RG, m):
     return signal * Norm
 
 def plot(t, signal, nP, DW, nS, RGnorm, RG, p90, att, RD, Out, Back, m):
-    points = 4
+    points = 5
     fid0Arr = signal[0:points].real
     fid0 = sum(fid0Arr) / points
     fid0_SD = (sum([((x - fid0) ** 2) for x in fid0Arr]) / points) ** 0.5
@@ -82,25 +85,41 @@ def plot(t, signal, nP, DW, nS, RGnorm, RG, p90, att, RD, Out, Back, m):
     freq = FT.fftshift(FT.fftfreq(zf, d=DW)) # Hz scale
     spec = FT.fftshift(FT.fft(signal, n = zf))
     max_peak = np.max(spec)
+    area_peak = np.sum(spec.real[260887:263405])
     spec /= max_peak
     CS = freq / 20
 
-    fig, (ax1, ax2) = plt.subplots(1, 2)
+    fig, axs = plt.subplots(2, 2, gridspec_kw={'height_ratios': [3,1]})
 
     fig.suptitle(f'nS={nS} | RG = {RG} dB ({RGnorm}) | RD = {RD} s | p90 = {p90} us | Atten = {att} dB | BG = {Back} | m = {m}', fontsize='small')
 
-    ax1.plot(t, signal.real)
-    ax1.set_xlabel('t [ms]')
-    ax1.set_ylabel('M')
-    ax1.text(0.98,0.98, fr'$M_R (0)$ = ({fid0:.2f} $\pm$ {fid0_SD:.2f})', ha='right', va='top', transform=ax1.transAxes, fontsize='small')
+    axs[0,0].plot(t, signal.real)
+    axs[0,0].set_xlabel('t [ms]')
+    axs[0,0].set_ylabel('M')
+    axs[0,0].text(0.98,0.98, fr'$M_R (0)$ = ({fid0:.2f} $\pm$ {fid0_SD:.2f})', ha='right', va='top', transform=axs[0,0].transAxes, fontsize='small')
 
-    ax2.plot(CS, spec.real)
-    # ax2.set_xlim(-0.1, 0.1)
-    ax2.set_xlim(-1, 1)
-    ax2.set_ylim(-0.2, 1.2)
-    ax2.xaxis.set_minor_locator(AutoMinorLocator())
-    ax2.set_xlabel(r'$\delta$ [ppm]')
-    ax2.axvline(x=0, color='gray', ls=':', lw=2)
-    ax2.text(0.98,0.98, f'Peak = {max_peak.real:.2f}', ha='right', va='top', transform=ax2.transAxes, fontsize='small')
+    axs[1,0].plot(t, signal.imag)
+    axs[1,0].set_xlabel('t [ms]')
+    axs[1,0].set_ylabel('M')
+
+    axs[0,1].plot(CS, spec.real)
+    axs[0,1].set_xlim(-0.1, 0.1)
+    axs[0,1].set_ylim(-0.05, 1.2)
+    axs[0,1].xaxis.set_minor_locator(AutoMinorLocator())
+    axs[0,1].set_xlabel(r'$\delta$ [ppm]')
+    axs[0,1].axvline(x=0, color='gray', ls=':', lw=2)
+    axs[0,1].axvline(x=CS[260887], color='gray', ls=':', lw=3)
+    axs[0,1].axvline(x=CS[263405], color='gray', ls=':', lw=3)
+    axs[0,1].text(0.98,0.98, fr'Peak Area = {area_peak:.0f}', ha='right', va='top', transform=axs[0,1].transAxes, fontsize='small')
+
+    axins = inset_axes(axs[0,1], width="30%", height="30%", loc=2)
+    axins.tick_params(labelleft=False)
+    axins.plot(CS, spec.real)
+
+    axs[1,1].plot(CS, spec.imag)
+    axs[1,1].set_xlim(-0.1, 0.1)
+    axs[1,1].xaxis.set_minor_locator(AutoMinorLocator())
+    axs[1,1].set_xlabel(r'$\delta$ [ppm]')
+    axs[1,1].axvline(x=0, color='gray', ls=':', lw=2)
 
     plt.savefig(f'{Out}')
