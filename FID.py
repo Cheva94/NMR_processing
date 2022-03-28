@@ -5,7 +5,7 @@
 '''
 
 import argparse
-from core.coreFID import *
+from core.FID import *
 
 def main():
 
@@ -13,7 +13,7 @@ def main():
     Out = args.output
     m = args.mass
     RGnorm = args.RGnorm
-    show = args.ShowPlot
+    # show = args.ShowPlot
     Back = args.background
     nini = args.niniValues
 
@@ -48,8 +48,8 @@ def main():
 
     plot(t, signal, nP, DW, nS, RGnorm, RG, p90, att, RD, Out, Back, m)
 
-    if show == 'on':
-        plt.show()
+        # if show == 'on':
+        #     plt.show()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -58,7 +58,7 @@ if __name__ == "__main__":
     parser.add_argument('output', help = "Path for the output files.")
     parser.add_argument('-m', '--mass', help = "Sample mass in g.", type = float, default = 1)
     parser.add_argument('-RGnorm', '--RGnorm', help = "Normalize by RG. Default: on", default = "on")
-    parser.add_argument('-show', '--ShowPlot', help = "Show plots. Default: off", default = 'off')
+    # parser.add_argument('-show', '--ShowPlot', help = "Show plots. Default: off", default = 'off')
     parser.add_argument('-back', '--background', help = "Path to de FID background file.")
     parser.add_argument('-nini', '--niniValues', help = "Number of values to avoid at the beginning of T2.", type = int, default=0)
 
