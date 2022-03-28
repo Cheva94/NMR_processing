@@ -83,11 +83,23 @@ def plot(t, signal, nP, DW, nS, RGnorm, RG, p90, att, RD, Out, Back, m):
 
     zf = FT.next_fast_len(2**5 * nP)
     freq = FT.fftshift(FT.fftfreq(zf, d=DW)) # Hz scale
-    spec = FT.fftshift(FT.fft(signal, n = zf))
+    CS = freq / 20 # ppm for Minispec scale
+    spec = np.flip(FT.fftshift(FT.fft(signal, n = zf)))
     max_peak = np.max(spec)
     area_peak = np.sum(spec.real[260887:263405])
     spec /= max_peak
-    CS = freq / 20
+
+    L = spec.real[260887:263405]
+    with open(f'SPEC.csv', 'w') as f:
+        for i in range(len(L)):
+            f.write(f'{L[i]:.6f} \n')
+
+    # pares = np.array([freq, spec.real])
+    # Amp_pos = pares[1, :].argmax()
+    # peak_freq = pares[0, Amp_pos]
+    # print(pares)
+    # print(Amp_pos)
+    # print(peak_freq)
 
     fig, axs = plt.subplots(2, 2, gridspec_kw={'height_ratios': [3,1]})
 
@@ -110,6 +122,7 @@ def plot(t, signal, nP, DW, nS, RGnorm, RG, p90, att, RD, Out, Back, m):
     axs[0,1].axvline(x=0, color='gray', ls=':', lw=2)
     axs[0,1].axvline(x=CS[260887], color='gray', ls=':', lw=3)
     axs[0,1].axvline(x=CS[263405], color='gray', ls=':', lw=3)
+    axs[0,1].axhline(y=0.02, color='gray', ls=':', lw=3)
     axs[0,1].text(0.98,0.98, fr'Peak Area = {area_peak:.0f}', ha='right', va='top', transform=axs[0,1].transAxes, fontsize='small')
 
     axins = inset_axes(axs[0,1], width="30%", height="30%", loc=2)
