@@ -1,9 +1,3 @@
-#!/usr/bin/python3.9
-'''
-    Written by: Ignacio J. Chevallier-Boutell.
-    Dated: December, 2021.
-'''
-
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
