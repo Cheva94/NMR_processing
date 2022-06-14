@@ -5,7 +5,7 @@
 '''
 
 import argparse
-from core.coremeanFID import *
+from core.meanFID import *
 
 def main():
 

@@ -70,7 +70,7 @@ def Norm(signal, RGnorm, RG, m):
     return signal * Norm
 
 def plot(t, signal, nP, DW, nS, RGnorm, RG, p90, att, RD, Out, Back, m):
-    points = 5
+    points = 10
     fid0Arr = signal[0:points].real
     fid0 = sum(fid0Arr) / points
     fid0_SD = (sum([((x - fid0) ** 2) for x in fid0Arr]) / points) ** 0.5
@@ -84,16 +84,9 @@ def plot(t, signal, nP, DW, nS, RGnorm, RG, p90, att, RD, Out, Back, m):
     spec /= max_peak
 
     L = spec.real[260887:263405]
-    with open(f'SPEC.csv', 'w') as f:
+    with open(f'{Out}_SpecRealPeak.csv', 'w') as f:
         for i in range(len(L)):
             f.write(f'{L[i]:.6f} \n')
-
-    # pares = np.array([freq, spec.real])
-    # Amp_pos = pares[1, :].argmax()
-    # peak_freq = pares[0, Amp_pos]
-    # print(pares)
-    # print(Amp_pos)
-    # print(peak_freq)
 
     fig, axs = plt.subplots(2, 2, gridspec_kw={'height_ratios': [3,1]})
 
@@ -102,7 +95,13 @@ def plot(t, signal, nP, DW, nS, RGnorm, RG, p90, att, RD, Out, Back, m):
     axs[0,0].plot(t, signal.real)
     axs[0,0].set_xlabel('t [ms]')
     axs[0,0].set_ylabel('M')
-    axs[0,0].text(0.98,0.98, fr'$M_R (0)$ = ({fid0:.2f} $\pm$ {fid0_SD:.2f})', ha='right', va='top', transform=axs[0,0].transAxes, fontsize='small')
+
+    axins1 = inset_axes(axs[0,0], width="30%", height="30%", loc=1)
+    axins1.plot(t, signal.real)
+    axins1.plot(t[0:points], signal[0:points].real, lw = 10)
+    axins1.set_xlim(0.01, 0.1)
+    axins1.set_ylim(signal.real[20]*0.9, signal.real[0]*1.1)
+    axins1.text(0.98,0.98, fr'$M_R (0)$ = ({fid0:.2f} $\pm$ {fid0_SD:.2f})', ha='right', va='top', transform=axins1.transAxes, fontsize='small')
 
     axs[1,0].plot(t, signal.imag)
     axs[1,0].set_xlabel('t [ms]')
@@ -117,11 +116,11 @@ def plot(t, signal, nP, DW, nS, RGnorm, RG, p90, att, RD, Out, Back, m):
     axs[0,1].axvline(x=CS[260887], color='gray', ls=':', lw=3)
     axs[0,1].axvline(x=CS[263405], color='gray', ls=':', lw=3)
     axs[0,1].axhline(y=0.02, color='gray', ls=':', lw=3)
-    axs[0,1].text(0.98,0.98, fr'Peak Area = {area_peak:.0f}', ha='right', va='top', transform=axs[0,1].transAxes, fontsize='small')
+    axs[0,1].text(0.98,0.98, fr'Peak Area = {area_peak*1e-6:.2f}x10$^6$', ha='right', va='top', transform=axs[0,1].transAxes, fontsize='small')
 
-    axins = inset_axes(axs[0,1], width="30%", height="30%", loc=2)
-    axins.tick_params(labelleft=False)
-    axins.plot(CS, spec.real)
+    axins2 = inset_axes(axs[0,1], width="30%", height="30%", loc=2)
+    axins2.tick_params(labelleft=False)
+    axins2.plot(CS, spec.real)
 
     axs[1,1].plot(CS, spec.imag)
     axs[1,1].set_xlim(-0.1, 0.1)
