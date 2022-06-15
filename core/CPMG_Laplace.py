@@ -27,7 +27,7 @@ plt.rcParams["legend.shadow"] = True
 plt.rcParams["legend.fontsize"] = 30
 plt.rcParams["legend.edgecolor"] = 'black'
 
-plt.rcParams["figure.figsize"] = 12.5, 13.5
+plt.rcParams["figure.figsize"] = 12.5, 10
 plt.rcParams["figure.autolayout"] = True
 
 plt.rcParams["lines.linewidth"] = 4
@@ -106,7 +106,7 @@ def NLI_FISTA(K, Z, alpha, S):
 
             Res = np.abs(ObjFunc - lastRes) / ObjFunc
             lastRes = ObjFunc
-            print(f'# It = {iter} >>> Obj. Func. = {ObjFunc:.4f} >>> Residue = {Res:.6f}')
+            print(f'# It = {iter} >>> Residue = {Res:.6f}')
 
             if Res < 1E-5:
                 break
@@ -163,6 +163,17 @@ def plot(tau, Z, M, T2, S, Out, nS, RG, RGnorm, p90, att, RD, alpha, tEcho, nEch
     axs[1,0].set_xlim(-10, 210)
     axs[1,0].set_xlabel(r'$\tau$ [ms]')
     axs[1,0].set_ylabel('Residual')
+
+    # Chi2 = []
+    # for x in range(len(M)):
+    #     Chi2.append((M[x] - Z[x])**2 / Z[x])
+    #
+    # axs[1,1].plot(tau, Chi2, color = 'blue')
+    # axs[1,1].axhline(0, c = 'k', lw = 4, ls = '-')
+    # # axs[1,1].set_xlim(-10, 210)
+    # axs[1,1].set_xlabel(r'$\tau$ [ms]')
+    # axs[1,1].set_ylabel(r'$\chi^2$')
+    # # axs[1,1].annotate(f'{np.sum(Chi2)}', xy = (0.98, 0.98), fontsize=30, ha='right')
 
     axs[1,1].plot(T2, S, label = 'Dist.', color = 'teal')
     axs[1,1].plot(peaksx, peaksy + 0.03, lw = 0, marker=11, color='black')

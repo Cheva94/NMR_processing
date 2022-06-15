@@ -5,7 +5,7 @@
 '''
 
 import argparse
-from core.coreSR_CPMG import *
+from core.SR_CPMG import *
 
 def main():
 
@@ -14,6 +14,7 @@ def main():
     m = args.mass
     RGnorm = args.RGnorm
     show = args.ShowPlot
+    newS = args.ManualS
     Back = args.background
     alpha = args.alpha
     T1min, T1max = args.T1Range[0], args.T1Range[1]
@@ -34,17 +35,19 @@ def main():
         Z -= back
 
     Z = Norm(Z, RGnorm, m)
-    S = NLI_FISTA(K1, K2, Z, alpha, S0)
 
-    # np.savetxt(f"{Out}-DomTemp.csv", Z, delimiter=',')
-    np.savetxt(f"{Out}-DomRates.csv", S, delimiter=',')
+    if newS == 'off':
+        S = NLI_FISTA(K1, K2, Z, alpha, S0)
+        np.savetxt(f"{Out}-DomRates.csv", S, delimiter=',')
+    else:
+        S = newSS(f"{Out}-DomRates.csv")
+
+    M1, M2 = fitMag(tau1, tau2, T1, T2, S)
 
     if Back != None:
         Back = "Yes"
 
-    plot_Z(tau1, tau2, Z, Out)
-    peaks1x, peaks2x = plot_proj(T1, T2, S, Out)
-    plot_map(T1, T2, S, nLevel, Out, peaks1x, peaks2x, T1min, T1max, T2min, T2max, RGnorm, alpha, Back, m)
+    plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2max, RGnorm, alpha, Back, m)
 
     if show == 'on':
         plt.show()
@@ -61,6 +64,7 @@ if __name__ == "__main__":
     parser.add_argument('-nLevel', '--ContourLevels', help = "Number of levels to use in the contour plot.", type = int, default = 100)
     parser.add_argument('-nini', '--niniValues', help = "Number of values to avoid at the beginning of T1 and T2.", nargs = 2, type = int, default=[0, 0])
     parser.add_argument('-show', '--ShowPlot', help = "Show plots.", default = 'off')
+    parser.add_argument('-newS', '--ManualS', default = 'off')
     parser.add_argument('-RGnorm', '--RGnorm', help = "Normalize by RG.", type = int)
     parser.add_argument('-back', '--background', help = "Path to de FID background file.")
 
