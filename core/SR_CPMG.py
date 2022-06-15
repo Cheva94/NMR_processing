@@ -231,11 +231,14 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2m
 
     axs[1,2].plot([10.0**mini, 10.0**maxi], [10.0**mini, 10.0**maxi], color='black', ls='-', alpha=0.7, zorder=-2, label = r'$T_1$ = $T_2$')
 
-    axs[1,2].contour(T2[15:-15], T1[15:-15], S[15:-15, 15:-15], nLevel, cmap='rainbow')
+    map = axs[1,2].contour(T2[15:-15], T1[15:-15], S[15:-15, 15:-15], nLevel, cmap='rainbow')
+    # map = axs[1,2].contour(T2, T1, S, nLevel, cmap='rainbow')
+    # axs[1,2].colorbar(map)
+    # fig.colorbar(map, cax=axs[0,3])
     axs[1,2].set_xlabel(r'$T_2$ [ms]')
     axs[1,2].set_ylabel(r'$T_1$ [ms]')
-    axs[1,2].set_xlim(10.0**T2min, 10.0**T2max)
-    axs[1,2].set_ylim(10.0**T1min, 10.0**T1max)
+    # axs[1,2].set_xlim(10.0**T2min, 10.0**T2max)
+    # axs[1,2].set_ylim(10.0**T1min, 10.0**T1max)
     axs[1,2].set_xscale('log')
     axs[1,2].set_yscale('log')
     axs[1,2].legend(loc='lower right')
