@@ -83,11 +83,6 @@ def plot(t, signal, nP, DW, nS, RGnorm, RG, p90, att, RD, Out, Back, m):
     area_peak = np.sum(spec.real[260887:263405])
     spec /= max_peak
 
-    L = spec.real[260887:263405]
-    with open(f'{Out}_SpecRealPeak.csv', 'w') as f:
-        for i in range(len(L)):
-            f.write(f'{L[i]:.6f} \n')
-
     fig, axs = plt.subplots(2, 2, gridspec_kw={'height_ratios': [3,1]})
 
     fig.suptitle(f'nS={nS} | RG = {RG} dB ({RGnorm}) | RD = {RD} s | p90 = {p90} us | Atten = {att} dB | BG = {Back} | m = {m}', fontsize='small')

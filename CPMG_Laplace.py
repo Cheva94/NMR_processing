@@ -5,7 +5,7 @@
 '''
 
 import argparse
-from core.coreCPMG_Laplace import *
+from core.CPMG_Laplace import *
 
 def main():
 
@@ -33,27 +33,27 @@ def main():
 
     Z = Norm(Z, RGnorm, RG, m)
     S = NLI_FISTA(K, Z, alpha, S0)
+    M = fitMag(tau, T2, S)
 
     if Back != None:
         Back = "Yes"
 
     cumT2 = np.cumsum(S)
+    cumT2 /= cumT2[-1]
 
     with open(f'{Out}.csv', 'w') as f:
-        f.write("nS, RG [dB], RGnorm, p90 [us], Attenuation [dB], RD [s], tEcho [ms], nEcho, Back, m [g] \n")
-        f.write(f'{nS}, {RG}, {RGnorm}, {p90}, {att}, {RD}, {tEcho:.1f}, {nEcho}, {Back}, {m} \n\n')
+        f.write("nS, RG [dB], RGnorm, p90 [us], Attenuation [dB], RD [s], tEcho [ms], nEcho (t [ms]), Back, m [g] \n")
+        f.write(f'{nS}, {RG}, {RGnorm}, {p90}, {att}, {RD}, {tEcho:.1f}, {nEcho:.0f} ({tau[-1]}), {Back}, {m} \n\n')
 
         f.write("T2 [ms], Distribution, Cumulative \n")
         for i in range(len(T2)):
             f.write(f'{T2[i]:.6f}, {S[i]:.6f}, {cumT2[i]:.6f} \n')
 
-        f.write("\n\nt [ms], Decay \n")
+        f.write("\n\nt [ms], Decay, Fit \n")
         for i in range(len(tau)):
-            f.write(f'{tau[i]:.6f}, {Z[i]:.6f} \n')
+            f.write(f'{tau[i]:.6f}, {Z[i]:.6f}, {M[i]:.6f} \n')
 
-    plot_Z(tau, Z, Out, nS, RG, RGnorm, p90, att, RD, tEcho, nEcho, Back, m)
-    plot_distrib(T2, S, Out, alpha, nS, RG, RGnorm, p90, att, RD, tEcho, nEcho, Back, m)
-
+    plot(tau, Z, M, T2, S, Out, nS, RG, RGnorm, p90, att, RD, alpha, tEcho, nEcho, Back, m, cumT2)
 
     if show == 'on':
         plt.show()

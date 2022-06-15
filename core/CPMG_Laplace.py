@@ -4,6 +4,7 @@ import pandas as pd
 from cycler import cycler
 from scipy.signal import find_peaks
 import matplotlib as mpl
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
 plt.rcParams["font.weight"] = "bold"
 plt.rcParams["font.size"] = 35
@@ -112,39 +113,68 @@ def NLI_FISTA(K, Z, alpha, S):
 
     return S[:, 0]
 
-def plot_Z(tau, Z, Out, nS, RG, RGnorm, p90, att, RD, tEcho, nEcho, Back, m):
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(25, 10))
+def fitMag(tau, T2, S):
+    t = range(len(tau))
+    d = range(len(T2))
+    M = []
+    for i in t:
+        m = 0
+        for j in d:
+            m += S[j] * np.exp(- tau[i] / T2[j])
+        M.append(m)
 
-    fig.suptitle(f'nS={nS} | RG = {RG} dB ({RGnorm}) | RD = {RD} s | p90 = {p90} us | Atten = {att} dB \n Ecos = {nEcho} | tE = {tEcho:.1f} ms | BG = {Back} | m = {m}', fontsize='small')
-    ax1.plot(tau, Z)
-    ax1.set_xlabel(r'$\tau$ [ms]')
-    ax1.set_ylabel('M')
+    return M
 
-    ax2.semilogy(tau, Z)
-    ax2.set_xlabel(r'$\tau$ [ms]')
-    ax2.set_ylabel('log(M)')
+def plot(tau, Z, M, T2, S, Out, nS, RG, RGnorm, p90, att, RD, alpha, tEcho, nEcho, Back, m, cumT2):
+    fig, axs = plt.subplots(2, 2, figsize=(25, 20))
 
-    plt.savefig(f'{Out}-DomTemp')
+    fig.suptitle(f'nS={nS} | RG = {RG} dB ({RGnorm}) | m = {m} | RD = {RD} s | p90 = {p90} us  | BG = {Back} \n Atten = {att} dB | tE = {tEcho:.1f} ms | Ecos = {nEcho:.0f} ({tau[-1]:.1f} ms) | Alpha = {alpha}', fontsize='small')
 
-def plot_distrib(T2, S, Out, alpha, nS, RG, RGnorm, p90, att, RD, tEcho, nEcho, Back, m):
+    axs[0,0].plot(tau, Z)
+    axs[0,0].plot(tau, M)
+    axs[0,0].set_xlim(-10, 210)
+    axs[0,0].set_xlabel(r'$\tau$ [ms]')
+    axs[0,0].set_ylabel('M')
+
+    axins1 = inset_axes(axs[0,0], width="30%", height="30%", loc=1)
+    axins1.plot(tau, Z)
+    axins1.plot(tau, M)
+    axins1.set_xlim(-1, 3)
+    axins1.set_ylim(Z[10], Z[0]*1.1)
+
+    axs[0,1].semilogy(tau, Z, label='Exp')
+    axs[0,1].semilogy(tau, M, label='Fit')
+    axs[0,1].set_xlim(-10, 210)
+    axs[0,1].set_ylim(10**-2, 0.25*10**2)
+    axs[0,1].set_xlabel(r'$\tau$ [ms]')
+    axs[0,1].set_ylabel('log(M)')
+    axs[0,1].legend()
+
     peaks, _ = find_peaks(S)
     peaksx, peaksy = T2[peaks], S[peaks]
-
-    fig, ax = plt.subplots()
-
-    fig.suptitle(f'nS={nS} | RG = {RG} dB ({RGnorm}) | RD = {RD} s \n p90 = {p90} us | Atten = {att} dB \n Ecos = {nEcho} | tE = {tEcho:.1f} ms | Alpha = {alpha} \n BG = {Back} | m = {m}', fontsize='small')
 
     if np.max(peaksy) < np.max(S)/4:
         ymax = 1.1 * np.max(peaksy)
     else:
         ymax = None
-    ax.plot(T2, S)
-    ax.plot(peaksx, peaksy, lw = 0, marker=2, color='black')
-    for i in range(len(peaksx)):
-        ax.annotate(f'({peaksx[i]:.2f}, {peaksy[i]:.2f})', xy = (peaksx[i], peaksy[i]), fontsize=30)
-    ax.set_xlabel(r'$T_2$ [ms]')
-    ax.set_xscale('log')
-    # ax.set_ylim(bottom=-0.005, top=ymax)
-    ax.set_ylim(bottom=-0.05, top=ymax)
 
-    plt.savefig(f'{Out}-DomRates')
+    axs[1,0].plot(tau, M-Z, color = 'blue')
+    axs[1,0].axhline(0, c = 'k', lw = 4, ls = '-')
+    axs[1,0].set_xlim(-10, 210)
+    axs[1,0].set_xlabel(r'$\tau$ [ms]')
+    axs[1,0].set_ylabel('Residual')
+
+    axs[1,1].plot(T2, S, label = 'Dist.', color = 'teal')
+    axs[1,1].plot(peaksx, peaksy + 0.03, lw = 0, marker=11, color='black')
+    for i in range(len(peaksx)):
+        axs[1,1].annotate(f'{peaksx[i]:.0f}', xy = (peaksx[i], peaksy[i] + 0.05), fontsize=30, ha='center')
+    axs[1,1].set_xlabel(r'$T_2$ [ms]')
+    axs[1,1].set_xscale('log')
+    axs[1,1].set_ylim(bottom=-0.05, top=ymax)
+
+    ax5 = axs[1,1].twinx()
+    ax5.plot(T2, cumT2, label = 'Cumul', color = 'coral')
+    ax5.set_ylim(-0.1, 1.1)
+    ax5.legend()
+
+    plt.savefig(f'{Out}')
