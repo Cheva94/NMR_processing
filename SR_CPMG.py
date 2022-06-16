@@ -43,13 +43,11 @@ def main():
         S = newSS(f"{Out}-DomRates.csv")
 
     M1, M2 = fitMag(tau1, tau2, T1, T2, S)
-    # M1, M2 = fitMag(tau1, tau2, T1[15:-15], T2[15:-15], S[15:-15, 15:-15])
 
     if Back != None:
         Back = "Yes"
 
     plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2max, RGnorm, alpha, Back, m)
-    # plot(tau1, tau2, Z, T1[15:-15], T2[15:-15], S[15:-15, 15:-15], M1, M2, Out, nLevel, T1min, T1max, T2min, T2max, RGnorm, alpha, Back, m)
 
     if show == 'on':
         plt.show()

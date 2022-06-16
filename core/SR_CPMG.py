@@ -163,7 +163,6 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2m
 
     axs[1,0].plot(tau1, M1-Z[:, 0], color = 'blue')
     axs[1,0].axhline(0, c = 'k', lw = 4, ls = '-')
-    # axs[1,0].set_xlim(-1, 3)
     axs[1,0].set_xlabel(r'$\tau$1 [ms]')
     axs[1,0].set_ylabel('Residual SR')
 
@@ -181,7 +180,6 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2m
 
     axs[1,1].plot(tau2, M2-Z[-1, :], color = 'blue')
     axs[1,1].axhline(0, c = 'k', lw = 4, ls = '-')
-    # axs[1,1].set_xlim(-1, 3)
     axs[1,1].set_xlabel(r'$\tau$2 [ms]')
     axs[1,1].set_ylabel('Residual CPMG')
 
@@ -192,6 +190,9 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2m
     projT2 = np.sum(S, axis=0)
     peaks2, _ = find_peaks(projT2, height=0.005)
     peaks2x, peaks2y = T2[peaks2], projT2[peaks2]
+
+    # np.savetxt(f"{Out}-DomRates1D_T1.csv", projT1)
+    # np.savetxt(f"{Out}-DomRates1D_T2.csv", projT1)
 
     if np.max(peaks1y) < np.max(projT1)/4:
         ymax = 1.1 * np.max(peaks1y)
@@ -204,9 +205,7 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2m
         axs[1,3].annotate(f'{peaks1x[i]:.0f}', xy = (peaks1y[i] * 1.05, peaks1x[i]), fontsize=30, va = 'center')
     axs[1,3].set_ylabel(r'$T_1$ [ms]')
     axs[1,3].set_yscale('log')
-    # ax1.set_ylim(bottom=-0.005, top=ymax)
     axs[1,3].set_xlim(left=-0.05, right=ymax)
-    # ax1.set_ylim(bottom=-0.5, top=ymax)
 
     if np.max(peaks2y) < np.max(projT2)/4:
         ymax = 1.1 * np.max(peaks2y)
@@ -219,22 +218,14 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2m
         axs[0,2].annotate(f'{peaks2x[i]:.0f}', xy = (peaks2x[i], peaks2y[i] * 1.05), fontsize=30, ha = 'center')
     axs[0,2].set_xlabel(r'$T_2$ [ms]')
     axs[0,2].set_xscale('log')
-    # ax2.set_ylim(bottom=-0.005, top=ymax)
     axs[0,2].set_ylim(bottom=-0.05, top=ymax)
-    # ax2.set_ylim(bottom=-0.5, top=ymax)
-
-    # np.savetxt(f"{Out}-DomRates1D_T1.csv", projT1)
-    # np.savetxt(f"{Out}-DomRates1D_T2.csv", projT1)
 
     mini = np.max([T1min, T2min])
     maxi = np.min([T1max, T2max])
 
     axs[1,2].plot([10.0**mini, 10.0**maxi], [10.0**mini, 10.0**maxi], color='black', ls='-', alpha=0.7, zorder=-2, label = r'$T_1$ = $T_2$')
 
-    map = axs[1,2].contour(T2[15:-15], T1[15:-15], S[15:-15, 15:-15], nLevel, cmap='rainbow')
-    # map = axs[1,2].contour(T2, T1, S, nLevel, cmap='rainbow')
-    # axs[1,2].colorbar(map)
-    # fig.colorbar(map, cax=axs[0,3])
+    axs[1,2].contour(T2[15:-15], T1[15:-15], S[15:-15, 15:-15], nLevel, cmap='rainbow')
     axs[1,2].set_xlabel(r'$T_2$ [ms]')
     axs[1,2].set_ylabel(r'$T_1$ [ms]')
     # axs[1,2].set_xlim(10.0**T2min, 10.0**T2max)
