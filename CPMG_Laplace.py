@@ -42,8 +42,8 @@ def main():
     cumT2 /= cumT2[-1]
 
     with open(f'{Out}.csv', 'w') as f:
-        f.write("nS, RG [dB], RGnorm, p90 [us], Attenuation [dB], RD [s], tEcho [ms], nEcho (t [ms]), Back, m [g] \n")
-        f.write(f'{nS}, {RG}, {RGnorm}, {p90}, {att}, {RD}, {tEcho:.1f}, {nEcho:.0f} ({tau[-1]}), {Back}, {m} \n\n')
+        f.write("nS, RG [dB], RGnorm, p90 [us], Attenuation [dB], RD [s], tEcho [ms], nEcho (t [ms]), Back, m [g], nini \n")
+        f.write(f'{nS}, {RG}, {RGnorm}, {p90}, {att}, {RD}, {tEcho:.1f}, {nEcho:.0f} ({tau[-1]}), {Back}, {m}, {niniT2} \n\n')
 
         f.write("T2 [ms], Distribution, Cumulative \n")
         for i in range(len(T2)):
@@ -53,7 +53,7 @@ def main():
         for i in range(len(tau)):
             f.write(f'{tau[i]:.6f}, {Z[i]:.6f}, {M[i]:.6f} \n')
 
-    plot(tau, Z, M, T2, S, Out, nS, RG, RGnorm, p90, att, RD, alpha, tEcho, nEcho, Back, m, cumT2)
+    plot(tau, Z, M, T2, S, Out, nS, RG, RGnorm, p90, att, RD, alpha, tEcho, nEcho, Back, m, cumT2, niniT2)
 
     if show == 'on':
         plt.show()

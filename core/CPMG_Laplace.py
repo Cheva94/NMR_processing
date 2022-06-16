@@ -11,7 +11,7 @@ plt.rcParams["font.size"] = 35
 
 plt.rcParams["axes.labelweight"] = "bold"
 plt.rcParams["axes.linewidth"] = 5
-plt.rcParams["axes.prop_cycle"] = cycler('color', ['tab:orange', 'mediumseagreen', 'm', 'y', 'k'])
+plt.rcParams["axes.prop_cycle"] = cycler('color', ['coral', 'teal', 'tab:orange', 'mediumseagreen'])
 
 plt.rcParams['xtick.major.size'] = 10
 plt.rcParams['xtick.major.width'] = 5
@@ -27,8 +27,8 @@ plt.rcParams["legend.shadow"] = True
 plt.rcParams["legend.fontsize"] = 30
 plt.rcParams["legend.edgecolor"] = 'black'
 
-plt.rcParams["figure.figsize"] = 12.5, 10
-plt.rcParams["figure.autolayout"] = True
+plt.rcParams["figure.figsize"] = 50, 20
+# plt.rcParams["figure.autolayout"] = True
 
 plt.rcParams["lines.linewidth"] = 4
 plt.rcParams["lines.markersize"] = 20
@@ -125,67 +125,59 @@ def fitMag(tau, T2, S):
 
     return M
 
-def plot(tau, Z, M, T2, S, Out, nS, RG, RGnorm, p90, att, RD, alpha, tEcho, nEcho, Back, m, cumT2):
-    fig, axs = plt.subplots(2, 2, figsize=(25, 20))
+def plot(tau, Z, M, T2, S, Out, nS, RG, RGnorm, p90, att, RD, alpha, tEcho, nEcho, Back, m, cumT2, niniT2):
+    fig, axs = plt.subplots(2, 2, gridspec_kw={'height_ratios': [3,1]})
 
-    fig.suptitle(f'nS={nS} | RG = {RG} dB ({RGnorm}) | m = {m} | RD = {RD} s | p90 = {p90} us  | BG = {Back} \n Atten = {att} dB | tE = {tEcho:.1f} ms | Ecos = {nEcho:.0f} ({tau[-1]:.1f} ms) | Alpha = {alpha}', fontsize='small')
+    fig.suptitle(f'nS={nS} | RG = {RG} dB ({RGnorm}) | m = {m} | RD = {RD} s | p90 = {p90} us  | BG = {Back} | Atten = {att} dB | tE = {tEcho:.1f} ms | Ecos = {nEcho:.0f} ({tau[-1]:.1f} ms) | Alpha = {alpha} | nini = {niniT2}', fontsize='small')
 
-    axs[0,0].plot(tau, Z)
-    axs[0,0].plot(tau, M)
-    axs[0,0].set_xlim(-10, 210)
+    axs[0,0].plot(tau, Z, label='Exp')
+    axs[0,0].plot(tau, M, label='Fit')
+    # axs[0,0].set_xlim(-10, 210)
     axs[0,0].set_xlabel(r'$\tau$ [ms]')
     axs[0,0].set_ylabel('M')
+    axs[0,0].legend()
 
-    axins1 = inset_axes(axs[0,0], width="30%", height="30%", loc=1)
+    axins1 = inset_axes(axs[0,0], width="30%", height="30%", loc=5)
     axins1.plot(tau, Z)
     axins1.plot(tau, M)
     axins1.set_xlim(-1, 3)
     axins1.set_ylim(Z[10], Z[0]*1.1)
 
-    axs[0,1].semilogy(tau, Z, label='Exp')
-    axs[0,1].semilogy(tau, M, label='Fit')
-    axs[0,1].set_xlim(-10, 210)
-    axs[0,1].set_ylim(10**-2, 0.25*10**2)
-    axs[0,1].set_xlabel(r'$\tau$ [ms]')
-    axs[0,1].set_ylabel('log(M)')
-    axs[0,1].legend()
+    axs[1,0].semilogy(tau, Z, label='Exp')
+    axs[1,0].semilogy(tau, M, label='Fit')
+    axs[1,0].set_xlim(-10, 300)
+    axs[1,0].set_ylim(bottom=10**-3)
+    axs[1,0].set_xlabel(r'$\tau$ [ms]')
+    axs[1,0].set_ylabel('log(M)')
+    axs[1,0].legend()
 
     peaks, _ = find_peaks(S)
     peaksx, peaksy = T2[peaks], S[peaks]
 
-    if np.max(peaksy) < np.max(S)/4:
-        ymax = 1.1 * np.max(peaksy)
-    else:
-        ymax = None
+    ymax = np.max(peaksy) + 0.08
 
-    axs[1,0].plot(tau, M-Z, color = 'blue')
-    axs[1,0].axhline(0, c = 'k', lw = 4, ls = '-')
-    axs[1,0].set_xlim(-10, 210)
-    axs[1,0].set_xlabel(r'$\tau$ [ms]')
-    axs[1,0].set_ylabel('Residual')
+    axs[1,1].plot(tau, M-Z, color = 'blue', label='Fit-Exp')
+    axs[1,1].axhline(0, c = 'k', lw = 4, ls = '-')
+    axs[1,1].set_xlabel(r'$\tau$ [ms]')
+    axs[1,1].set_ylabel('Residual')
 
-    # Chi2 = []
-    # for x in range(len(M)):
-    #     Chi2.append((M[x] - Z[x])**2 / Z[x])
-    #
-    # axs[1,1].plot(tau, Chi2, color = 'blue')
-    # axs[1,1].axhline(0, c = 'k', lw = 4, ls = '-')
-    # # axs[1,1].set_xlim(-10, 210)
-    # axs[1,1].set_xlabel(r'$\tau$ [ms]')
-    # axs[1,1].set_ylabel(r'$\chi^2$')
-    # # axs[1,1].annotate(f'{np.sum(Chi2)}', xy = (0.98, 0.98), fontsize=30, ha='right')
-
-    axs[1,1].plot(T2, S, label = 'Dist.', color = 'teal')
-    axs[1,1].plot(peaksx, peaksy + 0.03, lw = 0, marker=11, color='black')
+    axs[0,1].plot(T2, S, label = 'Distrib.', color = 'teal')
+    axs[0,1].plot(peaksx, peaksy + 0.03, lw = 0, marker=11, color='black')
     for i in range(len(peaksx)):
-        axs[1,1].annotate(f'{peaksx[i]:.0f}', xy = (peaksx[i], peaksy[i] + 0.05), fontsize=30, ha='center')
-    axs[1,1].set_xlabel(r'$T_2$ [ms]')
-    axs[1,1].set_xscale('log')
-    axs[1,1].set_ylim(bottom=-0.05, top=ymax)
+        axs[0,1].annotate(f'{peaksx[i]:.0f}', xy = (peaksx[i], peaksy[i] + 0.05), fontsize=30, ha='center')
+    axs[0,1].set_xlabel(r'$T_2$ [ms]')
+    axs[0,1].set_xscale('log')
+    axs[0,1].set_ylim(bottom=-0.05, top=ymax)
 
-    ax5 = axs[1,1].twinx()
+    ax5 = axs[0,1].twinx()
     ax5.plot(T2, cumT2, label = 'Cumul', color = 'coral')
+    for x in range(len(T2)):
+        if S[x] == 0:
+            ax5.annotate(f'{100*cumT2[x]:.2f} %', xy = (T2[-1], cumT2[x]), fontsize=30, ha='right', color='coral')
     ax5.set_ylim(-0.1, 1.1)
-    ax5.legend()
 
+    lines, labels = axs[0,1].get_legend_handles_labels()
+    lines5, labels5 = ax5.get_legend_handles_labels()
+    ax5.legend(lines + lines5, labels + labels5)
+    
     plt.savefig(f'{Out}')

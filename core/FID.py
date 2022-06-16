@@ -13,7 +13,7 @@ plt.rcParams["font.size"] = 35
 
 plt.rcParams["axes.labelweight"] = "bold"
 plt.rcParams["axes.linewidth"] = 5
-plt.rcParams["axes.prop_cycle"] = cycler('color', ['tab:orange', 'mediumseagreen', 'm', 'y', 'k'])
+plt.rcParams["axes.prop_cycle"] = cycler('color', ['coral', 'teal', 'tab:orange', 'mediumseagreen'])
 plt.rcParams["axes.titlesize"] = "x-small"
 
 plt.rcParams['xtick.major.size'] = 10
@@ -69,7 +69,7 @@ def Norm(signal, RGnorm, RG, m):
         Norm = 1 / ((6.32589E-4 * np.exp(RG/9) - 0.0854) * m)
     return signal * Norm
 
-def plot(t, signal, nP, DW, nS, RGnorm, RG, p90, att, RD, Out, Back, m):
+def plot(t, signal, nP, DW, nS, RGnorm, RG, p90, att, RD, Out, Back, m, nini):
     points = 10
     fid0Arr = signal[0:points].real
     fid0 = sum(fid0Arr) / points
@@ -85,42 +85,47 @@ def plot(t, signal, nP, DW, nS, RGnorm, RG, p90, att, RD, Out, Back, m):
 
     fig, axs = plt.subplots(2, 2, gridspec_kw={'height_ratios': [3,1]})
 
-    fig.suptitle(f'nS={nS} | RG = {RG} dB ({RGnorm}) | RD = {RD} s | p90 = {p90} us | Atten = {att} dB | BG = {Back} | m = {m}', fontsize='small')
+    fig.suptitle(f'nS={nS} | RG = {RG} dB ({RGnorm}) | RD = {RD} s | p90 = {p90} us | Atten = {att} dB | BG = {Back} | m = {m} | nini = {nini}', fontsize='small')
 
-    axs[0,0].plot(t, signal.real)
+    axs[0,0].plot(t, signal.real, label='FID (real)')
+    axs[0,0].plot(t[0:points], signal[0:points].real, lw = 10, label = fr'$M_R ({points})$ = ({fid0:.2f} $\pm$ {fid0_SD:.2f})')
+    axs[0,0].axhline(y=0, color='teal', ls=':', lw=4)
     axs[0,0].set_xlabel('t [ms]')
     axs[0,0].set_ylabel('M')
+    axs[0,0].legend()
 
-    axins1 = inset_axes(axs[0,0], width="30%", height="30%", loc=1)
+    axins1 = inset_axes(axs[0,0], width="30%", height="30%", loc=5)
     axins1.plot(t, signal.real)
     axins1.plot(t[0:points], signal[0:points].real, lw = 10)
     axins1.set_xlim(0.01, 0.1)
     axins1.set_ylim(signal.real[20]*0.9, signal.real[0]*1.1)
-    axins1.text(0.98,0.98, fr'$M_R (0)$ = ({fid0:.2f} $\pm$ {fid0_SD:.2f})', ha='right', va='top', transform=axins1.transAxes, fontsize='small')
 
-    axs[1,0].plot(t, signal.imag)
+    axs[1,0].plot(t, signal.imag, label='FID (imag)')
+    axs[1,0].axhline(y=0, color='teal', ls=':', lw=4)
     axs[1,0].set_xlabel('t [ms]')
     axs[1,0].set_ylabel('M')
+    axs[1,0].legend()
 
-    axs[0,1].plot(CS, spec.real)
+    axs[0,1].plot(CS, spec.real, label='Spectrum (real)')
+    axs[0,1].fill_between(CS[260887:263405], 0, spec.real[260887:263405], label = fr'Peak area = {area_peak*1e-6:.2f}x10$^6$')
     axs[0,1].set_xlim(-0.1, 0.1)
     axs[0,1].set_ylim(-0.05, 1.2)
     axs[0,1].xaxis.set_minor_locator(AutoMinorLocator())
     axs[0,1].set_xlabel(r'$\delta$ [ppm]')
-    axs[0,1].axvline(x=0, color='gray', ls=':', lw=2)
-    axs[0,1].axvline(x=CS[260887], color='gray', ls=':', lw=3)
-    axs[0,1].axvline(x=CS[263405], color='gray', ls=':', lw=3)
-    axs[0,1].axhline(y=0.02, color='gray', ls=':', lw=3)
-    axs[0,1].text(0.98,0.98, fr'Peak Area = {area_peak*1e-6:.2f}x10$^6$', ha='right', va='top', transform=axs[0,1].transAxes, fontsize='small')
+    axs[0,1].axvline(x=0, color='teal', ls=':', lw=4)
+    axs[0,1].axhline(y=0, color='teal', ls=':', lw=4)
+    axs[0,1].legend()
 
     axins2 = inset_axes(axs[0,1], width="30%", height="30%", loc=2)
     axins2.tick_params(labelleft=False)
     axins2.plot(CS, spec.real)
 
-    axs[1,1].plot(CS, spec.imag)
+    axs[1,1].plot(CS, spec.imag, label='Spectrum (imag)')
+    axs[1,1].axhline(y=0, color='teal', ls=':', lw=4)
+    axs[1,1].axvline(x=0, color='teal', ls=':', lw=4)
     axs[1,1].set_xlim(-0.1, 0.1)
     axs[1,1].xaxis.set_minor_locator(AutoMinorLocator())
     axs[1,1].set_xlabel(r'$\delta$ [ppm]')
-    axs[1,1].axvline(x=0, color='gray', ls=':', lw=2)
+    axs[1,1].legend()
 
     plt.savefig(f'{Out}')

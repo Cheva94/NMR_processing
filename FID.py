@@ -45,7 +45,7 @@ def main():
         for i in range(len(t)):
             f.write(f'{t[i]:.6f}, {signal.real[i]:.6f}, {signal.imag[i]:.6f} \n')
 
-    plot(t, signal, nP, DW, nS, RGnorm, RG, p90, att, RD, Out, Back, m)
+    plot(t, signal, nP, DW, nS, RGnorm, RG, p90, att, RD, Out, Back, m, nini)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
