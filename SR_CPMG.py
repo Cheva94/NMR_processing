@@ -47,7 +47,7 @@ def main():
     if Back != None:
         Back = "Yes"
 
-    plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2max, RGnorm, alpha, Back, m)
+    plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2max, RGnorm, alpha, Back, m, niniT1, niniT2)
 
     if show == 'on':
         plt.show()

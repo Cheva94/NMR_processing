@@ -28,7 +28,7 @@ plt.rcParams["legend.fontsize"] = 30
 plt.rcParams["legend.edgecolor"] = 'black'
 
 plt.rcParams["figure.figsize"] = 50, 20
-# plt.rcParams["figure.autolayout"] = True
+plt.rcParams["figure.autolayout"] = True
 
 plt.rcParams["lines.linewidth"] = 4
 plt.rcParams["lines.markersize"] = 20
@@ -132,16 +132,13 @@ def plot(tau, Z, M, T2, S, Out, nS, RG, RGnorm, p90, att, RD, alpha, tEcho, nEch
 
     axs[0,0].plot(tau, Z, label='Exp')
     axs[0,0].plot(tau, M, label='Fit')
-    # axs[0,0].set_xlim(-10, 210)
     axs[0,0].set_xlabel(r'$\tau$ [ms]')
     axs[0,0].set_ylabel('M')
     axs[0,0].legend()
 
     axins1 = inset_axes(axs[0,0], width="30%", height="30%", loc=5)
-    axins1.plot(tau, Z)
-    axins1.plot(tau, M)
-    axins1.set_xlim(-1, 3)
-    axins1.set_ylim(Z[10], Z[0]*1.1)
+    axins1.plot(tau[0:30], Z[0:30])
+    axins1.plot(tau[0:30], M[0:30])
 
     axs[1,0].semilogy(tau, Z, label='Exp')
     axs[1,0].semilogy(tau, M, label='Fit')
@@ -154,7 +151,8 @@ def plot(tau, Z, M, T2, S, Out, nS, RG, RGnorm, p90, att, RD, alpha, tEcho, nEch
     peaks, _ = find_peaks(S)
     peaksx, peaksy = T2[peaks], S[peaks]
 
-    ymax = np.max(peaksy) + 0.08
+    topPeak = np.max(peaksy)
+    ymax = topPeak + 0.2
 
     axs[1,1].plot(tau, M-Z, color = 'blue', label='Fit-Exp')
     axs[1,1].axhline(0, c = 'k', lw = 4, ls = '-')
@@ -164,20 +162,22 @@ def plot(tau, Z, M, T2, S, Out, nS, RG, RGnorm, p90, att, RD, alpha, tEcho, nEch
     axs[0,1].plot(T2, S, label = 'Distrib.', color = 'teal')
     axs[0,1].plot(peaksx, peaksy + 0.03, lw = 0, marker=11, color='black')
     for i in range(len(peaksx)):
-        axs[0,1].annotate(f'{peaksx[i]:.0f}', xy = (peaksx[i], peaksy[i] + 0.05), fontsize=30, ha='center')
+        if peaksy[i] > 0.1 * topPeak:
+            axs[0,1].annotate(f'{peaksx[i]:.0f}', xy = (peaksx[i], peaksy[i] + 0.05), fontsize=30, ha='center')
     axs[0,1].set_xlabel(r'$T_2$ [ms]')
     axs[0,1].set_xscale('log')
     axs[0,1].set_ylim(bottom=-0.05, top=ymax)
 
-    ax5 = axs[0,1].twinx()
-    ax5.plot(T2, cumT2, label = 'Cumul', color = 'coral')
+    ax = axs[0,1].twinx()
+    ax.plot(T2, cumT2, label = 'Cumul.', color = 'coral')
     for x in range(len(T2)):
         if S[x] == 0:
-            ax5.annotate(f'{100*cumT2[x]:.2f} %', xy = (T2[-1], cumT2[x]), fontsize=30, ha='right', color='coral')
-    ax5.set_ylim(-0.1, 1.1)
+            ax.annotate(f'{100*cumT2[x]:.2f} %', xy = (T2[-1], cumT2[x]), fontsize=30, ha='right', color='coral')
+    ax.set_ylim(-0.1, 1.1)
+    ax.set_ylabel('Cumulative')
 
-    lines, labels = axs[0,1].get_legend_handles_labels()
-    lines5, labels5 = ax5.get_legend_handles_labels()
-    ax5.legend(lines + lines5, labels + labels5)
-    
+    lines1, labels1 = axs[0,1].get_legend_handles_labels()
+    lines2, labels2 = ax.get_legend_handles_labels()
+    ax.legend(lines1 + lines2, labels1 + labels2)
+
     plt.savefig(f'{Out}')

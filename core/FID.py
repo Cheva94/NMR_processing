@@ -95,10 +95,8 @@ def plot(t, signal, nP, DW, nS, RGnorm, RG, p90, att, RD, Out, Back, m, nini):
     axs[0,0].legend()
 
     axins1 = inset_axes(axs[0,0], width="30%", height="30%", loc=5)
-    axins1.plot(t, signal.real)
+    axins1.plot(t[0:30], signal[0:30].real)
     axins1.plot(t[0:points], signal[0:points].real, lw = 10)
-    axins1.set_xlim(0.01, 0.1)
-    axins1.set_ylim(signal.real[20]*0.9, signal.real[0]*1.1)
 
     axs[1,0].plot(t, signal.imag, label='FID (imag)')
     axs[1,0].axhline(y=0, color='teal', ls=':', lw=4)

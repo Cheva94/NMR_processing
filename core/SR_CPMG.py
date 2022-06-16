@@ -27,7 +27,7 @@ plt.rcParams["legend.shadow"] = True
 plt.rcParams["legend.fontsize"] = 30
 plt.rcParams["legend.edgecolor"] = 'black'
 
-plt.rcParams["figure.figsize"] = 12.5, 10
+plt.rcParams["figure.figsize"] = 50, 20
 plt.rcParams["figure.autolayout"] = True
 
 plt.rcParams["lines.linewidth"] = 4
@@ -141,95 +141,112 @@ def fitMag(tau1, tau2, T1, T2, S):
 
     return M1, M2
 
-def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2max, RGnorm, alpha, Back, m):
-    fig, axs = plt.subplots(2,4, figsize=(50, 20))
+def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2max, RGnorm, alpha, Back, m, niniT1, niniT2):
+    fig, axs = plt.subplots(2,4)
 
-    fig.suptitle(f'RG = {RGnorm} dB | Alpha = {alpha} | BG = {Back} | m = {m}', fontsize='small')
+    fig.suptitle(f'RG = {RGnorm} dB | m = {m} | BG = {Back} | Alpha = {alpha} | nini SR = {niniT1} | nini CPMG = {niniT2}', fontsize='small')
 
-    axs[0,0].plot(tau1, Z[:, 0])
-    axs[0,0].plot(tau1, M1)
+    axs[0,0].plot(tau1, Z[:, 0], label='Exp')
+    axs[0,0].plot(tau1, M1, label='Fit')
     axs[0,0].set_xlabel(r'$\tau_1$ [ms]')
     axs[0,0].set_ylabel('SR')
+    axs[0,0].legend()
 
-    axins1 = inset_axes(axs[0,0], width="30%", height="30%", loc=4)
-    axins1.plot(tau1, Z[:, 0])
-    axins1.plot(tau1, M1)
-    axins1.set_xlim(tau1[0]*0.8, tau1[10])
-    if Z[0, 0] < Z[10, 0]:
-        axins1.set_ylim(Z[0, 0]*0.9, Z[10, 0])
-    else:
-        axins1.set_ylim(0, Z[0, 0]*1.1)
-    axins1.xaxis.set_visible(False)
+    axins1 = inset_axes(axs[0,0], width="30%", height="30%", loc=5)
+    axins1.plot(tau1[0:15], Z[:, 0][0:15])
+    axins1.plot(tau1[0:15], M1[0:15])
 
     axs[1,0].plot(tau1, M1-Z[:, 0], color = 'blue')
     axs[1,0].axhline(0, c = 'k', lw = 4, ls = '-')
     axs[1,0].set_xlabel(r'$\tau$1 [ms]')
     axs[1,0].set_ylabel('Residual SR')
 
-    axs[0,1].plot(tau2, Z[-1, :])
-    axs[0,1].plot(tau2, M2)
+    axs[0,1].plot(tau2, Z[-1, :], label='Exp')
+    axs[0,1].plot(tau2, M2, label='Fit')
     axs[0,1].set_xlabel(r'$\tau_2$ [ms]')
     axs[0,1].set_ylabel('CPMG')
+    axs[0,1].legend()
 
-    axins2 = inset_axes(axs[0,1], width="30%", height="30%", loc=1)
-    axins2.plot(tau2, Z[-1, :])
-    axins2.plot(tau2, M2)
-    axins2.set_xlim(tau2[0]*0.8, tau2[10])
-    axins2.set_ylim(Z[-1, 10], Z[-1, 0]*1.05)
-    axins2.xaxis.set_visible(False)
+    axins2 = inset_axes(axs[0,1], width="30%", height="30%", loc=5)
+    axins2.plot(tau2[0:15], Z[-1, :][0:15])
+    axins2.plot(tau2[0:15], M2[0:15])
 
     axs[1,1].plot(tau2, M2-Z[-1, :], color = 'blue')
     axs[1,1].axhline(0, c = 'k', lw = 4, ls = '-')
     axs[1,1].set_xlabel(r'$\tau$2 [ms]')
     axs[1,1].set_ylabel('Residual CPMG')
 
-    projT1 = np.sum(S, axis=1)
-    peaks1, _ = find_peaks(projT1, height=0.005)
-    peaks1x, peaks1y = T1[peaks1], projT1[peaks1]
-
     projT2 = np.sum(S, axis=0)
     peaks2, _ = find_peaks(projT2, height=0.005)
     peaks2x, peaks2y = T2[peaks2], projT2[peaks2]
 
-    # np.savetxt(f"{Out}-DomRates1D_T1.csv", projT1)
-    # np.savetxt(f"{Out}-DomRates1D_T2.csv", projT1)
+    topPeak2 = np.max(peaks2y)
+    ymax2 = topPeak2 + 0.2
 
-    if np.max(peaks1y) < np.max(projT1)/4:
-        ymax = 1.1 * np.max(peaks1y)
-    else:
-        ymax = None
+    cumT2 = np.cumsum(projT2[15:-15])
+    cumT2 /= cumT2[-1]
 
-    axs[1,3].plot(projT1, T1)
-    axs[1,3].plot(peaks1y * 1.03, peaks1x, lw = 0, marker=8, color='black')
-    for i in range(len(peaks1x)):
-        axs[1,3].annotate(f'{peaks1x[i]:.0f}', xy = (peaks1y[i] * 1.05, peaks1x[i]), fontsize=30, va = 'center')
-    axs[1,3].set_ylabel(r'$T_1$ [ms]')
-    axs[1,3].set_yscale('log')
-    axs[1,3].set_xlim(left=-0.05, right=ymax)
-
-    if np.max(peaks2y) < np.max(projT2)/4:
-        ymax = 1.1 * np.max(peaks2y)
-    else:
-        ymax = None
-
-    axs[0,2].plot(T2, projT2)
-    axs[0,2].plot(peaks2x, peaks2y * 1.03, lw = 0, marker=11, color='black')
+    axs[0,2].plot(T2[15:-15], projT2[15:-15], label = 'Distrib.', color = 'teal')
     for i in range(len(peaks2x)):
-        axs[0,2].annotate(f'{peaks2x[i]:.0f}', xy = (peaks2x[i], peaks2y[i] * 1.05), fontsize=30, ha = 'center')
+        if peaks2y[i] > 0.1 * topPeak2:
+            axs[0,2].plot(peaks2x[i], peaks2y[i] + 0.03, lw = 0, marker=11, color='black')
+            axs[0,2].annotate(f'{peaks2x[i]:.0f}', xy = (peaks2x[i], peaks2y[i] + 0.05), fontsize=30, ha = 'center')
     axs[0,2].set_xlabel(r'$T_2$ [ms]')
     axs[0,2].set_xscale('log')
-    axs[0,2].set_ylim(bottom=-0.05, top=ymax)
+    axs[0,2].set_ylim(bottom=-0.05, top=ymax2)
+
+    ax = axs[0,2].twinx()
+    ax.plot(T2[15:-15], cumT2, label = 'Cumul.', color = 'coral')
+    for x in range(len(T2[15:-15])):
+        if projT2[15:-15][x] == 0:
+            ax.annotate(f'{100*cumT2[x]:.2f} %', xy = (projT2[15:-15][-1], cumT2[x]), fontsize=30, ha='right', color='coral')
+    ax.set_ylim(-0.1, 1.1)
+    ax.set_ylabel('Cumulative')
+
+    lines1, labels1 = axs[0,2].get_legend_handles_labels()
+    lines2, labels2 = ax.get_legend_handles_labels()
+    ax.legend(lines1 + lines2, labels1 + labels2)
+
+    projT1 = np.sum(S, axis=1)
+    peaks1, _ = find_peaks(projT1, height=0.005)
+    peaks1x, peaks1y = T1[peaks1], projT1[peaks1]
+
+    topPeak1 = np.max(peaks1y)
+    ymax1 = topPeak1 + 0.2
+
+    cumT1 = np.cumsum(projT1[15:-15])
+    cumT1 /= cumT1[-1]
+
+    axs[1,3].plot(projT1[15:-15], T1[15:-15], label = 'Distrib.', color = 'teal')
+    for i in range(len(peaks1x)):
+        if peaks1y[i] > 0.1 * topPeak1:
+            axs[1,3].plot(peaks1y[i] + 0.03, peaks1x[i], lw = 0, marker=8, color='black')
+            axs[1,3].annotate(f'{peaks1x[i]:.0f}', xy = (peaks1y[i] + 0.05, peaks1x[i]), fontsize=30, va = 'center')
+    axs[1,3].set_ylabel(r'$T_1$ [ms]')
+    axs[1,3].set_yscale('log')
+    axs[1,3].set_xlim(left=-0.05, right=ymax1)
+
+    ax = axs[1,3].twinx()
+    ax.plot(cumT1, T1[15:-15], label = 'Cumul.', color = 'coral')
+    for x in range(len(T1[15:-15])):
+        if projT1[15:-15][x] == 0:
+            ax.annotate(f'{100*cumT1[x]:.2f} %', xy = (cumT1[x], projT1[15:-15][-1]), fontsize=30, ha='right', color='coral')
+    ax.set_xlim(-0.1, 1.1)
+    ax.set_xlabel('Cumulative')
+
+    lines1, labels1 = axs[1,3].get_legend_handles_labels()
+    lines2, labels2 = ax.get_legend_handles_labels()
+    ax.legend(lines1 + lines2, labels1 + labels2)
 
     mini = np.max([T1min, T2min])
     maxi = np.min([T1max, T2max])
 
     axs[1,2].plot([10.0**mini, 10.0**maxi], [10.0**mini, 10.0**maxi], color='black', ls='-', alpha=0.7, zorder=-2, label = r'$T_1$ = $T_2$')
-
     axs[1,2].contour(T2[15:-15], T1[15:-15], S[15:-15, 15:-15], nLevel, cmap='rainbow')
     axs[1,2].set_xlabel(r'$T_2$ [ms]')
     axs[1,2].set_ylabel(r'$T_1$ [ms]')
-    # axs[1,2].set_xlim(10.0**T2min, 10.0**T2max)
-    # axs[1,2].set_ylim(10.0**T1min, 10.0**T1max)
+    axs[1,2].set_xlim(10.0**T2min, 10.0**T2max)
+    axs[1,2].set_ylim(10.0**T1min, 10.0**T1max)
     axs[1,2].set_xscale('log')
     axs[1,2].set_yscale('log')
     axs[1,2].legend(loc='lower right')
@@ -237,6 +254,9 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2m
     axs[0,3].axis('off')
 
     plt.savefig(f'{Out}')
+
+    # np.savetxt(f"{Out}-DomRates1D_T1.csv", projT1)
+    # np.savetxt(f"{Out}-DomRates1D_T2.csv", projT1)
 
 def newSS(newS):
     return pd.read_csv(newS, header = None).to_numpy()
