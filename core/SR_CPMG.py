@@ -197,9 +197,13 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2m
 
     ax = axs[0,2].twinx()
     ax.plot(T2[15:-15], cumT2, label = 'Cumul.', color = 'coral')
-    for x in range(len(T2[15:-15])):
-        if projT2[15:-15][x] == 0:
-            ax.annotate(f'{100*cumT2[x]:.2f} %', xy = (projT2[15:-15][-1], cumT2[x]), fontsize=30, ha='right', color='coral')
+    ref = cumT2[0]
+    for x in range(len(cumT2)):
+        if cumT2[x] < 0.01:
+            continue
+        elif (cumT2[x] - ref) < 0.0001:
+            ax.annotate(f'{100*cumT2[x]:.0f} %', xy = (T2[15:-15][-1], cumT2[x]), fontsize=30, ha='right', color='coral')
+        ref = cumT2[x]
     ax.set_ylim(-0.1, 1.1)
     ax.set_ylabel('Cumulative')
 
@@ -217,24 +221,29 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2m
     cumT1 = np.cumsum(projT1[15:-15])
     cumT1 /= cumT1[-1]
 
-    axs[1,3].plot(projT1[15:-15], T1[15:-15], label = 'Distrib.', color = 'teal')
+    axs[0,3].plot(T1[15:-15], projT1[15:-15], label = 'Distrib.', color = 'teal')
     for i in range(len(peaks1x)):
         if peaks1y[i] > 0.1 * topPeak1:
-            axs[1,3].plot(peaks1y[i] + 0.03, peaks1x[i], lw = 0, marker=8, color='black')
-            axs[1,3].annotate(f'{peaks1x[i]:.0f}', xy = (peaks1y[i] + 0.05, peaks1x[i]), fontsize=30, va = 'center')
-    axs[1,3].set_ylabel(r'$T_1$ [ms]')
-    axs[1,3].set_yscale('log')
-    axs[1,3].set_xlim(left=-0.05, right=ymax1)
+            axs[0,3].plot(peaks1x[i], peaks1y[i] + 0.03, lw = 0, marker=11, color='black')
+            axs[0,3].annotate(f'{peaks1x[i]:.0f}', xy = (peaks1x[i], peaks1y[i] + 0.05), fontsize=30, ha = 'center')
+    axs[0,3].set_xlabel(r'$T_1$ [ms]')
+    axs[0,3].set_xscale('log')
+    axs[0,3].set_ylim(bottom=-0.05, top=ymax1)
 
-    ax = axs[1,3].twinx()
-    ax.plot(cumT1, T1[15:-15], label = 'Cumul.', color = 'coral')
-    for x in range(len(T1[15:-15])):
-        if projT1[15:-15][x] == 0:
-            ax.annotate(f'{100*cumT1[x]:.2f} %', xy = (cumT1[x], projT1[15:-15][-1]), fontsize=30, ha='right', color='coral')
-    ax.set_xlim(-0.1, 1.1)
-    ax.set_xlabel('Cumulative')
+    ax = axs[0,3].twinx()
+    ax.plot(T1[15:-15], cumT1, label = 'Cumul.', color = 'coral')
 
-    lines1, labels1 = axs[1,3].get_legend_handles_labels()
+    ref = cumT1[0]
+    for x in range(len(cumT1)):
+        if cumT1[x] < 0.01:
+            continue
+        elif (cumT1[x] - ref) < 0.0001:
+            ax.annotate(f'{100*cumT1[x]:.0f} %', xy = (T1[15:-15][-1], cumT1[x]), fontsize=30, ha='right', color='coral')
+        ref = cumT1[x]
+    ax.set_ylim(-0.1, 1.1)
+    ax.set_ylabel('Cumulative')
+
+    lines1, labels1 = axs[0,3].get_legend_handles_labels()
     lines2, labels2 = ax.get_legend_handles_labels()
     ax.legend(lines1 + lines2, labels1 + labels2)
 
@@ -251,12 +260,19 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2m
     axs[1,2].set_yscale('log')
     axs[1,2].legend(loc='lower right')
 
-    axs[0,3].axis('off')
+    axs[1,3].axis('off')
 
     plt.savefig(f'{Out}')
 
-    # np.savetxt(f"{Out}-DomRates1D_T1.csv", projT1)
-    # np.savetxt(f"{Out}-DomRates1D_T2.csv", projT1)
+    with open(f'{Out}-DomRates1D_T1.csv', 'w') as f:
+        f.write("T1 [ms], Distribution, Cumulative \n")
+        for i in range(len(T1[15:-15])):
+            f.write(f'{T1[15:-15][i]:.6f}, {projT1[15:-15][i]:.6f}, {cumT1[i]:.6f} \n')
+
+    with open(f'{Out}-DomRates1D_T2.csv', 'w') as f:
+        f.write("T2 [ms], Distribution, Cumulative \n")
+        for i in range(len(T2[15:-15])):
+            f.write(f'{T2[15:-15][i]:.6f}, {projT2[15:-15][i]:.6f}, {cumT2[i]:.6f} \n')
 
 def newSS(newS):
     return pd.read_csv(newS, header = None).to_numpy()

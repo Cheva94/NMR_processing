@@ -170,9 +170,13 @@ def plot(tau, Z, M, T2, S, Out, nS, RG, RGnorm, p90, att, RD, alpha, tEcho, nEch
 
     ax = axs[0,1].twinx()
     ax.plot(T2, cumT2, label = 'Cumul.', color = 'coral')
+    ref = cumT2[0]
     for x in range(len(T2)):
-        if S[x] == 0:
-            ax.annotate(f'{100*cumT2[x]:.2f} %', xy = (T2[-1], cumT2[x]), fontsize=30, ha='right', color='coral')
+        if cumT2[x] < 0.01:
+            continue
+        elif (cumT2[x] - ref) < 0.0001:
+            ax.annotate(f'{100*cumT2[x]:.0f} %', xy = (T2[-1], cumT2[x]), fontsize=30, ha='right', color='coral')
+        ref = cumT2[x]
     ax.set_ylim(-0.1, 1.1)
     ax.set_ylabel('Cumulative')
 
