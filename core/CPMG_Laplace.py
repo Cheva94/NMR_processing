@@ -1,22 +1,17 @@
-#!/usr/bin/python3.9
-'''
-    Written by: Ignacio J. Chevallier-Boutell.
-    Dated: December, 2021.
-'''
-
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 from cycler import cycler
 from scipy.signal import find_peaks
 import matplotlib as mpl
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
 plt.rcParams["font.weight"] = "bold"
 plt.rcParams["font.size"] = 35
 
 plt.rcParams["axes.labelweight"] = "bold"
 plt.rcParams["axes.linewidth"] = 5
-plt.rcParams["axes.prop_cycle"] = cycler('color', ['tab:orange', 'mediumseagreen', 'm', 'y', 'k'])
+plt.rcParams["axes.prop_cycle"] = cycler('color', ['coral', 'teal', 'tab:orange', 'mediumseagreen'])
 
 plt.rcParams['xtick.major.size'] = 10
 plt.rcParams['xtick.major.width'] = 5
@@ -32,7 +27,7 @@ plt.rcParams["legend.shadow"] = True
 plt.rcParams["legend.fontsize"] = 30
 plt.rcParams["legend.edgecolor"] = 'black'
 
-plt.rcParams["figure.figsize"] = 12.5, 13.5
+plt.rcParams["figure.figsize"] = 50, 20
 plt.rcParams["figure.autolayout"] = True
 
 plt.rcParams["lines.linewidth"] = 4
@@ -72,11 +67,11 @@ def PhCorr(decay):
 
     return decay.real
 
-def Norm(Z, RGnorm, RG, m):
+def Norm(Z, RGnorm, RG, nH):
     if RGnorm == "off":
-        Norm = 1 / m
+        Norm = 1 / nH
     elif RGnorm == 'on':
-        Norm = 1 / ((6.32589E-4 * np.exp(RG/9) - 0.0854) * m)
+        Norm = 1 / ((6.32589E-4 * np.exp(RG/9) - 0.0854) * nH)
     return Z * Norm
 
 def NLI_FISTA(K, Z, alpha, S):
@@ -111,46 +106,82 @@ def NLI_FISTA(K, Z, alpha, S):
 
             Res = np.abs(ObjFunc - lastRes) / ObjFunc
             lastRes = ObjFunc
-            print(f'# It = {iter} >>> Obj. Func. = {ObjFunc:.4f} >>> Residue = {Res:.6f}')
+            print(f'# It = {iter} >>> Residue = {Res:.6f}')
 
             if Res < 1E-5:
                 break
 
     return S[:, 0]
 
-def plot_Z(tau, Z, Out, nS, RG, RGnorm, p90, att, RD, tEcho, nEcho, Back, m):
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(25, 10))
+def fitMag(tau, T2, S):
+    t = range(len(tau))
+    d = range(len(T2))
+    M = []
+    for i in t:
+        m = 0
+        for j in d:
+            m += S[j] * np.exp(- tau[i] / T2[j])
+        M.append(m)
 
-    fig.suptitle(f'nS={nS} | RG = {RG} dB ({RGnorm}) | RD = {RD} s | p90 = {p90} us | Atten = {att} dB \n Ecos = {nEcho} | tE = {tEcho:.1f} ms | BG = {Back} | m = {m}', fontsize='small')
-    ax1.plot(tau, Z)
-    ax1.set_xlabel(r'$\tau$ [ms]')
-    ax1.set_ylabel('M')
+    return M
 
-    ax2.semilogy(tau, Z)
-    ax2.set_xlabel(r'$\tau$ [ms]')
-    ax2.set_ylabel('log(M)')
+def plot(tau, Z, M, T2, S, Out, nS, RG, RGnorm, p90, att, RD, alpha, tEcho, nEcho, Back, nH, cumT2, niniT2):
+    fig, axs = plt.subplots(2, 2, gridspec_kw={'height_ratios': [3,1]})
 
-    plt.savefig(f'{Out}-DomTemp')
+    fig.suptitle(f'nS={nS} | RG = {RG} dB ({RGnorm}) | nH = {nH:.6f} | RD = {RD} s | p90 = {p90} us  | BG = {Back} | Atten = {att} dB | tE = {tEcho:.1f} ms | Ecos = {nEcho:.0f} ({tau[-1]:.1f} ms) | Alpha = {alpha} | nini = {niniT2}', fontsize='large')
 
-def plot_distrib(T2, S, Out, alpha, nS, RG, RGnorm, p90, att, RD, tEcho, nEcho, Back, m):
+    axs[0,0].plot(tau, Z, label='Exp')
+    axs[0,0].plot(tau, M, label='Fit')
+    axs[0,0].set_xlabel(r'$\tau$ [ms]')
+    axs[0,0].set_ylabel('M / molH')
+    axs[0,0].legend()
+
+    axins1 = inset_axes(axs[0,0], width="30%", height="30%", loc=5)
+    axins1.plot(tau[0:30], Z[0:30])
+    axins1.plot(tau[0:30], M[0:30])
+
+    axs[1,0].semilogy(tau, Z, label='Exp')
+    axs[1,0].semilogy(tau, M, label='Fit')
+    axs[1,0].set_xlim(-10, 300)
+    axs[1,0].set_ylim(bottom=10**-3)
+    axs[1,0].set_xlabel(r'$\tau$ [ms]')
+    axs[1,0].set_ylabel('log(M / molH)')
+    axs[1,0].legend()
+
     peaks, _ = find_peaks(S)
     peaksx, peaksy = T2[peaks], S[peaks]
 
-    fig, ax = plt.subplots()
+    topPeak = np.max(peaksy)
+    ymax = topPeak + 0.2
 
-    fig.suptitle(f'nS={nS} | RG = {RG} dB ({RGnorm}) | RD = {RD} s \n p90 = {p90} us | Atten = {att} dB \n Ecos = {nEcho} | tE = {tEcho:.1f} ms | Alpha = {alpha} \n BG = {Back} | m = {m}', fontsize='small')
+    axs[1,1].plot(tau, M-Z, color = 'blue', label='Fit-Exp')
+    axs[1,1].axhline(0, c = 'k', lw = 4, ls = '-')
+    axs[1,1].set_xlabel(r'$\tau$ [ms]')
+    axs[1,1].set_ylabel('Residual')
 
-    if np.max(peaksy) < np.max(S)/4:
-        ymax = 1.1 * np.max(peaksy)
-    else:
-        ymax = None
-    ax.plot(T2, S)
-    ax.plot(peaksx, peaksy, lw = 0, marker=2, color='black')
+    axs[0,1].plot(T2, S, label = 'Distrib.', color = 'teal')
+    axs[0,1].plot(peaksx, peaksy + 0.03, lw = 0, marker=11, color='black')
     for i in range(len(peaksx)):
-        ax.annotate(f'({peaksx[i]:.2f}, {peaksy[i]:.2f})', xy = (peaksx[i], peaksy[i]), fontsize=30)
-    ax.set_xlabel(r'$T_2$ [ms]')
-    ax.set_xscale('log')
-    # ax.set_ylim(bottom=-0.005, top=ymax)
-    ax.set_ylim(bottom=-0.05, top=ymax)
+        if peaksy[i] > 0.1 * topPeak:
+            axs[0,1].annotate(f'{peaksx[i]:.0f}', xy = (peaksx[i], peaksy[i] + 0.05), fontsize=30, ha='center')
+    axs[0,1].set_xlabel(r'$T_2$ [ms]')
+    axs[0,1].set_xscale('log')
+    axs[0,1].set_ylim(bottom=-0.05, top=ymax)
 
-    plt.savefig(f'{Out}-DomRates')
+    ax = axs[0,1].twinx()
+    ax.plot(T2, cumT2, label = 'Cumul.', color = 'coral')
+    ref = cumT2[0]
+    for x in range(len(T2)):
+        if cumT2[x] < 0.01:
+            continue
+        elif (cumT2[x] - ref) < 0.0001:
+            ax.annotate(f'{100*cumT2[x]:.0f} %', xy = (T2[-1], cumT2[x]), fontsize=30, ha='right', color='coral')
+        ref = cumT2[x]
+    ax.set_ylim(-0.1, 1.1)
+    ax.set_ylabel('Cumulative')
+
+    lines1, labels1 = axs[0,1].get_legend_handles_labels()
+    lines2, labels2 = ax.get_legend_handles_labels()
+    ax.legend(lines1 + lines2, labels1 + labels2)
+
+    plt.savefig(f'{Out}')

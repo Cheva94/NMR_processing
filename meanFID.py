@@ -1,11 +1,11 @@
-#!/usr/bin/python3.9
+#!/usr/bin/python3.10
 '''
     Written by: Ignacio J. Chevallier-Boutell.
     Dated: February, 2022.
 '''
 
 import argparse
-from core.coremeanFID import *
+from core.meanFID import *
 
 def main():
 
