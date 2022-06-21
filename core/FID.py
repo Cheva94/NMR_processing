@@ -62,14 +62,14 @@ def PhCorr(signal):
 
     return signal * np.exp(1j * np.deg2rad(max(initVal, key=initVal.get)))
 
-def Norm(signal, RGnorm, RG, m):
+def Norm(signal, RGnorm, RG, nH):
     if RGnorm == "off":
-        Norm = 1 / m
+        Norm = 1 / nH
     elif RGnorm == 'on':
-        Norm = 1 / ((6.32589E-4 * np.exp(RG/9) - 0.0854) * m)
+        Norm = 1 / ((6.32589E-4 * np.exp(RG/9) - 0.0854) * nH)
     return signal * Norm
 
-def plot(t, signal, nP, DW, nS, RGnorm, RG, p90, att, RD, Out, Back, m, nini):
+def plot(t, signal, nP, DW, nS, RGnorm, RG, p90, att, RD, Out, Back, nH, nini):
     points = 10
     fid0Arr = signal[0:points].real
     fid0 = sum(fid0Arr) / points
@@ -80,18 +80,19 @@ def plot(t, signal, nP, DW, nS, RGnorm, RG, p90, att, RD, Out, Back, m, nini):
     CS = freq / 20 # ppm for Minispec scale
     spec = np.flip(FT.fftshift(FT.fft(signal, n = zf)))
     max_peak = np.max(spec)
-    area_peak = np.sum(spec.real[260887:263405])
+    # area_peak = np.sum(spec.real[260887:263405])
     spec /= max_peak
+    area_peak = np.sum(spec.real[260887:263405])
 
     fig, axs = plt.subplots(2, 2, gridspec_kw={'height_ratios': [3,1]})
 
-    fig.suptitle(f'nS={nS} | RG = {RG} dB ({RGnorm}) | RD = {RD} s | p90 = {p90} us | Atten = {att} dB | BG = {Back} | m = {m} | nini = {nini}', fontsize='small')
+    fig.suptitle(f'nS={nS} | RG = {RG} dB ({RGnorm}) | RD = {RD} s | p90 = {p90} us | Atten = {att} dB | BG = {Back} | nH = {nH:.6f} mol | nini = {nini}', fontsize='large') #large
 
     axs[0,0].plot(t, signal.real, label='FID (real)')
     axs[0,0].plot(t[0:points], signal[0:points].real, lw = 10, label = fr'$M_R ({points})$ = ({fid0:.2f} $\pm$ {fid0_SD:.2f})')
     axs[0,0].axhline(y=0, color='teal', ls=':', lw=4)
     axs[0,0].set_xlabel('t [ms]')
-    axs[0,0].set_ylabel('M')
+    axs[0,0].set_ylabel('M / molH')
     axs[0,0].legend()
 
     axins1 = inset_axes(axs[0,0], width="30%", height="30%", loc=5)
@@ -101,17 +102,18 @@ def plot(t, signal, nP, DW, nS, RGnorm, RG, p90, att, RD, Out, Back, m, nini):
     axs[1,0].plot(t, signal.imag, label='FID (imag)')
     axs[1,0].axhline(y=0, color='teal', ls=':', lw=4)
     axs[1,0].set_xlabel('t [ms]')
-    axs[1,0].set_ylabel('M')
+    axs[1,0].set_ylabel('M / molH')
     axs[1,0].legend()
 
     axs[0,1].plot(CS, spec.real, label='Spectrum (real)')
-    axs[0,1].fill_between(CS[260887:263405], 0, spec.real[260887:263405], label = fr'Peak area = {area_peak*1e-6:.2f}x10$^6$')
+    # axs[0,1].fill_between(CS[260887:263405], 0, spec.real[260887:263405], label = fr'Peak area = {area_peak*1e-6:.2f}x10$^6$', alpha = 0.25)
+    axs[0,1].fill_between(CS[260887:263405], 0, spec.real[260887:263405], label = fr'Peak area = {area_peak:.0f}', alpha = 0.25)
     axs[0,1].set_xlim(-0.1, 0.1)
     axs[0,1].set_ylim(-0.05, 1.2)
     axs[0,1].xaxis.set_minor_locator(AutoMinorLocator())
     axs[0,1].set_xlabel(r'$\delta$ [ppm]')
-    axs[0,1].axvline(x=0, color='teal', ls=':', lw=4)
-    axs[0,1].axhline(y=0, color='teal', ls=':', lw=4)
+    axs[0,1].axvline(x=0, color='teal', ls=':', lw=2)
+    axs[0,1].axhline(y=0, color='teal', ls=':', lw=2)
     axs[0,1].legend()
 
     axins2 = inset_axes(axs[0,1], width="30%", height="30%", loc=2)

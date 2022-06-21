@@ -72,11 +72,11 @@ def PhCorr(signal, N1, N2, niniT1, niniT2):
 
     return np.reshape(Z, (N1, N2))[niniT1:, niniT2:]
 
-def Norm(Z, RGnorm, m):
+def Norm(Z, RGnorm, nH):
     if RGnorm == None:
-        Norm = 1 / m
+        Norm = 1 / nH
     else:
-        Norm = 1 / ((6.32589E-4 * np.exp(RGnorm/9) - 0.0854) * m)
+        Norm = 1 / ((6.32589E-4 * np.exp(RGnorm/9) - 0.0854) * nH)
     return Z * Norm
 
 def NLI_FISTA(K1, K2, Z, alpha, S):
@@ -141,10 +141,10 @@ def fitMag(tau1, tau2, T1, T2, S):
 
     return M1, M2
 
-def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2max, RGnorm, alpha, Back, m, niniT1, niniT2):
+def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2max, RGnorm, alpha, Back, nH, niniT1, niniT2):
     fig, axs = plt.subplots(2,4)
 
-    fig.suptitle(f'RG = {RGnorm} dB | m = {m} | BG = {Back} | Alpha = {alpha} | nini SR = {niniT1} | nini CPMG = {niniT2}', fontsize='small')
+    fig.suptitle(f'RG = {RGnorm} dB | nH = {nH:.6f} | BG = {Back} | Alpha = {alpha} | nini SR = {niniT1} | nini CPMG = {niniT2}', fontsize='large')
 
     axs[0,0].plot(tau1, Z[:, 0], label='Exp')
     axs[0,0].plot(tau1, M1, label='Fit')
@@ -153,8 +153,8 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2m
     axs[0,0].legend()
 
     axins1 = inset_axes(axs[0,0], width="30%", height="30%", loc=5)
-    axins1.plot(tau1[0:15], Z[:, 0][0:15])
-    axins1.plot(tau1[0:15], M1[0:15])
+    axins1.plot(tau1[0:(15-niniT1)], Z[:, 0][0:(15-niniT1)])
+    axins1.plot(tau1[0:(15-niniT1)], M1[0:(15-niniT1)])
 
     axs[1,0].plot(tau1, M1-Z[:, 0], color = 'blue')
     axs[1,0].axhline(0, c = 'k', lw = 4, ls = '-')
@@ -168,8 +168,8 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2m
     axs[0,1].legend()
 
     axins2 = inset_axes(axs[0,1], width="30%", height="30%", loc=5)
-    axins2.plot(tau2[0:15], Z[-1, :][0:15])
-    axins2.plot(tau2[0:15], M2[0:15])
+    axins2.plot(tau2[0:(15-niniT2)], Z[-1, :][0:(15-niniT2)])
+    axins2.plot(tau2[0:(15-niniT2)], M2[0:(15-niniT2)])
 
     axs[1,1].plot(tau2, M2-Z[-1, :], color = 'blue')
     axs[1,1].axhline(0, c = 'k', lw = 4, ls = '-')

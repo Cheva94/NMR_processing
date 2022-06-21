@@ -11,7 +11,7 @@ def main():
 
     File = args.input
     Out = args.output
-    m = args.mass
+    nH = args.protonMoles
     RGnorm = args.RGnorm
     show = args.ShowPlot
     newS = args.ManualS
@@ -34,7 +34,7 @@ def main():
 
         Z -= back
 
-    Z = Norm(Z, RGnorm, m)
+    Z = Norm(Z, RGnorm, nH)
 
     if newS == 'off':
         S = NLI_FISTA(K1, K2, Z, alpha, S0)
@@ -47,7 +47,7 @@ def main():
     if Back != None:
         Back = "Yes"
 
-    plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2max, RGnorm, alpha, Back, m, niniT1, niniT2)
+    plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2max, RGnorm, alpha, Back, nH, niniT1, niniT2)
 
     if show == 'on':
         plt.show()
@@ -60,7 +60,7 @@ if __name__ == "__main__":
     parser.add_argument('-alpha', '--alpha', help = "Tikhonov regularization parameter.", type = float, default = 1)
     parser.add_argument('-T1', '--T1Range', help = "Range to consider for T1 values.", nargs = 2, type = int, default = [0, 5])
     parser.add_argument('-T2', '--T2Range', help = "Range to consider for T2 values.", nargs = 2, type = int, default = [0, 5])
-    parser.add_argument('-m', '--mass', help = "Sample mass.", type = float, default = 1)
+    parser.add_argument('-nH', '--protonMoles', type = float, default = 1)
     parser.add_argument('-nLevel', '--ContourLevels', help = "Number of levels to use in the contour plot.", type = int, default = 100)
     parser.add_argument('-nini', '--niniValues', help = "Number of values to avoid at the beginning of T1 and T2.", nargs = 2, type = int, default=[0, 0])
     parser.add_argument('-show', '--ShowPlot', help = "Show plots.", default = 'off')

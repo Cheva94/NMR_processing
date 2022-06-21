@@ -67,11 +67,11 @@ def PhCorr(decay):
 
     return decay.real
 
-def Norm(Z, RGnorm, RG, m):
+def Norm(Z, RGnorm, RG, nH):
     if RGnorm == "off":
-        Norm = 1 / m
+        Norm = 1 / nH
     elif RGnorm == 'on':
-        Norm = 1 / ((6.32589E-4 * np.exp(RG/9) - 0.0854) * m)
+        Norm = 1 / ((6.32589E-4 * np.exp(RG/9) - 0.0854) * nH)
     return Z * Norm
 
 def NLI_FISTA(K, Z, alpha, S):
@@ -125,15 +125,15 @@ def fitMag(tau, T2, S):
 
     return M
 
-def plot(tau, Z, M, T2, S, Out, nS, RG, RGnorm, p90, att, RD, alpha, tEcho, nEcho, Back, m, cumT2, niniT2):
+def plot(tau, Z, M, T2, S, Out, nS, RG, RGnorm, p90, att, RD, alpha, tEcho, nEcho, Back, nH, cumT2, niniT2):
     fig, axs = plt.subplots(2, 2, gridspec_kw={'height_ratios': [3,1]})
 
-    fig.suptitle(f'nS={nS} | RG = {RG} dB ({RGnorm}) | m = {m} | RD = {RD} s | p90 = {p90} us  | BG = {Back} | Atten = {att} dB | tE = {tEcho:.1f} ms | Ecos = {nEcho:.0f} ({tau[-1]:.1f} ms) | Alpha = {alpha} | nini = {niniT2}', fontsize='small')
+    fig.suptitle(f'nS={nS} | RG = {RG} dB ({RGnorm}) | nH = {nH:.6f} | RD = {RD} s | p90 = {p90} us  | BG = {Back} | Atten = {att} dB | tE = {tEcho:.1f} ms | Ecos = {nEcho:.0f} ({tau[-1]:.1f} ms) | Alpha = {alpha} | nini = {niniT2}', fontsize='large')
 
     axs[0,0].plot(tau, Z, label='Exp')
     axs[0,0].plot(tau, M, label='Fit')
     axs[0,0].set_xlabel(r'$\tau$ [ms]')
-    axs[0,0].set_ylabel('M')
+    axs[0,0].set_ylabel('M / molH')
     axs[0,0].legend()
 
     axins1 = inset_axes(axs[0,0], width="30%", height="30%", loc=5)
@@ -145,7 +145,7 @@ def plot(tau, Z, M, T2, S, Out, nS, RG, RGnorm, p90, att, RD, alpha, tEcho, nEch
     axs[1,0].set_xlim(-10, 300)
     axs[1,0].set_ylim(bottom=10**-3)
     axs[1,0].set_xlabel(r'$\tau$ [ms]')
-    axs[1,0].set_ylabel('log(M)')
+    axs[1,0].set_ylabel('log(M / molH)')
     axs[1,0].legend()
 
     peaks, _ = find_peaks(S)
