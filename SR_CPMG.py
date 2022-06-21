@@ -15,7 +15,6 @@ def main():
     Out = args.output
     nH = args.protonMoles
     RGnorm = args.RGnorm
-    show = args.ShowPlot
     newS = args.ManualS
     Back = args.background
     alpha = args.alpha
@@ -53,9 +52,6 @@ def main():
 
     plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2max, RGnorm, alpha, Back, nH, niniT1, niniT2)
 
-    if show == 'on':
-        plt.show()
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
@@ -67,7 +63,6 @@ if __name__ == "__main__":
     parser.add_argument('-nH', '--protonMoles', type = float, default = 1)
     parser.add_argument('-nLevel', '--ContourLevels', help = "Number of levels to use in the contour plot.", type = int, default = 30)
     parser.add_argument('-nini', '--niniValues', help = "Number of values to avoid at the beginning of T1 and T2.", nargs = 2, type = int, default=[0, 0])
-    parser.add_argument('-show', '--ShowPlot', help = "Show plots.", default = 'off')
     parser.add_argument('-newS', '--ManualS', default = 'off')
     parser.add_argument('-RGnorm', '--RGnorm', help = "Normalize by RG.", type = int, default = 70)
     parser.add_argument('-back', '--background', help = "Path to de FID background file.")

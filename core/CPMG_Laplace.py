@@ -52,9 +52,9 @@ def CPMG_file(File, T2min, T2max, niniT2):
         K[i, :] = np.exp(-tau[i] / T2)
 
     pAcq = pd.read_csv(File.split(".txt")[0]+'-acqs.txt', header = None, delim_whitespace = True)
-    nS, RG, p90, att, RD, tEcho, nEcho = pAcq.iloc[0, 1], pAcq.iloc[1, 1], pAcq.iloc[2, 1], pAcq.iloc[4, 1], pAcq.iloc[5, 1], 2*pAcq.iloc[6, 1], pAcq.iloc[7, 1]
+    nS, p90, att, RD, tEcho, nEcho = pAcq.iloc[0, 1], pAcq.iloc[2, 1], pAcq.iloc[4, 1], pAcq.iloc[5, 1], 2*pAcq.iloc[6, 1], pAcq.iloc[7, 1]
 
-    return S0, T2, tau[niniT2:], K, decay[niniT2:], nS, RG, p90, att, RD, tEcho, nEcho
+    return S0, T2, tau[niniT2:], K, decay[niniT2:], nS, p90, att, RD, tEcho, nEcho
 
 def PhCorr(decay):
     initVal = {}
@@ -67,8 +67,8 @@ def PhCorr(decay):
 
     return decay.real
 
-def Norm(Z, RGnorm, RG, nH):
-    norm = 1 / ((6.32589E-4 * np.exp(RG/9) - 0.0854) * nH)
+def Norm(Z, RGnorm, nH):
+    norm = 1 / ((6.32589E-4 * np.exp(RGnorm/9) - 0.0854) * nH)
     return Z * norm
 
 def NLI_FISTA(K, Z, alpha, S):
@@ -123,10 +123,10 @@ def fitMag(tau, T2, S):
 
     return M
 
-def plot(tau, Z, M, T2, S, Out, nS, RG, RGnorm, p90, att, RD, alpha, tEcho, nEcho, Back, nH, cumT2, niniT2):
+def plot(tau, Z, M, T2, S, Out, nS, RGnorm, p90, att, RD, alpha, tEcho, nEcho, Back, nH, cumT2, niniT2):
     fig, axs = plt.subplots(2, 2, gridspec_kw={'height_ratios': [3,1]})
 
-    fig.suptitle(f'nS={nS} | RG = {RG} dB | nH = {nH:.6f} | RD = {RD} s | p90 = {p90} us  | BG = {Back} | Atten = {att} dB | tE = {tEcho:.1f} ms | Ecos = {nEcho:.0f} ({tau[-1]:.1f} ms) | Alpha = {alpha} | nini = {niniT2}', fontsize='large')
+    fig.suptitle(f'nS={nS} | RG = {RGnorm} dB | nH = {nH:.6f} | RD = {RD} s | p90 = {p90} us  | BG = {Back} | Atten = {att} dB | tE = {tEcho:.1f} ms | Ecos = {nEcho:.0f} ({tau[-1]:.1f} ms) | Alpha = {alpha} | nini = {niniT2}', fontsize='large')
 
     axs[0,0].plot(tau, Z, label='Exp')
     axs[0,0].plot(tau, M, label='Fit')
