@@ -25,7 +25,7 @@ def main():
         S0, T2, tau, K, decay, nS, p90, att, RD, tEcho, nEcho = CPMG_file(File, T2min, T2max, niniT2)
         Z = PhCorr(decay)
 
-        _, _, _, _, back, _, _, _, _, _, _, _ = CPMG_file(Back, T2min, T2max, niniT2)
+        _, _, _, _, back, _, _, _, _, _, _ = CPMG_file(Back, T2min, T2max, niniT2)
         back = PhCorr(back)
 
         Z -= back

@@ -26,7 +26,7 @@ def main():
         t, signal, nP, DW, nS, p90, att, RD = FID_file(File, nini)
         signal = PhCorr(signal)
 
-        _, back, _, _, _, _, _, _, _ = FID_file(Back, nini)
+        _, back, _, _, _, _, _, _ = FID_file(Back, nini)
         back = PhCorr(back)
 
         Re = signal.real - back.real
