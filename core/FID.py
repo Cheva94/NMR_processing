@@ -49,9 +49,9 @@ def FID_file(File, nini):
     signal = Re + Im * 1j
 
     pAcq = pd.read_csv(File.split(".txt")[0]+'-acqs.txt', header = None, delim_whitespace = True)
-    nS, RG, p90, att, RD = pAcq.iloc[0, 1], pAcq.iloc[1, 1], pAcq.iloc[2, 1], pAcq.iloc[4, 1], pAcq.iloc[5, 1]
+    nS, p90, att, RD = pAcq.iloc[0, 1], pAcq.iloc[2, 1], pAcq.iloc[4, 1], pAcq.iloc[5, 1]
 
-    return t[nini:], signal[nini:], nP, DW, nS, RG, p90, att, RD
+    return t[nini:], signal[nini:], nP, DW, nS, p90, att, RD
 
 def PhCorr(signal):
     initVal = {}
@@ -62,11 +62,11 @@ def PhCorr(signal):
 
     return signal * np.exp(1j * np.deg2rad(max(initVal, key=initVal.get)))
 
-def Norm(signal, RGnorm, RG, nH):
-    norm = 1 / ((6.32589E-4 * np.exp(RG/9) - 0.0854) * nH)
+def Norm(signal, RGnorm, nH):
+    norm = 1 / ((6.32589E-4 * np.exp(RGnorm/9) - 0.0854) * nH)
     return signal * norm
 
-def plot(t, signal, nP, DW, nS, RGnorm, RG, p90, att, RD, Out, Back, nH, nini):
+def plot(t, signal, nP, DW, nS, RGnorm, p90, att, RD, Out, Back, nH, nini):
     points = 10
     fid0Arr = signal[0:points].real
     fid0 = sum(fid0Arr) / points
@@ -77,13 +77,12 @@ def plot(t, signal, nP, DW, nS, RGnorm, RG, p90, att, RD, Out, Back, nH, nini):
     CS = freq / 20 # ppm for Minispec scale
     spec = np.flip(FT.fftshift(FT.fft(signal, n = zf)))
     max_peak = np.max(spec)
-    # area_peak = np.sum(spec.real[260887:263405])
     spec /= max_peak
     area_peak = np.sum(spec.real[260887:263405])
 
     fig, axs = plt.subplots(2, 2, gridspec_kw={'height_ratios': [3,1]})
 
-    fig.suptitle(f'nS={nS} | RG = {RG} dB ({RGnorm}) | RD = {RD} s | p90 = {p90} us | Atten = {att} dB | BG = {Back} | nH = {nH:.6f} mol | nini = {nini}', fontsize='large') #large
+    fig.suptitle(f'nS={nS} | RG = {RGnorm} dB | RD = {RD} s | p90 = {p90} us | Atten = {att} dB | BG = {Back} | nH = {nH:.6f} mol | nini = {nini}', fontsize='large') #large
 
     axs[0,0].plot(t, signal.real, label='FID (real)')
     axs[0,0].plot(t[0:points], signal[0:points].real, lw = 10, label = fr'$M_R ({points})$ = ({fid0:.2f} $\pm$ {fid0_SD:.2f})')

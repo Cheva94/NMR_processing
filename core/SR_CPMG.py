@@ -143,7 +143,7 @@ def fitMag(tau1, tau2, T1, T2, S):
 def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2max, RGnorm, alpha, Back, nH, niniT1, niniT2):
     fig, axs = plt.subplots(2,4)
 
-    fig.suptitle(f'RG = {RGnorm} dB | nH = {nH:.6f} | BG = {Back} | Alpha = {alpha} | nini SR = {niniT1} | nini CPMG = {niniT2}', fontsize='large')
+    fig.suptitle(f'ns = 4 | RG = {RGnorm} dB | nH = {nH:.6f} | BG = {Back} | Alpha = {alpha} | nini SR = {niniT1} | nini CPMG = {niniT2}', fontsize='large')
 
     # SR: experimental y ajustada
     axs[0,0].plot(tau1, Z[:, 0], label='Exp')

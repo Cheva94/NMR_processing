@@ -107,6 +107,7 @@ def NLI_FISTA(K, Z, alpha, S):
 
             if Res < 1E-5:
                 break
+    print(f'¡Inversión lista! ({iter} iteraciones)')
 
     return S[:, 0]
 
@@ -125,7 +126,7 @@ def fitMag(tau, T2, S):
 def plot(tau, Z, M, T2, S, Out, nS, RG, RGnorm, p90, att, RD, alpha, tEcho, nEcho, Back, nH, cumT2, niniT2):
     fig, axs = plt.subplots(2, 2, gridspec_kw={'height_ratios': [3,1]})
 
-    fig.suptitle(f'nS={nS} | RG = {RG} dB ({RGnorm}) | nH = {nH:.6f} | RD = {RD} s | p90 = {p90} us  | BG = {Back} | Atten = {att} dB | tE = {tEcho:.1f} ms | Ecos = {nEcho:.0f} ({tau[-1]:.1f} ms) | Alpha = {alpha} | nini = {niniT2}', fontsize='large')
+    fig.suptitle(f'nS={nS} | RG = {RG} dB | nH = {nH:.6f} | RD = {RD} s | p90 = {p90} us  | BG = {Back} | Atten = {att} dB | tE = {tEcho:.1f} ms | Ecos = {nEcho:.0f} ({tau[-1]:.1f} ms) | Alpha = {alpha} | nini = {niniT2}', fontsize='large')
 
     axs[0,0].plot(tau, Z, label='Exp')
     axs[0,0].plot(tau, M, label='Fit')

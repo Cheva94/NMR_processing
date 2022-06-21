@@ -16,12 +16,14 @@ def main():
     Back = args.background
     nini = args.niniValues
 
+    print(f'RG = {RGnorm}')
+
     if Back == None:
-        t, signal, nP, DW, nS, RG, p90, att, RD = FID_file(File, nini)
+        t, signal, nP, DW, nS, p90, att, RD = FID_file(File, nini)
         signal = PhCorr(signal)
 
     else:
-        t, signal, nP, DW, nS, RG, p90, att, RD = FID_file(File, nini)
+        t, signal, nP, DW, nS, p90, att, RD = FID_file(File, nini)
         signal = PhCorr(signal)
 
         _, back, _, _, _, _, _, _, _ = FID_file(Back, nini)
@@ -32,20 +34,20 @@ def main():
 
         signal = Re + Im * 1j
 
-    signal = Norm(signal, RGnorm, RG, nH)
+    signal = Norm(signal, RGnorm, nH)
 
     if Back != None:
         Back = "Yes"
 
     with open(f'{Out}_FIDandParams.csv', 'w') as f:
-        f.write("nS, RG [dB], RGnorm, p90 [us], Attenuation [dB], RD [s], Back, nH [mol], nini \n")
-        f.write(f'{nS}, {RG}, {RGnorm}, {p90}, {att}, {RD}, {Back}, {nH}, {nini} \n\n')
+        f.write("nS, RG [dB], p90 [us], Attenuation [dB], RD [s], Back, nH [mol], nini \n")
+        f.write(f'{nS}, {RGnorm}, {p90}, {att}, {RD}, {Back}, {nH}, {nini} \n\n')
 
         f.write("t [ms], Re[FID]/molH, Im[FID]/molH \n")
         for i in range(len(t)):
             f.write(f'{t[i]:.6f}, {signal.real[i]:.6f}, {signal.imag[i]:.6f} \n')
 
-    plot(t, signal, nP, DW, nS, RGnorm, RG, p90, att, RD, Out, Back, nH, nini)
+    plot(t, signal, nP, DW, nS, RGnorm, p90, att, RD, Out, Back, nH, nini)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -55,7 +57,7 @@ if __name__ == "__main__":
     parser.add_argument('-nH', '--protonMoles', type = float, default = 1)
     parser.add_argument('-RGnorm', '--RGnorm', help = "Normalize by RG. Default: on", default = 70)
     parser.add_argument('-back', '--background', help = "Path to de FID background file.")
-    parser.add_argument('-nini', '--niniValues', help = "Number of values to avoid at the beginning of T2.", type = int, default=0)
+    parser.add_argument('-nini', '--niniValues', help = "Number of values to avoid at the beginning the FID.", type = int, default=0)
 
     args = parser.parse_args()
 
