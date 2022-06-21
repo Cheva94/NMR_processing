@@ -22,6 +22,8 @@ def main():
     niniT1, niniT2 = args.niniValues[0], args.niniValues[1]
     nLevel = args.ContourLevels
 
+    print(f'Alpha = {alpha}')
+
     if Back == None:
         S0, T1, T2, tau1, tau2, K1, K2, signal, N1, N2 = SRCPMG_file(File, T1min, T1max, T2min, T2max, niniT1, niniT2)
         Z = PhCorr(signal, N1, N2, niniT1, niniT2)
@@ -57,7 +59,7 @@ if __name__ == "__main__":
 
     parser.add_argument('input', help = "Path to the SR-CPMG file.")
     parser.add_argument('output', help = "Path for the output files.")
-    parser.add_argument('-alpha', '--alpha', help = "Tikhonov regularization parameter.", type = float, default = 1)
+    parser.add_argument('-alpha', '--alpha', help = "Tikhonov regularization parameter.", type = float, default = 0.01)
     parser.add_argument('-T1', '--T1Range', help = "Range to consider for T1 values.", nargs = 2, type = int, default = [0, 5])
     parser.add_argument('-T2', '--T2Range', help = "Range to consider for T2 values.", nargs = 2, type = int, default = [0, 5])
     parser.add_argument('-nH', '--protonMoles', type = float, default = 1)
