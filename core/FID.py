@@ -88,7 +88,7 @@ def plot(t, signal, nP, DW, nS, RGnorm, p90, att, RD, Out, Back, nH, nini):
     axs[0,0].plot(t[0:points], signal[0:points].real, lw = 10, label = fr'$M_R ({points})$ = ({fid0:.2f} $\pm$ {fid0_SD:.2f})')
     axs[0,0].axhline(y=0, color='teal', ls=':', lw=4)
     axs[0,0].set_xlabel('t [ms]')
-    axs[0,0].set_ylabel('M / molH')
+    axs[0,0].set_ylabel('FID')
     axs[0,0].legend()
 
     axins1 = inset_axes(axs[0,0], width="30%", height="30%", loc=5)
@@ -98,7 +98,7 @@ def plot(t, signal, nP, DW, nS, RGnorm, p90, att, RD, Out, Back, nH, nini):
     axs[1,0].plot(t, signal.imag, label='FID (imag)')
     axs[1,0].axhline(y=0, color='teal', ls=':', lw=4)
     axs[1,0].set_xlabel('t [ms]')
-    axs[1,0].set_ylabel('M / molH')
+    axs[1,0].set_ylabel('FID')
     axs[1,0].legend()
 
     axs[0,1].plot(CS, spec.real, label='Spectrum (real)')
