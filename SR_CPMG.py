@@ -63,11 +63,11 @@ if __name__ == "__main__":
     parser.add_argument('-T1', '--T1Range', help = "Range to consider for T1 values.", nargs = 2, type = int, default = [0, 5])
     parser.add_argument('-T2', '--T2Range', help = "Range to consider for T2 values.", nargs = 2, type = int, default = [0, 5])
     parser.add_argument('-nH', '--protonMoles', type = float, default = 1)
-    parser.add_argument('-nLevel', '--ContourLevels', help = "Number of levels to use in the contour plot.", type = int, default = 100)
+    parser.add_argument('-nLevel', '--ContourLevels', help = "Number of levels to use in the contour plot.", type = int, default = 75)
     parser.add_argument('-nini', '--niniValues', help = "Number of values to avoid at the beginning of T1 and T2.", nargs = 2, type = int, default=[0, 0])
     parser.add_argument('-show', '--ShowPlot', help = "Show plots.", default = 'off')
     parser.add_argument('-newS', '--ManualS', default = 'off')
-    parser.add_argument('-RGnorm', '--RGnorm', help = "Normalize by RG.", type = int)
+    parser.add_argument('-RGnorm', '--RGnorm', help = "Normalize by RG.", type = int, default = 70)
     parser.add_argument('-back', '--background', help = "Path to de FID background file.")
 
     args = parser.parse_args()
