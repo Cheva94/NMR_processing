@@ -6,6 +6,8 @@
 
 import argparse
 from core.CPMG_Laplace import *
+import warnings
+warnings.filterwarnings("ignore")
 
 def main():
 
