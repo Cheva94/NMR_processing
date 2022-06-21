@@ -53,7 +53,7 @@ if __name__ == "__main__":
     parser.add_argument('input', help = "Path to the FID file.")
     parser.add_argument('output', help = "Path for the output files.")
     parser.add_argument('-nH', '--protonMoles', type = float, default = 1)
-    parser.add_argument('-RGnorm', '--RGnorm', help = "Normalize by RG. Default: on", default = "on")
+    parser.add_argument('-RGnorm', '--RGnorm', help = "Normalize by RG. Default: on", default = 70)
     parser.add_argument('-back', '--background', help = "Path to de FID background file.")
     parser.add_argument('-nini', '--niniValues', help = "Number of values to avoid at the beginning of T2.", type = int, default=0)
 

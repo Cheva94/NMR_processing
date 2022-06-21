@@ -68,11 +68,8 @@ def PhCorr(decay):
     return decay.real
 
 def Norm(Z, RGnorm, RG, nH):
-    if RGnorm == "off":
-        Norm = 1 / nH
-    elif RGnorm == 'on':
-        Norm = 1 / ((6.32589E-4 * np.exp(RG/9) - 0.0854) * nH)
-    return Z * Norm
+    norm = 1 / ((6.32589E-4 * np.exp(RG/9) - 0.0854) * nH)
+    return Z * norm
 
 def NLI_FISTA(K, Z, alpha, S):
     Z = np.reshape(Z, (len(Z), 1))

@@ -63,11 +63,8 @@ def PhCorr(signal):
     return signal * np.exp(1j * np.deg2rad(max(initVal, key=initVal.get)))
 
 def Norm(signal, RGnorm, RG, nH):
-    if RGnorm == "off":
-        Norm = 1 / nH
-    elif RGnorm == 'on':
-        Norm = 1 / ((6.32589E-4 * np.exp(RG/9) - 0.0854) * nH)
-    return signal * Norm
+    norm = 1 / ((6.32589E-4 * np.exp(RG/9) - 0.0854) * nH)
+    return signal * norm
 
 def plot(t, signal, nP, DW, nS, RGnorm, RG, p90, att, RD, Out, Back, nH, nini):
     points = 10
