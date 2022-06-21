@@ -123,63 +123,62 @@ def fitMag(tau, T2, S):
 
     return M
 
-def plot(tau, Z, M, T2, S, Out, nS, RGnorm, p90, att, RD, alpha, tEcho, nEcho, Back, nH, cumT2, niniT2):
+def plot(tau, Z, M, T2, S, Out, nS, RGnorm, p90, att, RD, alpha, tEcho, nEcho, Back, nH, cumT2, niniT2, T2min, T2max):
     fig, axs = plt.subplots(2, 2, gridspec_kw={'height_ratios': [3,1]})
 
     fig.suptitle(f'nS={nS} | RG = {RGnorm} dB | nH = {nH:.6f} | RD = {RD} s | p90 = {p90} us  | BG = {Back} | Atten = {att} dB | tE = {tEcho:.1f} ms | Ecos = {nEcho:.0f} ({tau[-1]:.1f} ms) | Alpha = {alpha} | nini = {niniT2}', fontsize='large')
 
+    # CPMG: experimental y ajustada
     axs[0,0].plot(tau, Z, label='Exp')
     axs[0,0].plot(tau, M, label='Fit')
     axs[0,0].set_xlabel(r'$\tau$ [ms]')
-    axs[0,0].set_ylabel('M / molH')
+    axs[0,0].set_ylabel('CPMG')
     axs[0,0].legend()
 
     axins1 = inset_axes(axs[0,0], width="30%", height="30%", loc=5)
     axins1.plot(tau[0:30], Z[0:30])
     axins1.plot(tau[0:30], M[0:30])
 
+    # CPMG: experimental y ajustada (en semilog)
     axs[1,0].semilogy(tau, Z, label='Exp')
     axs[1,0].semilogy(tau, M, label='Fit')
     axs[1,0].set_xlim(-10, 300)
     axs[1,0].set_ylim(bottom=10**-3)
     axs[1,0].set_xlabel(r'$\tau$ [ms]')
-    axs[1,0].set_ylabel('log(M / molH)')
+    axs[1,0].set_ylabel('log(CPMG)')
     axs[1,0].legend()
 
-    peaks, _ = find_peaks(S)
-    peaksx, peaksy = T2[peaks], S[peaks]
-
-    topPeak = np.max(peaksy)
-    ymax = topPeak + 0.2
-
+    # CPMG: residuos
     axs[1,1].plot(tau, M-Z, color = 'blue', label='Fit-Exp')
     axs[1,1].axhline(0, c = 'k', lw = 4, ls = '-')
     axs[1,1].set_xlabel(r'$\tau$ [ms]')
-    axs[1,1].set_ylabel('Residual')
+    axs[1,1].set_ylabel('Res. CPMG')
+
+    S /= np.max(S)
+    peaks, _ = find_peaks(S)
+    peaksx, peaksy = T2[peaks], S[peaks]
 
     axs[0,1].plot(T2, S, label = 'Distrib.', color = 'teal')
-    axs[0,1].plot(peaksx, peaksy + 0.03, lw = 0, marker=11, color='black')
     for i in range(len(peaksx)):
-        if peaksy[i] > 0.1 * topPeak:
-            axs[0,1].annotate(f'{peaksx[i]:.0f}', xy = (peaksx[i], peaksy[i] + 0.05), fontsize=30, ha='center')
+        if peaksy[i] > 0.1:
+            axs[0,1].plot(peaksx, peaksy + 0.05, lw = 0, marker=11, color='black')
+            axs[0,1].annotate(f'{peaksx[i]:.0f}', xy = (peaksx[i], peaksy[i] + 0.07), fontsize=30, ha='center')
     axs[0,1].set_xlabel(r'$T_2$ [ms]')
+    axs[0,1].set_ylabel(r'Distrib. $T_2$')
     axs[0,1].set_xscale('log')
-    axs[0,1].set_ylim(bottom=-0.05, top=ymax)
+    axs[0,1].set_ylim(-0.02, 1.2)
+    axs[0,1].set_xlim(10.0**T2min, 10.0**T2max)
 
     ax = axs[0,1].twinx()
     ax.plot(T2, cumT2, label = 'Cumul.', color = 'coral')
-    ref = cumT2[0]
-    for x in range(len(T2)):
-        if cumT2[x] < 0.01:
-            continue
-        elif (cumT2[x] - ref) < 0.0001:
-            ax.annotate(f'{100*cumT2[x]:.0f} %', xy = (T2[-1], cumT2[x]), fontsize=30, ha='right', color='coral')
-        ref = cumT2[x]
-    ax.set_ylim(-0.1, 1.1)
-    ax.set_ylabel('Cumulative')
-
-    lines1, labels1 = axs[0,1].get_legend_handles_labels()
-    lines2, labels2 = ax.get_legend_handles_labels()
-    ax.legend(lines1 + lines2, labels1 + labels2)
+    # ref = cumT2[0]
+    # for x in range(len(T2)):
+    #     if cumT2[x] < 0.01:
+    #         continue
+    #     elif (cumT2[x] - ref) < 0.0001:
+    #         ax.annotate(f'{100*cumT2[x]:.0f} %', xy = (T2[-1], cumT2[x]), fontsize=30, ha='right', color='coral')
+    #     ref = cumT2[x]
+    ax.set_ylim(-0.02, 1.2)
+    ax.set_ylabel(r'Cumul. $T_2$')
 
     plt.savefig(f'{Out}')

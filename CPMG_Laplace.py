@@ -54,7 +54,7 @@ def main():
         for i in range(len(tau)):
             f.write(f'{tau[i]:.6f}, {Z[i]:.6f}, {M[i]:.6f} \n')
 
-    plot(tau, Z, M, T2, S, Out, nS, RGnorm, p90, att, RD, alpha, tEcho, nEcho, Back, nH, cumT2, niniT2)
+    plot(tau, Z, M, T2, S, Out, nS, RGnorm, p90, att, RD, alpha, tEcho, nEcho, Back, nH, cumT2, niniT2, T2min, T2max)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
