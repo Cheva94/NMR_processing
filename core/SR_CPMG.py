@@ -111,6 +111,8 @@ def NLI_FISTA(K1, K2, Z, alpha, S):
             if Res < 1E-5:
                 break
 
+    print(f'¡Inversión lista! ({iter} iteraciones)')
+
     return S
 
 def fitMag(tau1, tau2, T1, T2, S):
@@ -152,8 +154,8 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2m
 
     axins1 = inset_axes(axs[0,0], width="30%", height="30%", loc=5)
     if niniT1<10:
-        axins1.plot(tau1[0:15], Z[:, 0][0:15])
-        axins1.plot(tau1[0:15], M1[0:15])
+        axins1.plot(tau1[0:20], Z[:, 0][0:20])
+        axins1.plot(tau1[0:20], M1[0:20])
     else:
         axins1.plot(tau1[0:5], Z[:, 0][0:5])
         axins1.plot(tau1[0:5], M1[0:5])
@@ -173,8 +175,8 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2m
 
     axins2 = inset_axes(axs[0,1], width="30%", height="30%", loc=5)
     if niniT1<10:
-        axins2.plot(tau2[0:15], Z[-1, :][0:15])
-        axins2.plot(tau2[0:15], M2[0:15])
+        axins2.plot(tau2[0:20], Z[-1, :][0:20])
+        axins2.plot(tau2[0:20], M2[0:20])
     else:
         axins2.plot(tau2[0:5], Z[-1, :][0:5])
         axins2.plot(tau2[0:5], M2[0:5])
@@ -186,108 +188,100 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2m
     axs[1,1].set_ylabel('Res. CPMG')
 
     # Distribución proyectada de T1
+    T1 = T1[4:-9]
     projT1 = np.sum(S, axis=1)
-    peaks1, _ = find_peaks(projT1, height=0.005)
+    projT1 = projT1[4:-9] / np.max(projT1[4:-9])
+    peaks1, _ = find_peaks(projT1)
     peaks1x, peaks1y = T1[peaks1], projT1[peaks1]
 
-    topPeak1 = np.max(peaks1y)
-    ymax1 = topPeak1 + 0.3
-
-    cumT1 = np.cumsum(projT1[4:-9])
+    cumT1 = np.cumsum(projT1)
     cumT1 /= cumT1[-1]
 
-    axs[0,2].plot(T1[4:-9], projT1[4:-9], label = 'Distrib.', color = 'teal')
+    axs[0,2].plot(T1, projT1, label = 'Distrib.', color = 'teal')
     for i in range(len(peaks1x)):
-        if peaks1y[i] > 0.1 * topPeak1:
-            axs[0,2].plot(peaks1x[i], peaks1y[i] + 0.1, lw = 0, marker=11, color='black')
-            axs[0,2].annotate(f'{peaks1x[i]:.0f}', xy = (peaks1x[i], peaks1y[i] + 0.2), fontsize=30, ha = 'center')
+        if peaks1y[i] > 0.1:
+            axs[0,2].plot(peaks1x[i], peaks1y[i] + 0.05, lw = 0, marker=11, color='black')
+            axs[0,2].annotate(f'{peaks1x[i]:.0f}', xy = (peaks1x[i], peaks1y[i] + 0.07), fontsize=30, ha = 'center')
     axs[0,2].set_xlabel(r'$T_1$ [ms]')
     axs[0,2].set_ylabel(r'Distrib. $T_1$')
     axs[0,2].set_xscale('log')
     axs[0,2].set_xlim(10.0**T1min, 10.0**T1max)
-    axs[0,2].set_ylim(bottom=-0.05, top=ymax1)
+    axs[0,2].set_ylim(-0.02, 1.2)
 
     ax = axs[0,2].twinx()
-    ax.plot(T1[4:-9], cumT1, label = 'Cumul.', color = 'coral')
-    ref = cumT1[0]
-    for x in range(len(cumT1)):
-        if cumT1[x] < 0.01:
-            continue
-        elif (cumT1[x] - ref) < 0.0001:
-            ax.annotate(f'{100*cumT1[x]:.0f} %', xy = (T1[4:-9][-1], cumT1[x]), fontsize=30, ha='right', color='coral')
-        ref = cumT1[x]
-    ax.set_ylim(-0.1, 1.1)
+    ax.plot(T1, cumT1, label = 'Cumul.', color = 'coral')
+    # ref = cumT1[0]
+    # for x in range(len(cumT1)):
+    #     if cumT1[x] < 0.01:
+    #         continue
+    #     elif (cumT1[x] - ref) < 0.0001:
+    #         ax.annotate(f'{100*cumT1[x]:.0f} %', xy = (T1[-1], cumT1[x]), fontsize=30, ha='right', color='coral')
+    #     ref = cumT1[x]
+    ax.set_ylim(-0.02, 1.2)
     ax.set_ylabel(r'Cumul. $T_1$')
 
     # Distribución proyectada de T2
+
+    T2 = T2[2:]
     projT2 = np.sum(S, axis=0)
-    # projT2 /= np.max(projT2)
-    peaks2, _ = find_peaks(projT2, height=0.005)
+    projT2 = projT2[2:] / np.max(projT2[2:])
+    peaks2, _ = find_peaks(projT2)
     peaks2x, peaks2y = T2[peaks2], projT2[peaks2]
 
-    topPeak2 = np.max(peaks2y)
-    ymax2 = topPeak2 + 0.3
-
-    cumT2 = np.cumsum(projT2[2:])
+    cumT2 = np.cumsum(projT2)
     cumT2 /= cumT2[-1]
 
-    axs[0,3].plot(T2[2:], projT2[2:], label = 'Distrib.', color = 'teal')
+    axs[0,3].plot(T2, projT2, label = 'Distrib.', color = 'teal')
     for i in range(len(peaks2x)):
-        if peaks2y[i] > 0.1 * topPeak2:
-            axs[0,3].plot(peaks2x[i], peaks2y[i] + 0.1, lw = 0, marker=11, color='black')
-            axs[0,3].annotate(f'{peaks2x[i]:.0f}', xy = (peaks2x[i], peaks2y[i] + 0.2), fontsize=30, ha = 'center')
+        if peaks2y[i] > 0.1:
+            axs[0,3].plot(peaks2x[i], peaks2y[i] + 0.05, lw = 0, marker=11, color='black')
+            axs[0,3].annotate(f'{peaks2x[i]:.0f}', xy = (peaks2x[i], peaks2y[i] + 0.07), fontsize=30, ha = 'center')
     axs[0,3].set_xlabel(r'$T_2$ [ms]')
     axs[0,3].set_ylabel(r'Distrib. $T_2$')
     axs[0,3].set_xscale('log')
-    axs[0,3].set_ylim(bottom=-0.05, top=ymax2)
+    axs[0,3].set_ylim(-0.02, 1.2)
     axs[0,3].set_xlim(10.0**T2min, 10.0**T2max)
 
     ax = axs[0,3].twinx()
-    ax.plot(T2[2:], cumT2, label = 'Cumul.', color = 'coral')
-    ref = cumT2[0]
-    for x in range(len(cumT2)):
-        if cumT2[x] < 0.01:
-            continue
-        elif (cumT2[x] - ref) < 0.0001:
-            ax.annotate(f'{100*cumT2[x]:.0f} %', xy = (T2[2:][-1], cumT2[x]), fontsize=30, ha='right', color='coral')
-        ref = cumT2[x]
-    ax.set_ylim(-0.1, 1.1)
+    ax.plot(T2, cumT2, label = 'Cumul.', color = 'coral')
+    # ref = cumT2[0]
+    # for x in range(len(cumT2)):
+    #     if cumT2[x] < 0.01:
+    #         continue
+    #     elif (cumT2[x] - ref) < 0.0001:
+    #         ax.annotate(f'{100*cumT2[x]:.0f} %', xy = (T2[-1], cumT2[x]), fontsize=30, ha='right', color='coral')
+    #     ref = cumT2[x]
+    ax.set_ylim(-0.02, 1.2)
     ax.set_ylabel(r'Cumul. $T_2$')
-
-    # Distribución proyectada de T1 simplificada (para poner rotado)
-    axs[1,2].plot(-projT1[4:-9], T1[4:-9], label = 'Distrib.', color = 'teal')
-    axs[1,2].yaxis.tick_right()
-    axs[1,2].yaxis.set_label_position("right")
-    axs[1,2].set_ylim(10.0**T1min, 10.0**T1max)
-    axs[1,2].set_yscale('log')
-    axs[1,2].set_xlim(left=-ymax1, right=0.05)
-    axs[1,2].xaxis.set_visible(False)
 
     # Mapa T1-T2
     mini = np.max([T1min, T2min])
     maxi = np.min([T1max, T2max])
+    S = S[4:-9, 2:]
 
-    axs[1,3].plot([10.0**mini, 10.0**maxi], [10.0**mini, 10.0**maxi], color='black', ls='-', alpha=0.7, zorder=-2, label = r'$T_1$ = $T_2$')
-    axs[1,3].contour(T2[2:], T1[4:-9], S[4:-9, 2:], nLevel, cmap='rainbow')
-    axs[1,3].set_ylabel(r'$T_1$ [ms]')
-    axs[1,3].xaxis.tick_top()
-    axs[1,3].set_xlim(10.0**T2min, 10.0**T2max)
-    axs[1,3].set_ylim(10.0**T1min, 10.0**T1max)
-    axs[1,3].set_xscale('log')
-    axs[1,3].set_yscale('log')
-    axs[1,3].legend(loc='lower right')
+    axs[1,2].plot([10.0**mini, 10.0**maxi], [10.0**mini, 10.0**maxi], color='black', ls='-', alpha=0.7, zorder=-2, label = r'$T_1$ = $T_2$')
+    axs[1,2].contour(T2, T1, S, nLevel, cmap='rainbow')
+    axs[1,2].set_ylabel(r'$T_1$ [ms]')
+    axs[1,2].set_xlabel(r'$T_2$ [ms]')
+    axs[1,2].set_xlim(10.0**T2min, 10.0**T2max)
+    axs[1,2].set_ylim(10.0**T1min, 10.0**T1max)
+    axs[1,2].set_xscale('log')
+    axs[1,2].set_yscale('log')
+    axs[1,2].legend(loc='lower right')
+
+    axs[1,3].axis('off')
 
     plt.savefig(f'{Out}')
 
     with open(f'{Out}-DomRates1D_T1.csv', 'w') as f:
         f.write("T1 [ms], Distribution, Cumulative \n")
-        for i in range(len(T1[4:-9])):
-            f.write(f'{T1[4:-9][i]:.6f}, {projT1[4:-9][i]:.6f}, {cumT1[i]:.6f} \n')
+        for i in range(len(T1)):
+            f.write(f'{T1[i]:.6f}, {projT1[i]:.6f}, {cumT1[i]:.6f} \n')
 
     with open(f'{Out}-DomRates1D_T2.csv', 'w') as f:
         f.write("T2 [ms], Distribution, Cumulative \n")
-        for i in range(len(T2[2:])):
-            f.write(f'{T2[2:][i]:.6f}, {projT2[2:][i]:.6f}, {cumT2[i]:.6f} \n')
+        for i in range(len(T2)):
+            f.write(f'{T2[i]:.6f}, {projT2[i]:.6f}, {cumT2[i]:.6f} \n')
 
 def newSS(newS):
     return pd.read_csv(newS, header = None).to_numpy()
