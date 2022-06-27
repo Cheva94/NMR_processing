@@ -161,7 +161,7 @@ def plot(tau, Z, M, T2, S, Out, nS, RGnorm, p90, att, RD, alpha, tEcho, nEcho, B
     axs[0,1].plot(T2, S, label = 'Distrib.', color = 'teal')
     for i in range(len(peaksx)):
         if peaksy[i] > 0.1:
-            axs[0,1].plot(peaksx, peaksy + 0.05, lw = 0, marker=11, color='black')
+            axs[0,1].plot(peaksx[i], peaksy[i] + 0.05, lw = 0, marker=11, color='black')
             axs[0,1].annotate(f'{peaksx[i]:.0f}', xy = (peaksx[i], peaksy[i] + 0.07), fontsize=30, ha='center')
     axs[0,1].set_xlabel(r'$T_2$ [ms]')
     axs[0,1].set_ylabel(r'Distrib. $T_2$')
