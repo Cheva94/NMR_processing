@@ -21,7 +21,7 @@ def main():
     niniT2 = args.niniValues
 
     print(f'Alpha = {alpha}')
-    
+
     if Back == None:
         S0, T2, tau, K, decay, nS, p90, att, RD, tEcho, nEcho = CPMG_file(File, T2min, T2max, niniT2)
         Z = PhCorr(decay)
@@ -64,7 +64,7 @@ if __name__ == "__main__":
     parser.add_argument('input', help = "Path to the CPMG file.")
     parser.add_argument('output', help = "Path for the output files.")
     parser.add_argument('-alpha', '--alpha', help = "Tikhonov regularization parameter.", type = float, default = 0.001)
-    parser.add_argument('-T2', '--T2Range', help = "Range to consider for T2 values.", nargs = 2, type = int, default = [0, 5])
+    parser.add_argument('-T2', '--T2Range', help = "Range to consider for T2 values.", nargs = 2, type = float, default = [-1.5, 2.5])
     parser.add_argument('-nini', '--niniValues', help = "Number of values to avoid at the beginning of T2.", type = int, default=0)
     parser.add_argument('-nH', '--protonMoles', type = float, default = 1)
     parser.add_argument('-RGnorm', '--RGnorm', help = "Normalize by RG. Default: on", default = 70)

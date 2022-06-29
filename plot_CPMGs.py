@@ -5,7 +5,7 @@
 '''
 
 import argparse
-from core.meanFID import *
+from core.meanCPMG import *
 
 def main():
 
@@ -16,16 +16,18 @@ def main():
     nH = args.protonMoles
 
     signalArr = []
+    cumulArr = []
     nF = len(FileArr)
 
     for F in FileArr:
-        t, signal = FID_file(F, nini)
-        signal = PhCorrNorm(signal, nH)
-        signalArr.append(signal)
+        t, Decay, T2, Cumulative = CPMG_file(F, nini)
+        signalArr.append(Decay)
+        cumulArr.append(Cumulative)
 
     signalArr = np.reshape(signalArr, (nF, len(t))).T
+    cumulArr = np.reshape(cumulArr, (nF, len(T2))).T
 
-    plot(t, signalArr, nF, Out, Labels)
+    plot(t, signalArr, T2, cumulArr, nF, Out, Labels)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

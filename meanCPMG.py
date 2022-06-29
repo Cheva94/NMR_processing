@@ -5,7 +5,7 @@
 '''
 
 import argparse
-from core.coremeanCPMG import *
+from core.meanCPMG import *
 
 def main():
 
@@ -17,8 +17,8 @@ def main():
     nF = len(FileArr)
 
     for F in FileArr:
-        t, signal = CPMG_file(F)
-        signal = PhCorr(signal)
+        t, signal = CPMG_file(F, nini)
+        signal = PhCorr(signal, nH)
         signalArr.append(signal)
 
     signalArr = np.reshape(signalArr, (nF, len(t))).T
@@ -28,7 +28,7 @@ def main():
         for k in range(len(t)):
             f.write(f'{t[k]:.6f}    {signalMean.real[k]:.6f}    {signalMean.imag[k]:.6f} \n')
 
-    plot(t, signalArr, signalMean, nF, Out)
+    plot(t, signalArr, nF, Out)
 
     if show == 'on':
         plt.show()

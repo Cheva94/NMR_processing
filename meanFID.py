@@ -28,7 +28,7 @@ def main():
         for k in range(len(t)):
             f.write(f'{t[k]:.6f}    {signalMean.real[k]:.6f}    {signalMean.imag[k]:.6f} \n')
 
-    plot(t, signalArr, signalMean, nF, Out)
+    # plot(t, signalArr, signalMean, nF, Out)
 
     if show == 'on':
         plt.show()
