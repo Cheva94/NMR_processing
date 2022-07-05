@@ -50,11 +50,11 @@ def main():
 
         f.write("T2 [ms], Distribution, Cumulative \n")
         for i in range(len(T2)):
-            f.write(f'{T2[i]:.6f}, {S[i]:.6f}, {cumT2[i]:.6f} \n')
+            f.write(f'{T2[i]:.6f}\t{S[i]:.6f}\t{cumT2[i]:.6f} \n')
 
         f.write("\n\nt [ms], Decay, Fit \n")
         for i in range(len(tau)):
-            f.write(f'{tau[i]:.6f}, {Z[i]:.6f}, {M[i]:.6f} \n')
+            f.write(f'{tau[i]:.6f}\t{Z[i]:.6f}\t{M[i]:.6f} \n')
 
     plot(tau, Z, M, T2, S, Out, nS, RGnorm, p90, att, RD, alpha, tEcho, nEcho, Back, nH, cumT2, niniT2, T2min, T2max)
 

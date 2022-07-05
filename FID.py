@@ -45,7 +45,7 @@ def main():
 
         f.write("t [ms], Re[FID]/molH, Im[FID]/molH \n")
         for i in range(len(t)):
-            f.write(f'{t[i]:.6f}, {signal.real[i]:.6f}, {signal.imag[i]:.6f} \n')
+            f.write(f'{t[i]:.6f}\t{signal.real[i]:.6f}\t{signal.imag[i]:.6f} \n')
 
     plot(t, signal, nP, DW, nS, RGnorm, p90, att, RD, Out, Back, nH, nini)
 

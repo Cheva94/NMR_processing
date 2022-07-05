@@ -48,7 +48,7 @@ def FID_file(File, nini):
     Im = data[:, 2]
     signal = Re + Im * 1j
 
-    pAcq = pd.read_csv(File.split(".txt")[0]+'-acqs.txt', header = None, delim_whitespace = True)
+    pAcq = pd.read_csv(File.split(".txt")[0]+'_acqs.txt', header = None, delim_whitespace = True)
     nS, p90, att, RD = pAcq.iloc[0, 1], pAcq.iloc[2, 1], pAcq.iloc[4, 1], pAcq.iloc[5, 1]
 
     return t[nini:], signal[nini:], nP, DW, nS, p90, att, RD

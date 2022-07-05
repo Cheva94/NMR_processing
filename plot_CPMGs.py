@@ -15,11 +15,22 @@ def main():
     nini = args.niniValues
     nH = args.protonMoles
 
-    signalArr = []
-    cumulArr = []
-    nF = len(FileArr)
+    nF = range(len(FileArr))
 
-    for F in FileArr:
+    for k in nF:
+        data = pd.read_csv(FileArr[k], header = None, delim_whitespace = True, comment='#').to_numpy()
+        Laplace = data[3:153, :3]
+        T2 = Laplace[:, 0]
+        Cumulative = Laplace[:, 2]
+
+        Time = data[154:, :3]
+        t = Time[:, 0]
+        Decay = Time[:, 1]
+
+        return t[nini:], Decay[nini:], T2, Cumulative
+
+
+
         t, Decay, T2, Cumulative = CPMG_file(F, nini)
         signalArr.append(Decay)
         cumulArr.append(Cumulative)

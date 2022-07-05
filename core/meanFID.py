@@ -30,10 +30,10 @@ plt.rcParams["legend.shadow"] = True
 plt.rcParams["legend.fontsize"] = 30
 plt.rcParams["legend.edgecolor"] = 'black'
 
-plt.rcParams["figure.figsize"] = 12.5, 10
+plt.rcParams["figure.figsize"] = 25, 10
 plt.rcParams["figure.autolayout"] = True
 
-plt.rcParams["lines.linewidth"] = 3
+plt.rcParams["lines.linewidth"] = 0.5
 plt.rcParams["lines.markersize"] = 20
 plt.rcParams["lines.linestyle"] = '-'
 

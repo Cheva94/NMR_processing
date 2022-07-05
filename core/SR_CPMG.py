@@ -201,7 +201,7 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2m
     for i in range(len(peaks1x)):
         if peaks1y[i] > 0.1:
             axs[0,2].plot(peaks1x[i], peaks1y[i] + 0.05, lw = 0, marker=11, color='black')
-            axs[0,2].annotate(f'{peaks1x[i]:.0f}', xy = (peaks1x[i], peaks1y[i] + 0.07), fontsize=30, ha = 'center')
+            axs[0,2].annotate(f'{peaks1x[i]:.2f}', xy = (peaks1x[i], peaks1y[i] + 0.07), fontsize=30, ha = 'center')
     axs[0,2].set_xlabel(r'$T_1$ [ms]')
     axs[0,2].set_ylabel(r'Distrib. $T_1$')
     axs[0,2].set_xscale('log')
@@ -235,7 +235,7 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2m
     for i in range(len(peaks2x)):
         if peaks2y[i] > 0.1:
             axs[0,3].plot(peaks2x[i], peaks2y[i] + 0.05, lw = 0, marker=11, color='black')
-            axs[0,3].annotate(f'{peaks2x[i]:.0f}', xy = (peaks2x[i], peaks2y[i] + 0.07), fontsize=30, ha = 'center')
+            axs[0,3].annotate(f'{peaks2x[i]:.2f}', xy = (peaks2x[i], peaks2y[i] + 0.07), fontsize=30, ha = 'center')
     axs[0,3].set_xlabel(r'$T_2$ [ms]')
     axs[0,3].set_ylabel(r'Distrib. $T_2$')
     axs[0,3].set_xscale('log')

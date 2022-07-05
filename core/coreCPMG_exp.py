@@ -37,7 +37,7 @@ def CPMG_file(File, nini):
     Im = data[:, 2]
     signal = Re + Im * 1j # Complex signal
 
-    pAcq = pd.read_csv(File.split('.txt')[0]+'-acqs.txt', header = None, delim_whitespace = True)
+    pAcq = pd.read_csv(File.split('.txt')[0]+'_acqs.txt', header = None, delim_whitespace = True)
 
     nS, RG, p90, att, RD, tEcho, nEcho = pAcq.iloc[0, 1], pAcq.iloc[1, 1], pAcq.iloc[2, 1], pAcq.iloc[4, 1], pAcq.iloc[5, 1], 2*pAcq.iloc[6, 1], pAcq.iloc[7, 1]-nini
 

@@ -51,7 +51,7 @@ def CPMG_file(File, T2min, T2max, niniT2):
     for i in range(nP):
         K[i, :] = np.exp(-tau[i] / T2)
 
-    pAcq = pd.read_csv(File.split(".txt")[0]+'-acqs.txt', header = None, delim_whitespace = True)
+    pAcq = pd.read_csv(File.split(".txt")[0]+'_acqs.txt', header = None, delim_whitespace = True)
     nS, p90, att, RD, tEcho, nEcho = pAcq.iloc[0, 1], pAcq.iloc[2, 1], pAcq.iloc[4, 1], pAcq.iloc[5, 1], 2*pAcq.iloc[6, 1], pAcq.iloc[7, 1]
 
     return S0, T2, tau[niniT2:], K, decay[niniT2:], nS, p90, att, RD, tEcho, nEcho
@@ -162,7 +162,7 @@ def plot(tau, Z, M, T2, S, Out, nS, RGnorm, p90, att, RD, alpha, tEcho, nEcho, B
     for i in range(len(peaksx)):
         if peaksy[i] > 0.1:
             axs[0,1].plot(peaksx[i], peaksy[i] + 0.05, lw = 0, marker=11, color='black')
-            axs[0,1].annotate(f'{peaksx[i]:.0f}', xy = (peaksx[i], peaksy[i] + 0.07), fontsize=30, ha='center')
+            axs[0,1].annotate(f'{peaksx[i]:.2f}', xy = (peaksx[i], peaksy[i] + 0.07), fontsize=30, ha='center')
     axs[0,1].set_xlabel(r'$T_2$ [ms]')
     axs[0,1].set_ylabel(r'Distrib. $T_2$')
     axs[0,1].set_xscale('log')
