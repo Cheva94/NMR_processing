@@ -5,7 +5,7 @@
 '''
 
 import argparse
-from core.SR_CPMG import *
+from core.SRmaps import *
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -13,6 +13,7 @@ def main():
 
     File = args.input
     Out = args.output
+    Map = args.mapType
     nH = args.protonMoles
     RGnorm = args.RGnorm
     newS = args.ManualS
@@ -41,7 +42,7 @@ def main():
 
     if newS == 'off':
         S = NLI_FISTA(K1, K2, Z, alpha, S0)
-        np.savetxt(f"{Out}-DomRates.csv", S, delimiter=',')
+        np.savetxt(f"{Out}-DomRates.csv", S, delimiter='\t')
     else:
         S = newSS(f"{Out}-DomRates.csv")
 
@@ -50,13 +51,14 @@ def main():
     if Back != None:
         Back = "Yes"
 
-    plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2max, RGnorm, alpha, Back, nH, niniT1, niniT2)
+    plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2max, RGnorm, alpha, Back, nH, niniT1, niniT2, Map)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument('input', help = "Path to the SR-CPMG file.")
     parser.add_argument('output', help = "Path for the output files.")
+    parser.add_argument('mapType', help = "fid, cpmg, fidcpmg", choices=['fid', 'cpmg', 'fidcpmg'])
     parser.add_argument('-alpha', '--alpha', help = "Tikhonov regularization parameter.", type = float, default = 0.001)
     parser.add_argument('-T1', '--T1Range', help = "Range to consider for T1 values.", nargs = 2, type = float, default = [1, 3])
     parser.add_argument('-T2', '--T2Range', help = "Range to consider for T2 values.", nargs = 2, type = float, default = [-1.5, 2.5])

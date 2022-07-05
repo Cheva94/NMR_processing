@@ -140,7 +140,7 @@ def fitMag(tau1, tau2, T1, T2, S):
 
     return M1, M2
 
-def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2max, RGnorm, alpha, Back, nH, niniT1, niniT2):
+def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2max, RGnorm, alpha, Back, nH, niniT1, niniT2, Map):
     fig, axs = plt.subplots(2,4)
 
     fig.suptitle(f'ns = 4 | RG = {RGnorm} dB | nH = {nH:.6f} | BG = {Back} | Alpha = {alpha} | nini SR = {niniT1} | nini CPMG = {niniT2}', fontsize='large')
@@ -166,11 +166,9 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2m
     axs[1,0].set_xlabel(r'$\tau$1 [ms]')
     axs[1,0].set_ylabel('Res. SR')
 
-    # CPMG: experimental y ajustada
+    # CPMG/FID/FID-CPMG: experimental y ajustada
     axs[0,1].plot(tau2, Z[-1, :], label='Exp')
     axs[0,1].plot(tau2, M2, label='Fit')
-    axs[0,1].set_xlabel(r'$\tau_2$ [ms]')
-    axs[0,1].set_ylabel('CPMG')
     axs[0,1].legend()
 
     axins2 = inset_axes(axs[0,1], width="30%", height="30%", loc=5)
@@ -181,11 +179,9 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2m
         axins2.plot(tau2[0:5], Z[-1, :][0:5])
         axins2.plot(tau2[0:5], M2[0:5])
 
-    # CPMG: residuos
+    # CPMG/FID/FID-CPMG: residuos
     axs[1,1].plot(tau2, M2-Z[-1, :], color = 'blue')
     axs[1,1].axhline(0, c = 'k', lw = 4, ls = '-')
-    axs[1,1].set_xlabel(r'$\tau$2 [ms]')
-    axs[1,1].set_ylabel('Res. CPMG')
 
     # Distribución proyectada de T1
     T1 = T1[4:-9]
@@ -210,18 +206,10 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2m
 
     ax = axs[0,2].twinx()
     ax.plot(T1, cumT1, label = 'Cumul.', color = 'coral')
-    # ref = cumT1[0]
-    # for x in range(len(cumT1)):
-    #     if cumT1[x] < 0.01:
-    #         continue
-    #     elif (cumT1[x] - ref) < 0.0001:
-    #         ax.annotate(f'{100*cumT1[x]:.0f} %', xy = (T1[-1], cumT1[x]), fontsize=30, ha='right', color='coral')
-    #     ref = cumT1[x]
     ax.set_ylim(-0.02, 1.2)
     ax.set_ylabel(r'Cumul. $T_1$')
 
     # Distribución proyectada de T2
-
     T2 = T2[2:]
     projT2 = np.sum(S, axis=0)
     projT2 = projT2[2:] / np.max(projT2[2:])
@@ -236,23 +224,13 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2m
         if peaks2y[i] > 0.1:
             axs[0,3].plot(peaks2x[i], peaks2y[i] + 0.05, lw = 0, marker=11, color='black')
             axs[0,3].annotate(f'{peaks2x[i]:.2f}', xy = (peaks2x[i], peaks2y[i] + 0.07), fontsize=30, ha = 'center')
-    axs[0,3].set_xlabel(r'$T_2$ [ms]')
-    axs[0,3].set_ylabel(r'Distrib. $T_2$')
     axs[0,3].set_xscale('log')
     axs[0,3].set_ylim(-0.02, 1.2)
     axs[0,3].set_xlim(10.0**T2min, 10.0**T2max)
 
     ax = axs[0,3].twinx()
     ax.plot(T2, cumT2, label = 'Cumul.', color = 'coral')
-    # ref = cumT2[0]
-    # for x in range(len(cumT2)):
-    #     if cumT2[x] < 0.01:
-    #         continue
-    #     elif (cumT2[x] - ref) < 0.0001:
-    #         ax.annotate(f'{100*cumT2[x]:.0f} %', xy = (T2[-1], cumT2[x]), fontsize=30, ha='right', color='coral')
-    #     ref = cumT2[x]
     ax.set_ylim(-0.02, 1.2)
-    ax.set_ylabel(r'Cumul. $T_2$')
 
     # Mapa T1-T2
     mini = np.max([T1min, T2min])
@@ -262,7 +240,6 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2m
     axs[1,2].plot([10.0**mini, 10.0**maxi], [10.0**mini, 10.0**maxi], color='black', ls='-', alpha=0.7, zorder=-2, label = r'$T_1$ = $T_2$')
     axs[1,2].contour(T2, T1, S, nLevel, cmap='rainbow')
     axs[1,2].set_ylabel(r'$T_1$ [ms]')
-    axs[1,2].set_xlabel(r'$T_2$ [ms]')
     axs[1,2].set_xlim(10.0**T2min, 10.0**T2max)
     axs[1,2].set_ylim(10.0**T1min, 10.0**T1max)
     axs[1,2].set_xscale('log')
@@ -270,6 +247,46 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2m
     axs[1,2].legend(loc='lower right')
 
     axs[1,3].axis('off')
+
+    if Map == 'fid':
+        axs[0,1].set_xlabel(r'$\tau_2^*$ [ms]')
+        axs[0,1].set_ylabel('FID')
+
+        axs[1,1].set_xlabel(r'$\tau_2^*$ [ms]')
+        axs[1,1].set_ylabel('Res. FID')
+
+        axs[0,3].set_xlabel(r'$T_2^*$ [ms]')
+        axs[0,3].set_ylabel(r'Distrib. $T_2^*$')
+
+        ax.set_ylabel(r'Cumul. $T_2^*$')
+
+        axs[1,2].set_xlabel(r'$T_2^*$ [ms]')
+    elif Map == 'cpmg':
+        axs[0,1].set_xlabel(r'$\tau_2$ [ms]')
+        axs[0,1].set_ylabel('CPMG')
+
+        axs[1,1].set_xlabel(r'$\tau_2$ [ms]')
+        axs[1,1].set_ylabel('Res. CPMG')
+
+        axs[0,3].set_xlabel(r'$T_2$ [ms]')
+        axs[0,3].set_ylabel(r'Distrib. $T_2$')
+
+        ax.set_ylabel(r'Cumul. $T_2$')
+
+        axs[1,2].set_xlabel(r'$T_2$ [ms]')
+    elif Map == 'fidcpmg':
+        axs[0,1].set_xlabel(r'$\tau_2^* | \tau_2$ [ms]')
+        axs[0,1].set_ylabel('FID-CPMG')
+
+        axs[1,1].set_xlabel(r'$\tau_2^* | \tau_2$ [ms]')
+        axs[1,1].set_ylabel('FID-CPMG')
+
+        axs[0,3].set_xlabel(r'$T_2^* | T_2$ [ms]')
+        axs[0,3].set_ylabel(r'Distrib. $T_2^* | T_2$')
+
+        ax.set_ylabel(r'Cumul. $T_2^* | T_2$')
+
+        axs[1,2].set_xlabel(r'$T_2^* | T_2$ [ms]')
 
     plt.savefig(f'{Out}')
 
