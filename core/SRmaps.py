@@ -31,7 +31,7 @@ plt.rcParams["figure.figsize"] = 50, 20
 plt.rcParams["figure.autolayout"] = True
 
 plt.rcParams["lines.linewidth"] = 4
-plt.rcParams["lines.markersize"] = 20
+plt.rcParams["lines.markersize"] = 10
 plt.rcParams["lines.linestyle"] = '-'
 
 def SRCPMG_file(File, T1min, T1max, T2min, T2max, niniT1, niniT2):
@@ -146,38 +146,39 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2m
     fig.suptitle(f'ns = 4 | RG = {RGnorm} dB | nH = {nH:.6f} | BG = {Back} | Alpha = {alpha} | nini SR = {niniT1} | nini CPMG = {niniT2}', fontsize='large')
 
     # SR: experimental y ajustada
-    axs[0,0].plot(tau1, Z[:, 0], label='Exp')
-    axs[0,0].plot(tau1, M1, label='Fit')
+    # axs[0,0].plot(tau1, Z[:, 0], label='Exp')
+    axs[0,0].scatter(tau1, Z[:, 0], label='Exp', color='coral')
+    axs[0,0].plot(tau1, M1, label='Fit', color='teal')
     axs[0,0].set_xlabel(r'$\tau_1$ [ms]')
     axs[0,0].set_ylabel('SR')
     axs[0,0].legend()
 
     axins1 = inset_axes(axs[0,0], width="30%", height="30%", loc=5)
     if niniT1<10:
-        axins1.plot(tau1[0:20], Z[:, 0][0:20])
-        axins1.plot(tau1[0:20], M1[0:20])
+        axins1.scatter(tau1[0:20], Z[:, 0][0:20], color='coral')
+        axins1.plot(tau1[0:20], M1[0:20], color='teal')
     else:
-        axins1.plot(tau1[0:5], Z[:, 0][0:5])
-        axins1.plot(tau1[0:5], M1[0:5])
+        axins1.scatter(tau1[0:20], Z[:, 0][0:20], color='coral')
+        axins1.plot(tau1[0:20], M1[0:20], color='teal')
 
     # SR: residuos
-    axs[1,0].plot(tau1, M1-Z[:, 0], color = 'blue')
+    axs[1,0].scatter(tau1, M1-Z[:, 0], color = 'blue')
     axs[1,0].axhline(0, c = 'k', lw = 4, ls = '-')
     axs[1,0].set_xlabel(r'$\tau$1 [ms]')
     axs[1,0].set_ylabel('Res. SR')
 
     # CPMG/FID/FID-CPMG: experimental y ajustada
-    axs[0,1].plot(tau2, Z[-1, :], label='Exp')
-    axs[0,1].plot(tau2, M2, label='Fit')
+    axs[0,1].scatter(tau2, Z[-1, :], label='Exp', color='coral')
+    axs[0,1].plot(tau2, M2, label='Fit', color='teal')
     axs[0,1].legend()
 
     axins2 = inset_axes(axs[0,1], width="30%", height="30%", loc=5)
     if niniT1<10:
-        axins2.plot(tau2[0:20], Z[-1, :][0:20])
-        axins2.plot(tau2[0:20], M2[0:20])
+        axins2.scatter(tau2[0:20], Z[-1, :][0:20], color='coral')
+        axins2.plot(tau2[0:20], M2[0:20], color='teal')
     else:
-        axins2.plot(tau2[0:5], Z[-1, :][0:5])
-        axins2.plot(tau2[0:5], M2[0:5])
+        axins2.scatter(tau2[0:5], Z[-1, :][0:5], color='coral')
+        axins2.plot(tau2[0:5], M2[0:5], color='teal')
 
     # CPMG/FID/FID-CPMG: residuos
     axs[1,1].plot(tau2, M2-Z[-1, :], color = 'blue')
@@ -187,7 +188,7 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2m
     T1 = T1[4:-9]
     projT1 = np.sum(S, axis=1)
     projT1 = projT1[4:-9] / np.max(projT1[4:-9])
-    peaks1, _ = find_peaks(projT1)
+    peaks1, _ = find_peaks(projT1, height=0.1, distance = 5)
     peaks1x, peaks1y = T1[peaks1], projT1[peaks1]
 
     cumT1 = np.cumsum(projT1)
@@ -195,9 +196,8 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2m
 
     axs[0,2].plot(T1, projT1, label = 'Distrib.', color = 'teal')
     for i in range(len(peaks1x)):
-        if peaks1y[i] > 0.1:
-            axs[0,2].plot(peaks1x[i], peaks1y[i] + 0.05, lw = 0, marker=11, color='black')
-            axs[0,2].annotate(f'{peaks1x[i]:.2f}', xy = (peaks1x[i], peaks1y[i] + 0.07), fontsize=30, ha = 'center')
+        axs[0,2].plot(peaks1x[i], peaks1y[i] + 0.05, lw = 0, marker=11, color='black')
+        axs[0,2].annotate(f'{peaks1x[i]:.2f}', xy = (peaks1x[i], peaks1y[i] + 0.07), fontsize=30, ha = 'center')
     axs[0,2].set_xlabel(r'$T_1$ [ms]')
     axs[0,2].set_ylabel(r'Distrib. $T_1$')
     axs[0,2].set_xscale('log')
@@ -213,7 +213,7 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2m
     T2 = T2[2:]
     projT2 = np.sum(S, axis=0)
     projT2 = projT2[2:] / np.max(projT2[2:])
-    peaks2, _ = find_peaks(projT2)
+    peaks2, _ = find_peaks(projT2, height=0.1, distance = 5)
     peaks2x, peaks2y = T2[peaks2], projT2[peaks2]
 
     cumT2 = np.cumsum(projT2)
@@ -221,9 +221,8 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2m
 
     axs[0,3].plot(T2, projT2, label = 'Distrib.', color = 'teal')
     for i in range(len(peaks2x)):
-        if peaks2y[i] > 0.1:
-            axs[0,3].plot(peaks2x[i], peaks2y[i] + 0.05, lw = 0, marker=11, color='black')
-            axs[0,3].annotate(f'{peaks2x[i]:.2f}', xy = (peaks2x[i], peaks2y[i] + 0.07), fontsize=30, ha = 'center')
+        axs[0,3].plot(peaks2x[i], peaks2y[i] + 0.05, lw = 0, marker=11, color='black')
+        axs[0,3].annotate(f'{peaks2x[i]:.2f}', xy = (peaks2x[i], peaks2y[i] + 0.07), fontsize=30, ha = 'center')
     axs[0,3].set_xscale('log')
     axs[0,3].set_ylim(-0.02, 1.2)
     axs[0,3].set_xlim(10.0**T2min, 10.0**T2max)

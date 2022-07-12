@@ -71,6 +71,7 @@ def main():
 
         ax.scatter(t, M, label='data', zorder=2)
         ax.plot(t, damped_sine(t, *popt), label='fit', color='mediumseagreen', zorder=0)
+        ax.axhline(y=0, color='teal', ls=':', lw=4)
         ax.set_xlabel('t [us]')
         ax.set_ylabel('M')
         ax.legend()
@@ -84,6 +85,7 @@ def main():
 
         ax.scatter(t, M, label='data', zorder=2)
         ax.plot(t, damped_sine(t, *popt), label='fit', color='mediumseagreen', zorder=0)
+        ax.axhline(y=0, color='teal', ls=':', lw=4)
         ax.set_xlabel('t [us]')
         ax.set_ylabel('M')
         ax.legend()
