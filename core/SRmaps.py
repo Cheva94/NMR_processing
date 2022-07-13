@@ -154,12 +154,8 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2m
     axs[0,0].legend()
 
     axins1 = inset_axes(axs[0,0], width="30%", height="30%", loc=5)
-    if niniT1<10:
-        axins1.scatter(tau1[0:20], Z[:, 0][0:20], color='coral')
-        axins1.plot(tau1[0:20], M1[0:20], color='teal')
-    else:
-        axins1.scatter(tau1[0:20], Z[:, 0][0:20], color='coral')
-        axins1.plot(tau1[0:20], M1[0:20], color='teal')
+    axins1.scatter(tau1[0:5], Z[:, 0][0:5], color='coral')
+    axins1.plot(tau1[0:5], M1[0:5], color='teal')
 
     # SR: residuos
     axs[1,0].scatter(tau1, M1-Z[:, 0], color = 'blue')
@@ -173,15 +169,11 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2m
     axs[0,1].legend()
 
     axins2 = inset_axes(axs[0,1], width="30%", height="30%", loc=5)
-    if niniT1<10:
-        axins2.scatter(tau2[0:20], Z[-1, :][0:20], color='coral')
-        axins2.plot(tau2[0:20], M2[0:20], color='teal')
-    else:
-        axins2.scatter(tau2[0:5], Z[-1, :][0:5], color='coral')
-        axins2.plot(tau2[0:5], M2[0:5], color='teal')
+    axins2.scatter(tau2[0:5], Z[-1, :][0:5], color='coral')
+    axins2.plot(tau2[0:5], M2[0:5], color='teal')
 
     # CPMG/FID/FID-CPMG: residuos
-    axs[1,1].plot(tau2, M2-Z[-1, :], color = 'blue')
+    axs[1,1].scatter(tau2, M2-Z[-1, :], color = 'blue')
     axs[1,1].axhline(0, c = 'k', lw = 4, ls = '-')
 
     # Distribución proyectada de T1
