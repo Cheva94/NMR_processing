@@ -14,7 +14,6 @@ def main():
     File = args.input
     Out = args.output
     nH = args.protonMoles
-    RGnorm = args.RGnorm
     Back = args.background
     alpha = args.alpha
     T2min, T2max = args.T2Range[0], args.T2Range[1]
@@ -34,7 +33,7 @@ def main():
 
         Z -= back
 
-    Z = Norm(Z, RGnorm, nH)
+    Z = Norm(Z, RG, nH)
     S = NLI_FISTA(K, Z, alpha, S0)
     M = fitMag(tau, T2, S)
 
@@ -46,7 +45,7 @@ def main():
 
     with open(f'{Out}.csv', 'w') as f:
         f.write("nS, RG [dB], p90 [us], Attenuation [dB], RD [s], tEcho [ms], nEcho (t [ms]), Back, nH [g], nini \n")
-        f.write(f'{nS}, {RGnorm}, {p90}, {att}, {RD}, {tEcho:.1f}, {nEcho:.0f} ({tau[-1]}), {Back}, {nH}, {niniT2} \n\n')
+        f.write(f'{nS}, {RG}, {p90}, {att}, {RD}, {tEcho:.1f}, {nEcho:.0f} ({tau[-1]}), {Back}, {nH}, {niniT2} \n\n')
 
         f.write("T2 [ms], Distribution, Cumulative \n")
         for i in range(len(T2)):
@@ -56,7 +55,7 @@ def main():
         for i in range(len(tau)):
             f.write(f'{tau[i]:.6f}\t{Z[i]:.6f}\t{M[i]:.6f} \n')
 
-    plot(tau, Z, M, T2, S, Out, nS, RGnorm, p90, att, RD, alpha, tEcho, nEcho, Back, nH, cumT2, niniT2, T2min, T2max)
+    plot(tau, Z, M, T2, S, Out, nS, RG, p90, att, RD, alpha, tEcho, nEcho, Back, nH, cumT2, niniT2, T2min, T2max)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -67,7 +66,6 @@ if __name__ == "__main__":
     parser.add_argument('-T2', '--T2Range', help = "Range to consider for T2 values.", nargs = 2, type = float, default = [-1.5, 2.5])
     parser.add_argument('-nini', '--niniValues', help = "Number of values to avoid at the beginning of T2.", type = int, default=0)
     parser.add_argument('-nH', '--protonMoles', type = float, default = 1)
-    parser.add_argument('-RGnorm', '--RGnorm', help = "Normalize by RG. Default: on", default = 70)
     parser.add_argument('-back', '--background', help = "Path to de FID background file.")
 
     args = parser.parse_args()
