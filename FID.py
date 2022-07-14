@@ -15,11 +15,13 @@ def main():
     Back = args.background
     nini = args.niniValues
 
+    print('Processing...')
+
     if Back == None:
         t, signal, nP, DW, nS, RDT, RG, att, RD, p90 = FID_file(File, nini)
         signal = PhCorr(signal)
 
-        Back = "No!"
+        Back = "Nein!"
 
     else:
         t, signal, nP, DW, nS, RDT, RG, att, RD, p90 = FID_file(File, nini)
@@ -33,14 +35,18 @@ def main():
 
         signal = Re + Im * 1j
 
-        Back = "Si!"
+        Back = "Ja!"
 
     signal = Norm(signal, RG, nH)
 
+    print('Saving...')
+
     with open(f'{Out}.csv', 'w') as f:
-        f.write("t [ms], Re[FID], Im[FID] \n")
+        f.write("t [ms]\tRe[FID]\tIm[FID] \n")
         for i in range(nP):
             f.write(f'{t[i]:.6f}\t{signal.real[i]:.6f}\t{signal.imag[i]:.6f} \n')
+
+    print('Plotting...')
 
     plot(t, signal, nP, DW, nS, RDT, RG, att, RD, p90, Out, Back, nH, nini)
 

@@ -1,7 +1,7 @@
 #!/usr/bin/python3.10
 '''
     Written by: Ignacio J. Chevallier-Boutell.
-    Dated: December, 2021.
+    Dated: July, 2021.
 '''
 
 import argparse
@@ -17,45 +17,53 @@ def main():
     Back = args.background
     alpha = args.alpha
     T2min, T2max = args.T2Range[0], args.T2Range[1]
-    niniT2 = args.niniValues
+    nini = args.niniValues
 
     print(f'Alpha = {alpha}')
+    print('Processing...')
 
     if Back == None:
-        S0, T2, tau, K, decay, nS, p90, att, RD, tEcho, nEcho = CPMG_file(File, T2min, T2max, niniT2)
-        Z = PhCorr(decay)
-    else:
-        S0, T2, tau, K, decay, nS, p90, att, RD, tEcho, nEcho = CPMG_file(File, T2min, T2max, niniT2)
+        S0, T2, tau, K, decay, nS, RDT, RG, att, RD, p90, p180, tEcho, nEcho, nP = CPMG_file(File, T2min, T2max, nini)
         Z = PhCorr(decay)
 
-        _, _, _, _, back, _, _, _, _, _, _ = CPMG_file(Back, T2min, T2max, niniT2)
+        Back = "No!"
+
+    else:
+        S0, T2, tau, K, decay, nS, RDT, RG, att, RD, p90, p180, tEcho, nEcho, nP = CPMG_file(File, T2min, T2max, nini)
+        Z = PhCorr(decay)
+
+        _, _, _, _, back, _, _, _, _, _, _ = CPMG_file(Back, T2min, T2max, nini)
         back = PhCorr(back)
 
         Z -= back
 
+        Back = "Sí!"
+
     Z = Norm(Z, RG, nH)
     S = NLI_FISTA(K, Z, alpha, S0)
-    M = fitMag(tau, T2, S)
 
-    if Back != None:
-        Back = "Yes"
+    print(f'Inversion ready!')
+
+    M = fitMag(tau, T2, S, nP)
 
     cumT2 = np.cumsum(S)
     cumT2 /= cumT2[-1]
 
-    with open(f'{Out}.csv', 'w') as f:
-        f.write("nS, RG [dB], p90 [us], Attenuation [dB], RD [s], tEcho [ms], nEcho (t [ms]), Back, nH [g], nini \n")
-        f.write(f'{nS}, {RG}, {p90}, {att}, {RD}, {tEcho:.1f}, {nEcho:.0f} ({tau[-1]}), {Back}, {nH}, {niniT2} \n\n')
+    print('Saving...')
 
-        f.write("T2 [ms], Distribution, Cumulative \n")
+    with open(f'{Out}_DistribT2.csv', 'w') as f:
+        f.write("T2 [ms]\tDistribution\tCumulative \n")
         for i in range(len(T2)):
             f.write(f'{T2[i]:.6f}\t{S[i]:.6f}\t{cumT2[i]:.6f} \n')
 
-        f.write("\n\nt [ms], Decay, Fit \n")
-        for i in range(len(tau)):
+    with open(f'{Out}_Decay.csv', 'w') as f:
+        f.write("t [ms]\tDecay\tFit \n")
+        for i in range(nP):
             f.write(f'{tau[i]:.6f}\t{Z[i]:.6f}\t{M[i]:.6f} \n')
 
-    plot(tau, Z, M, T2, S, Out, nS, RG, p90, att, RD, alpha, tEcho, nEcho, Back, nH, cumT2, niniT2, T2min, T2max)
+    print('Plotting...')
+
+    plot(tau, Z, M, T2, S, Out, nS, RDT, RG, att, RD, p90, p180, tEcho, nEcho, alpha, Back, nH, cumT2, nini, T2min, T2max)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

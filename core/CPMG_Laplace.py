@@ -31,13 +31,17 @@ plt.rcParams["figure.figsize"] = 50, 20
 plt.rcParams["figure.autolayout"] = True
 
 plt.rcParams["lines.linewidth"] = 4
-plt.rcParams["lines.markersize"] = 20
+plt.rcParams["lines.markersize"] = 10
 plt.rcParams["lines.linestyle"] = '-'
 
-def CPMG_file(File, T2min, T2max, niniT2):
-    data = pd.read_csv(File, header = None, delim_whitespace = True, comment='#').to_numpy()
+def CPMG_file(File, T2min, T2max, nini):
+    '''
+    Lectura del archivo de la medición y sus parámetros.
+    '''
+
+    data = pd.read_csv(File, header = None, delim_whitespace=True).to_numpy()
     tau = data[:, 0] # In ms
-    nP = len(tau) - niniT2
+    nP = len(tau) - nini
 
     Re = data[:, 1]
     Im = data[:, 2]
@@ -51,12 +55,16 @@ def CPMG_file(File, T2min, T2max, niniT2):
     for i in range(nP):
         K[i, :] = np.exp(-tau[i] / T2)
 
-    pAcq = pd.read_csv(File.split(".txt")[0]+'_acqs.txt', header = None, delim_whitespace = True)
-    nS, p90, att, RD, tEcho, nEcho = pAcq.iloc[0, 1], pAcq.iloc[2, 1], pAcq.iloc[4, 1], pAcq.iloc[5, 1], 2*pAcq.iloc[6, 1], pAcq.iloc[7, 1]
+    pAcq = pd.read_csv(File.split(".txt")[0]+'_acqs.txt', header = None, sep='\t')
+    nS, RDT, RG, att, RD, p90, p180, tEcho, nEcho = pAcq.iloc[0, 1], pAcq.iloc[1, 1], pAcq.iloc[2, 1], pAcq.iloc[3, 1], pAcq.iloc[4, 1], pAcq.iloc[5, 1], pAcq.iloc[6, 1], pAcq.iloc[7, 1], pAcq.iloc[8, 1]
 
-    return S0, T2, tau[niniT2:], K, decay[niniT2:], nS, p90, att, RD, tEcho, nEcho
+    return S0, T2, tau[nini:], K, decay[nini:], nS, RDT, RG, att, RD, p90, p180, tEcho, nEcho, nP
 
 def PhCorr(decay):
+    '''
+    Corrección de fase.
+    '''
+
     initVal = {}
     for i in range(360):
         tita = np.deg2rad(i)
@@ -68,10 +76,18 @@ def PhCorr(decay):
     return decay.real
 
 def Norm(Z, RGnorm, nH):
+    '''
+    Normalización por ganancia y por masa/cantidad de H.
+    '''
+
     norm = 1 / ((6.32589E-4 * np.exp(RGnorm/9) - 0.0854) * nH)
     return Z * norm
 
 def NLI_FISTA(K, Z, alpha, S):
+    '''
+    Inversión de Laplace
+    '''
+
     Z = np.reshape(Z, (len(Z), 1))
     S = np.reshape(S, (len(S), 1))
 
@@ -107,12 +123,15 @@ def NLI_FISTA(K, Z, alpha, S):
 
             if Res < 1E-5:
                 break
-    print(f'¡Inversión lista! ({iter} iteraciones)')
 
     return S[:, 0]
 
-def fitMag(tau, T2, S):
-    t = range(len(tau))
+def fitMag(tau, T2, S, nP):
+    '''
+    Ajuste del decaimiento a partir de la distribución de T2.
+    '''
+
+    t = range(nP)
     d = range(len(T2))
     M = []
     for i in t:
@@ -123,41 +142,53 @@ def fitMag(tau, T2, S):
 
     return M
 
-def plot(tau, Z, M, T2, S, Out, nS, RGnorm, p90, att, RD, alpha, tEcho, nEcho, Back, nH, cumT2, niniT2, T2min, T2max):
+def plot(tau, Z, M, T2, S, Out, nS, RDT, RG, att, RD, p90, p180, tEcho, nEcho, alpha, Back, nH, cumT2, nini, T2min, T2max):
+    '''
+    Grafica resultados.
+    '''
+
     fig, axs = plt.subplots(2, 2, gridspec_kw={'height_ratios': [3,1]})
 
-    fig.suptitle(f'nS={nS} | RG = {RGnorm} dB | nH = {nH:.6f} | RD = {RD} s | p90 = {p90} us  | BG = {Back} | Atten = {att} dB | tE = {tEcho:.1f} ms | Ecos = {nEcho:.0f} ({tau[-1]:.1f} ms) | Alpha = {alpha} | nini = {niniT2}', fontsize='large')
+    if nH == 1:
+        fig.suptitle(rf'nS={nS:.0f}    |    RDT = {RDT} ms    |    RG = {RG:.0f} dB    |    Atten = {att:.0f} dB    |    RD = {RD:.0f} s    |    p90 = {p90} $\mu$s    |    p180 = {p180} $\mu$s    |    tE = {tEcho:.1f} ms    |    Ecos = {nEcho:.0f} ({tau[-1]:.1f} ms)', fontsize='large')
+    else:
+        fig.suptitle(f'nS={nS:.0f}    |    RDT = {RDT} ms    |    RG = {RG:.0f} dB    |    Atten = {att:.0f} dB    |    RD = {RD:.0f} s    |    p90 = {p90} us    |    p180 = {p180} $\mu$s    |    tE = {tEcho:.1f} ms    |    Ecos = {nEcho:.0f} ({tau[-1]:.1f} ms)    |    nH = {nH:.6f} mol', fontsize='medium')
 
     # CPMG: experimental y ajustada
-    axs[0,0].plot(tau, Z, label='Exp')
-    axs[0,0].plot(tau, M, label='Fit')
+    axs[0,0].set_title(f'Se descartaron {nini:.0f} puntos al comienzo.', fontsize='large')
+    axs[0,0].scatter(tau, Z, label='Exp', color='coral')
+    axs[0,0].plot(tau, M, label='Fit', color='teal')
     axs[0,0].set_xlabel(r'$\tau$ [ms]')
     axs[0,0].set_ylabel('CPMG')
     axs[0,0].legend()
 
+    # Inset del comienzo de la CPMG
     axins1 = inset_axes(axs[0,0], width="30%", height="30%", loc=5)
-    axins1.plot(tau[0:30], Z[0:30])
-    axins1.plot(tau[0:30], M[0:30])
+    axins1.scatter(tau[0:30], Z[0:30], color='coral')
+    axins1.plot(tau[0:30], M[0:30], color='teal')
 
     # CPMG: experimental y ajustada (en semilog)
-    axs[1,0].semilogy(tau, Z, label='Exp')
-    axs[1,0].semilogy(tau, M, label='Fit')
-    axs[1,0].set_xlim(-10, 300)
-    axs[1,0].set_ylim(bottom=10**-3)
+    axs[1,0].set_title(f'¿Background restado? {Back}', fontsize='large')
+    axs[1,0].scatter(tau, Z, label='Exp', color='coral')
+    axs[1,0].plot(tau, M, label='Fit', color='teal')
+    axs[1,0].set_yscale('log')
     axs[1,0].set_xlabel(r'$\tau$ [ms]')
     axs[1,0].set_ylabel('log(CPMG)')
     axs[1,0].legend()
 
     # CPMG: residuos
-    axs[1,1].plot(tau, M-Z, color = 'blue', label='Fit-Exp')
+    axs[1,1].set_title('Residuos del ajuste')
+    axs[1,1].scatter(tau, M-Z, color = 'blue')
     axs[1,1].axhline(0, c = 'k', lw = 4, ls = '-')
     axs[1,1].set_xlabel(r'$\tau$ [ms]')
-    axs[1,1].set_ylabel('Res. CPMG')
 
+    # Distribución de T2
     S /= np.max(S)
     peaks, _ = find_peaks(S)
     peaksx, peaksy = T2[peaks], S[peaks]
 
+    axs[0,1].set_title(f'Alpha = {alpha}')
+    axs[0,1].axhline(y=0.1, color='k', ls=':', lw=4)
     axs[0,1].plot(T2, S, label = 'Distrib.', color = 'teal')
     for i in range(len(peaksx)):
         if peaksy[i] > 0.1:
@@ -169,15 +200,9 @@ def plot(tau, Z, M, T2, S, Out, nS, RGnorm, p90, att, RD, alpha, tEcho, nEcho, B
     axs[0,1].set_ylim(-0.02, 1.2)
     axs[0,1].set_xlim(10.0**T2min, 10.0**T2max)
 
+
     ax = axs[0,1].twinx()
     ax.plot(T2, cumT2, label = 'Cumul.', color = 'coral')
-    # ref = cumT2[0]
-    # for x in range(len(T2)):
-    #     if cumT2[x] < 0.01:
-    #         continue
-    #     elif (cumT2[x] - ref) < 0.0001:
-    #         ax.annotate(f'{100*cumT2[x]:.0f} %', xy = (T2[-1], cumT2[x]), fontsize=30, ha='right', color='coral')
-    #     ref = cumT2[x]
     ax.set_ylim(-0.02, 1.2)
     ax.set_ylabel(r'Cumul. $T_2$')
 
