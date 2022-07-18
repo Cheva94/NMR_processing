@@ -1,4 +1,4 @@
-#!/usr/bin/python3.10
+#!/usr/bin/python3.8
 '''
     Written by: Ignacio J. Chevallier-Boutell.
     Dated: July, 2021.
@@ -26,7 +26,7 @@ def main():
         S0, T2, tau, K, decay, nS, RDT, RG, att, RD, p90, p180, tEcho, nEcho, nP = CPMG_file(File, T2min, T2max, nini)
         Z = PhCorr(decay)
 
-        Back = "No!"
+        Back = "Nein!"
 
     else:
         S0, T2, tau, K, decay, nS, RDT, RG, att, RD, p90, p180, tEcho, nEcho, nP = CPMG_file(File, T2min, T2max, nini)
@@ -37,7 +37,7 @@ def main():
 
         Z -= back
 
-        Back = "Sí!"
+        Back = "Ja!"
 
     Z = Norm(Z, RG, nH)
     S = NLI_FISTA(K, Z, alpha, S0)

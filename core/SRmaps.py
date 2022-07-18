@@ -146,7 +146,6 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2m
     fig.suptitle(f'ns = 4 | RG = {RGnorm} dB | nH = {nH:.6f} | BG = {Back} | Alpha = {alpha} | nini SR = {niniT1} | nini CPMG = {niniT2}', fontsize='large')
 
     # SR: experimental y ajustada
-    # axs[0,0].plot(tau1, Z[:, 0], label='Exp')
     axs[0,0].scatter(tau1, Z[:, 0], label='Exp', color='coral')
     axs[0,0].plot(tau1, M1, label='Fit', color='teal')
     axs[0,0].set_xlabel(r'$\tau_1$ [ms]')
@@ -229,6 +228,10 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2m
     S = S[4:-9, 2:]
 
     axs[1,2].plot([10.0**mini, 10.0**maxi], [10.0**mini, 10.0**maxi], color='black', ls='-', alpha=0.7, zorder=-2, label = r'$T_1$ = $T_2$')
+    for i in range(len(peaks2x)):
+        axs[1,2].axvline(x=peaks2x[i], color='k', ls=':', lw=4)
+    for i in range(len(peaks1x)):
+        axs[1,2].axhline(y=peaks1x[i], color='k', ls=':', lw=4)
     axs[1,2].contour(T2, T1, S, nLevel, cmap='rainbow')
     axs[1,2].set_ylabel(r'$T_1$ [ms]')
     axs[1,2].set_xlim(10.0**T2min, 10.0**T2max)
@@ -237,11 +240,16 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2m
     axs[1,2].set_yscale('log')
     axs[1,2].legend(loc='lower right')
 
-    axs[1,3].axis('off')
+    for k in range(5):
+        axs[1,3].scatter(tau2, Z[k, :], label='Exp', label=f'{k+1}')
+    axs[1,3].legend()
 
     if Map == 'fid':
         axs[0,1].set_xlabel(r'$\tau_2^*$ [ms]')
         axs[0,1].set_ylabel('FID')
+
+        axs[1,3].set_xlabel(r'$\tau_2^*$ [ms]')
+        axs[1,3].set_ylabel('FID')
 
         axs[1,1].set_xlabel(r'$\tau_2^*$ [ms]')
         axs[1,1].set_ylabel('Res. FID')
@@ -256,6 +264,9 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2m
         axs[0,1].set_xlabel(r'$\tau_2$ [ms]')
         axs[0,1].set_ylabel('CPMG')
 
+        axs[1,3].set_xlabel(r'$\tau_2$ [ms]')
+        axs[1,3].set_ylabel('CPMG')
+
         axs[1,1].set_xlabel(r'$\tau_2$ [ms]')
         axs[1,1].set_ylabel('Res. CPMG')
 
@@ -269,8 +280,11 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2m
         axs[0,1].set_xlabel(r'$\tau_2^* | \tau_2$ [ms]')
         axs[0,1].set_ylabel('FID-CPMG')
 
+        axs[1,3].set_xlabel(r'$\tau_2^* | \tau_2$ [ms]')
+        axs[1,3].set_ylabel('FID-CPMG')
+
         axs[1,1].set_xlabel(r'$\tau_2^* | \tau_2$ [ms]')
-        axs[1,1].set_ylabel('FID-CPMG')
+        axs[1,1].set_ylabel('Res. FID-CPMG')
 
         axs[0,3].set_xlabel(r'$T_2^* | T_2$ [ms]')
         axs[0,3].set_ylabel(r'Distrib. $T_2^* | T_2$')
