@@ -5,6 +5,7 @@ from cycler import cycler
 from scipy.signal import find_peaks
 import matplotlib as mpl
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
+from scipy.ndimage import gaussian_filter1d
 
 plt.rcParams["font.weight"] = "bold"
 plt.rcParams["font.size"] = 35
@@ -241,7 +242,7 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2m
     axs[1,2].legend(loc='lower right')
 
     for k in range(5):
-        axs[1,3].scatter(tau2, Z[k, :], label='Exp', label=f'{k+1}')
+        axs[1,3].scatter(tau2, gaussian_filter1d(Z[k, :], sigma=50), label=f'{k+1}')
     axs[1,3].legend()
 
     if Map == 'fid':
