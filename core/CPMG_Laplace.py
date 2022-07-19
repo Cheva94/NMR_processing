@@ -74,12 +74,12 @@ def PhCorr(decay):
 
     return decay.real
 
-def Norm(Z, RGnorm, nH):
+def Norm(Z, RGnorm):
     '''
     Normalización por ganancia y por masa/cantidad de H.
     '''
 
-    norm = 1 / ((6.32589E-4 * np.exp(RGnorm/9) - 0.0854) * nH)
+    norm = 1 / (6.32589E-4 * np.exp(RGnorm/9) - 0.0854)
     return Z * norm
 
 def NLI_FISTA(K, Z, alpha, S):
@@ -141,17 +141,13 @@ def fitMag(tau, T2, S, nP):
 
     return M
 
-def plot(tau, Z, M, T2, S, Out, nS, RDT, RG, att, RD, p90, p180, tEcho, nEcho, alpha, Back, nH, cumT2, nini, T2min, T2max):
+def plot(tau, Z, M, T2, S, Out, nS, RDT, RG, att, RD, p90, p180, tEcho, nEcho, alpha, Back, cumT2, nini, T2min, T2max):
     '''
     Grafica resultados.
     '''
 
     fig, axs = plt.subplots(2, 2, gridspec_kw={'height_ratios': [3,1]})
-
-    if nH == 1:
-        fig.suptitle(rf'nS={nS:.0f}    |    RDT = {RDT} ms    |    RG = {RG:.0f} dB    |    Atten = {att:.0f} dB    |    RD = {RD:.0f} s    |    p90 = {p90} $\mu$s    |    p180 = {p180} $\mu$s    |    tE = {tEcho:.1f} ms    |    Ecos = {nEcho:.0f} ({tau[-1]:.1f} ms)', fontsize='large')
-    else:
-        fig.suptitle(f'nS={nS:.0f}    |    RDT = {RDT} ms    |    RG = {RG:.0f} dB    |    Atten = {att:.0f} dB    |    RD = {RD:.0f} s    |    p90 = {p90} us    |    p180 = {p180} $\mu$s    |    tE = {tEcho:.1f} ms    |    Ecos = {nEcho:.0f} ({tau[-1]:.1f} ms)    |    nH = {nH:.6f} mol', fontsize='medium')
+    fig.suptitle(rf'nS={nS:.0f}    |    RDT = {RDT} ms    |    RG = {RG:.0f} dB    |    Atten = {att:.0f} dB    |    RD = {RD:.0f} s    |    p90 = {p90} $\mu$s    |    p180 = {p180} $\mu$s    |    tE = {tEcho:.1f} ms    |    Ecos = {nEcho:.0f} ({tau[-1]:.1f} ms)', fontsize='large')
 
     # CPMG: experimental y ajustada
     axs[0,0].set_title(f'Se descartaron {nini:.0f} puntos al comienzo.', fontsize='large')

@@ -13,7 +13,6 @@ def main():
 
     File = args.input
     Out = args.output
-    nH = args.protonMoles
     Back = args.background
     alpha = args.alpha
     T2min, T2max = args.T2Range[0], args.T2Range[1]
@@ -39,7 +38,7 @@ def main():
 
         Back = "Ja!"
 
-    Z = Norm(Z, RG, nH)
+    Z = Norm(Z, RG)
     S = NLI_FISTA(K, Z, alpha, S0)
 
     print(f'Inversion ready!')
@@ -63,7 +62,7 @@ def main():
 
     print('Plotting...')
 
-    plot(tau, Z, M, T2, S, Out, nS, RDT, RG, att, RD, p90, p180, tEcho, nEcho, alpha, Back, nH, cumT2, nini, T2min, T2max)
+    plot(tau, Z, M, T2, S, Out, nS, RDT, RG, att, RD, p90, p180, tEcho, nEcho, alpha, Back, cumT2, nini, T2min, T2max)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -73,7 +72,6 @@ if __name__ == "__main__":
     parser.add_argument('-alpha', '--alpha', help = "Tikhonov regularization parameter.", type = float, default = 0.001)
     parser.add_argument('-T2', '--T2Range', help = "Range to consider for T2 values.", nargs = 2, type = float, default = [-1.5, 2.5])
     parser.add_argument('-nini', '--niniValues', help = "Number of values to avoid at the beginning of T2.", type = int, default=0)
-    parser.add_argument('-nH', '--protonMoles', type = float, default = 1)
     parser.add_argument('-back', '--background', help = "Path to de FID background file.")
 
     args = parser.parse_args()
