@@ -111,9 +111,6 @@ def NLI_FISTA(K1, K2, Z, alpha, S):
 
             if Res < 1E-5:
                 break
-
-    print(f'¡Inversión lista! ({iter} iteraciones)')
-
     return S
 
 def fitMag(tau1, tau2, T1, T2, S):

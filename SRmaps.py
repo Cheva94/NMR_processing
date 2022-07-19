@@ -25,10 +25,13 @@ def main():
     nLevel = args.ContourLevels
 
     print(f'Alpha = {alpha}')
+    print('Processing...')
 
     if Back == None:
         S0, T1, T2, tau1, tau2, K1, K2, signal, N1, N2 = SRCPMG_file(File, T1min, T1max, T2min, T2max, niniT1, niniT2)
         Z = PhCorr(signal, N1, N2, niniT1, niniT2)
+
+        Back = "Nein!"
     else:
         S0, T1, T2, tau1, tau2, K1, K2, signal, N1, N2 = SRCPMG_file(File, T1min, T1max, T2min, T2max, niniT1, niniT2)
         Z = PhCorr(signal, N1, N2, niniT1, niniT2)
@@ -38,19 +41,19 @@ def main():
 
         Z -= back
 
+        Back = "Ja!"
+
     Z = Norm(Z, RGnorm, nH)
 
-    if newS == 'off':
-        S = NLI_FISTA(K1, K2, Z, alpha, S0)
-        np.savetxt(f"{Out}-DomRates.csv", S, delimiter='\t')
-    else:
-        S = newSS(f"{Out}-DomRates.csv")
+    S = NLI_FISTA(K1, K2, Z, alpha, S0)
+    print(f'Inversion ready!')
+    print('Saving...')
+
+    np.savetxt(f"{Out}-DomRates.csv", S, delimiter='\t')
 
     M1, M2 = fitMag(tau1, tau2, T1, T2, S)
 
-    if Back != None:
-        Back = "Yes"
-
+    print('Plotting...')
     plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2max, RGnorm, alpha, Back, nH, niniT1, niniT2, Map)
 
 if __name__ == "__main__":
