@@ -68,25 +68,21 @@ def PhCorr(signal):
 
     return signal * np.exp(1j * np.deg2rad(max(initVal, key=initVal.get)))
 
-def Norm(signal, RG, nH):
+def Norm(signal, RG):
     '''
     Normalización por ganancia y por masa/cantidad de H.
     '''
 
-    norm = 1 / ((6.32589E-4 * np.exp(RG/9) - 0.0854) * nH)
+    norm = 1 / (6.32589E-4 * np.exp(RG/9) - 0.0854)
     return signal * norm
 
-def plot(t, signal, nP, DW, nS, RDT, RG, att, RD, p90, Out, Back, nH, nini):
+def plot(t, signal, nP, DW, nS, RDT, RG, att, RD, p90, Out, Back, nini):
     '''
     Grafica resultados.
     '''
 
     fig, axs = plt.subplots(2, 2, gridspec_kw={'height_ratios': [3,1]})
-
-    if nH == 1:
-        fig.suptitle(rf'nS={nS:.0f}    |    RDT = {RDT} ms    |    RG = {RG:.0f} dB    |    Atten = {att:.0f} dB    |    RD = {RD:.0f} s    |    p90 = {p90} $\mu$s', fontsize='large')
-    else:
-        fig.suptitle(f'nS={nS:.0f}    |    RDT = {RDT} ms    |    RG = {RG:.0f} dB    |    Atten = {att:.0f} dB    |    RD = {RD:.0f} s    |    p90 = {p90} us    |    nH = {nH:.6f} mol', fontsize='large')
+    fig.suptitle(rf'nS={nS:.0f}    |    RDT = {RDT} ms    |    RG = {RG:.0f} dB    |    Atten = {att:.0f} dB    |    RD = {RD:.0f} s    |    p90 = {p90} $\mu$s', fontsize='large')
 
     # Promedio de los primeros 10 puntos de la FID
     points = 10

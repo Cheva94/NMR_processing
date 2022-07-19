@@ -11,7 +11,6 @@ def main():
 
     File = args.input
     Out = args.output
-    nH = args.protonMoles
     Back = args.background
     nini = args.niniValues
 
@@ -37,7 +36,7 @@ def main():
 
         Back = "Ja!"
 
-    signal = Norm(signal, RG, nH)
+    signal = Norm(signal, RG)
 
     print('Saving...')
 
@@ -48,14 +47,13 @@ def main():
 
     print('Plotting...')
 
-    plot(t, signal, nP, DW, nS, RDT, RG, att, RD, p90, Out, Back, nH, nini)
+    plot(t, signal, nP, DW, nS, RDT, RG, att, RD, p90, Out, Back, nini)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument('input', help = "Path to the FID file.")
     parser.add_argument('output', help = "Path for the output files.")
-    parser.add_argument('-nH', '--protonMoles', type = float, default = 1)
     parser.add_argument('-back', '--background', help = "Path to de FID background file.")
     parser.add_argument('-nini', '--niniValues', help = "Number of values to avoid at the beginning the FID.", type = int, default=0)
 
