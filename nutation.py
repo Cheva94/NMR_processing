@@ -1,4 +1,4 @@
-#!/usr/bin/python3.10
+#!/usr/bin/python3.8
 '''
     Written by: Ignacio J. Chevallier-Boutell.
     Dated: February, 2022.
@@ -16,7 +16,6 @@ plt.rcParams["font.size"] = 35
 
 plt.rcParams["axes.labelweight"] = "bold"
 plt.rcParams["axes.linewidth"] = 5
-plt.rcParams["axes.prop_cycle"] = cycler('color', ['tab:orange', 'mediumseagreen', 'k', 'm', 'y'])
 
 plt.rcParams['xtick.major.size'] = 10
 plt.rcParams['xtick.major.width'] = 5
@@ -69,9 +68,9 @@ def main():
 
         fig, ax = plt.subplots()
 
-        ax.scatter(t, M, label='data', zorder=2)
-        ax.plot(t, damped_sine(t, *popt), label='fit', color='mediumseagreen', zorder=0)
-        ax.axhline(y=0, color='teal', ls=':', lw=4)
+        ax.scatter(t, M, label='data', zorder=2, color='coral')
+        ax.plot(t, damped_sine(t, *popt), label='fit', color='teal', zorder=0)
+        ax.axhline(y=0, color='k', ls=':', lw=4)
         ax.set_xlabel('t [us]')
         ax.set_ylabel('M')
         ax.legend()
@@ -83,9 +82,9 @@ def main():
 
         fig, ax = plt.subplots()
 
-        ax.scatter(t, M, label='data', zorder=2)
-        ax.plot(t, damped_sine(t, *popt), label='fit', color='mediumseagreen', zorder=0)
-        ax.axhline(y=0, color='teal', ls=':', lw=4)
+        ax.scatter(t, M, label='data', zorder=2, color='coral')
+        ax.plot(t, damped_sine(t, *popt), label='fit', color='teal', zorder=0)
+        ax.axhline(y=0, color='k', ls=':', lw=4)
         ax.set_xlabel('t [us]')
         ax.set_ylabel('M')
         ax.legend()
