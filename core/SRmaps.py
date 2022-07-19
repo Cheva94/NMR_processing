@@ -12,7 +12,6 @@ plt.rcParams["font.size"] = 35
 
 plt.rcParams["axes.labelweight"] = "bold"
 plt.rcParams["axes.linewidth"] = 5
-plt.rcParams["axes.prop_cycle"] = cycler('color', ['coral', 'teal', 'tab:orange', 'mediumseagreen'])
 
 plt.rcParams['xtick.major.size'] = 10
 plt.rcParams['xtick.major.width'] = 5
@@ -156,7 +155,9 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2m
 
     # SR: residuos
     axs[1,0].scatter(tau1, M1-Z[:, 0], color = 'blue')
-    axs[1,0].axhline(0, c = 'k', lw = 4, ls = '-')
+    axs[1,0].axhline(0.1*np.max(Z[:, 0]), c = 'red', lw = 6, ls = '-')
+    axs[1,0].axhline(-0.1*np.max(Z[:, 0]), c = 'red', lw = 6, ls = '-')
+    axs[1,0].axhline(0, c = 'k', lw = 4, ls = ':')
     axs[1,0].set_xlabel(r'$\tau$1 [ms]')
     axs[1,0].set_ylabel('Res. SR')
 
@@ -172,6 +173,8 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2m
     # CPMG/FID/FID-CPMG: residuos
     axs[1,1].scatter(tau2, M2-Z[-1, :], color = 'blue')
     axs[1,1].axhline(0, c = 'k', lw = 4, ls = '-')
+    axs[1,1].axhline(0.1*np.max(Z[-1,:]), c = 'red', lw = 6, ls = '-')
+    axs[1,1].axhline(-0.1*np.max(Z[-1,:]), c = 'red', lw = 6, ls = '-')
 
     # Distribución proyectada de T1
     T1 = T1[4:-9]
