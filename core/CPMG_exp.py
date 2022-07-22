@@ -9,7 +9,6 @@ plt.rcParams["font.size"] = 35
 
 plt.rcParams["axes.labelweight"] = "bold"
 plt.rcParams["axes.linewidth"] = 5
-plt.rcParams["axes.prop_cycle"] = cycler('color', ['tab:orange', 'mediumseagreen', 'k', 'm', 'y'])
 
 plt.rcParams['xtick.major.size'] = 10
 plt.rcParams['xtick.major.width'] = 5
@@ -29,21 +28,27 @@ plt.rcParams["figure.autolayout"] = True
 plt.rcParams["lines.linestyle"] = '-'
 
 def CPMG_file(File, nini):
-    data = pd.read_csv(File, header = None, delim_whitespace = True, comment='#').to_numpy()
+    '''
+    Lectura del archivo de la medición y sus parámetros.
+    '''
+    data = pd.read_csv(File, header = None, delim_whitespace = True).to_numpy()
 
     t = data[:, 0] # In ms
 
     Re = data[:, 1]
     Im = data[:, 2]
-    signal = Re + Im * 1j # Complex signal
+    decay = Re + Im * 1j # Complex signal
 
-    pAcq = pd.read_csv(File.split('.txt')[0]+'_acqs.txt', header = None, delim_whitespace = True)
+    pAcq = pd.read_csv(File.split(".txt")[0]+'_acqs.txt', header = None, sep='\t')
+    nS, RDT, RG, att, RD, p90, p180, tEcho, nEcho = pAcq.iloc[0, 1], pAcq.iloc[1, 1], pAcq.iloc[2, 1], pAcq.iloc[3, 1], pAcq.iloc[4, 1], pAcq.iloc[5, 1], pAcq.iloc[6, 1], pAcq.iloc[7, 1], pAcq.iloc[8, 1]
 
-    nS, RG, p90, att, RD, tEcho, nEcho = pAcq.iloc[0, 1], pAcq.iloc[1, 1], pAcq.iloc[2, 1], pAcq.iloc[4, 1], pAcq.iloc[5, 1], 2*pAcq.iloc[6, 1], pAcq.iloc[7, 1]-nini
-
-    return t[nini:], signal[nini:], nS, RG, p90, att, RD, tEcho, nEcho
+    return t[nini:], decay[nini:], nS, RDT, RG, att, RD, p90, p180, tEcho, nEcho
 
 def PhCorr(signal):
+    '''
+    Corrección de fase.
+    '''
+
     initVal = {}
     for i in range(360):
         tita = np.deg2rad(i)
@@ -54,13 +59,18 @@ def PhCorr(signal):
     return signal.real
 
 def Norm(decay, RGnorm, RG, m):
-    if RGnorm == "off":
-        Norm = 1 / m
-    elif RGnorm == 'on':
-        Norm = 1 / ((6.32589E-4 * np.exp(RG/9) - 0.0854) * m)
+    '''
+    Normalización por ganancia.
+    '''
+
+    norm = 1 / (6.32589E-4 * np.exp(RGnorm/9) - 0.0854)
     return decay * Norm
 
 def r_square(x, y, f, popt):
+    '''
+    Coeficiente de Pearson.
+    '''
+
     residuals = y - f(x, *popt)
     ss_res = np.sum(residuals ** 2)
     ss_tot = np.sum((y - np.mean(y)) ** 2)

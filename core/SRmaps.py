@@ -143,6 +143,7 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2m
     fig.suptitle(f'ns = 4 | RG = {RGnorm} dB | nH = {nH:.6f} | BG = {Back} | Alpha = {alpha} | nini SR = {niniT1} | nini CPMG = {niniT2}', fontsize='large')
 
     # SR: experimental y ajustada
+    axs[0,0].set_title(f'Se descartaron {niniT1:.0f} puntos al comienzo.', fontsize='large')
     axs[0,0].scatter(tau1, Z[:, 0], label='Exp', color='coral')
     axs[0,0].plot(tau1, M1, label='Fit', color='teal')
     axs[0,0].set_xlabel(r'$\tau_1$ [ms]')
@@ -154,6 +155,7 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2m
     axins1.plot(tau1[0:5], M1[0:5], color='teal')
 
     # SR: residuos
+    axs[1,0].set_title(f'Residuos del ajuste - Dim. indirecta', fontsize='large')
     axs[1,0].scatter(tau1, M1-Z[:, 0], color = 'blue')
     axs[1,0].axhline(0.1*np.max(Z[:, 0]), c = 'red', lw = 6, ls = '-')
     axs[1,0].axhline(-0.1*np.max(Z[:, 0]), c = 'red', lw = 6, ls = '-')
@@ -162,6 +164,7 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2m
     axs[1,0].set_ylabel('Res. SR')
 
     # CPMG/FID/FID-CPMG: experimental y ajustada
+    axs[0,1].set_title(f'Se descartaron {niniT2:.0f} puntos al comienzo.', fontsize='large')
     axs[0,1].scatter(tau2, Z[-1, :], label='Exp', color='coral')
     axs[0,1].plot(tau2, M2, label='Fit', color='teal')
     axs[0,1].legend()
@@ -171,6 +174,7 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2m
     axins2.plot(tau2[0:5], M2[0:5], color='teal')
 
     # CPMG/FID/FID-CPMG: residuos
+    axs[1,1].set_title(f'Residuos del ajuste - Dim. directa', fontsize='large')
     axs[1,1].scatter(tau2, M2-Z[-1, :], color = 'blue')
     axs[1,1].axhline(0, c = 'k', lw = 4, ls = '-')
     axs[1,1].axhline(0.1*np.max(Z[-1,:]), c = 'red', lw = 6, ls = '-')
@@ -244,6 +248,7 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2m
     for k in range(5):
         axs[1,3].scatter(tau2, gaussian_filter1d(Z[k, :], sigma=50), label=f'{k+1}')
     axs[1,3].legend()
+    axs[1,3].set_title(f'Primeras 5 mediciones (descontando las {niniT1} primeras)', fontsize='large')
 
     if Map == 'fid':
         axs[0,1].set_xlabel(r'$\tau_2^*$ [ms]')

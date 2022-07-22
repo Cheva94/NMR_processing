@@ -70,7 +70,7 @@ def PhCorr(signal):
 
 def Norm(signal, RG):
     '''
-    Normalización por ganancia y por masa/cantidad de H.
+    Normalización por ganancia.
     '''
 
     norm = 1 / (6.32589E-4 * np.exp(RG/9) - 0.0854)
@@ -101,7 +101,7 @@ def plot(t, signal, nP, DW, nS, RDT, RG, att, RD, p90, Out, Back, nini):
 
     # Inset del comienzo de la parte real de la FID
     axins1 = inset_axes(axs[0,0], width="30%", height="30%", loc=5)
-    axins1.scatter(t[0:30], signal[0:30].real, color='coral')
+    axins1.scatter(t[0:40], signal[0:40].real, color='coral')
     axins1.plot(t[0:points], signal[0:points].real, color='teal')
 
     # Plot de la parte imaginaria de la FID

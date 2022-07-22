@@ -76,7 +76,7 @@ def PhCorr(decay):
 
 def Norm(Z, RGnorm):
     '''
-    Normalización por ganancia y por masa/cantidad de H.
+    Normalización por ganancia.
     '''
 
     norm = 1 / (6.32589E-4 * np.exp(RGnorm/9) - 0.0854)
@@ -147,7 +147,7 @@ def plot(tau, Z, M, T2, S, Out, nS, RDT, RG, att, RD, p90, p180, tEcho, nEcho, a
     '''
 
     fig, axs = plt.subplots(2, 2, gridspec_kw={'height_ratios': [3,1]})
-    fig.suptitle(rf'nS={nS:.0f}    |    RDT = {RDT} ms    |    RG = {RG:.0f} dB    |    Atten = {att:.0f} dB    |    RD = {RD:.0f} s    |    p90 = {p90} $\mu$s    |    p180 = {p180} $\mu$s    |    tE = {tEcho:.1f} ms    |    Ecos = {nEcho:.0f} ({tau[-1]:.1f} ms)', fontsize='large')
+    fig.suptitle(rf'nS={nS:.0f}    |    RDT = {RDT} ms    |    RG = {RG:.0f} dB    |    Atten = {att:.0f} dB    |    RD = {RD:.0f} s    |    p90 = {p90} $\mu$s    |    p180 = {p180} $\mu$s    |    tE = {tEcho:.1f} ms    |    Ecos = {nEcho:.0f}', fontsize='large')
 
     # CPMG: experimental y ajustada
     axs[0,0].set_title(f'Se descartaron {nini:.0f} puntos al comienzo.', fontsize='large')
