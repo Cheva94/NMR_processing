@@ -1,4 +1,4 @@
-#!/usr/bin/python3.8
+#!/usr/bin/python3.10
 '''
     Written by: Ignacio J. Chevallier-Boutell.
     Dated: February, 2022.
