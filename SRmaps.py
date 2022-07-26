@@ -29,21 +29,24 @@ def main():
 
     if Back == None:
         S0, T1, T2, tau1, tau2, K1, K2, signal, N1, N2 = SRCPMG_file(File, T1min, T1max, T2min, T2max, niniT1, niniT2)
-        Z = PhCorr(signal, N1, N2, niniT1, niniT2)
+        # Z = PhCorr(signal, N1, N2, niniT1, niniT2)
+        Z = PhCorr(signal, N1, N2)
 
         Back = "Nein!"
     else:
         S0, T1, T2, tau1, tau2, K1, K2, signal, N1, N2 = SRCPMG_file(File, T1min, T1max, T2min, T2max, niniT1, niniT2)
-        Z = PhCorr(signal, N1, N2, niniT1, niniT2)
+        # Z = PhCorr(signal, N1, N2, niniT1, niniT2)
+        Z = PhCorr(signal, N1, N2)
 
         _, _, _, _, _, _, _, back, _, _ = SRCPMG_file(Back, T1min, T1max, T2min, T2max, niniT1, niniT2)
-        back = PhCorr(back, N1, N2, niniT1, niniT2)
+        # back = PhCorr(back, N1, N2, niniT1, niniT2)
+        back = PhCorr(back, N1, N2)
 
         Z -= back
 
         Back = "Ja!"
 
-    Z = Norm(Z, RGnorm, nH)
+    Z = Norm(Z, RGnorm, N1, N2, niniT1, niniT2)
 
     S = NLI_FISTA(K1, K2, Z, alpha, S0)
     print(f'Inversion ready!')

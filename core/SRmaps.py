@@ -56,25 +56,37 @@ def SRCPMG_file(File, T1min, T1max, T2min, T2max, niniT1, niniT2):
 
     return S0, T1, T2, tau1, tau2, K1, K2, signal, N1, N2
 
-def PhCorr(signal, N1, N2, niniT1, niniT2):
+# def PhCorr(signal, N1, N2, niniT1, niniT2):
+def PhCorr(signal, N1, N2):
     Z = []
 
+    signal_Last = signal[(N1-1)*N2:]
+    initVal = {}
+    for i in range(360):
+        tita = np.deg2rad(i)
+        signal_ph = signal_Last * np.exp(1j * tita)
+        initVal[i] = signal_ph[0].real
+
+    tita = np.deg2rad(max(initVal, key=initVal.get))
+
     for k in range(N1):
-        initVal = {}
-        signal_k = signal[k*N2:(k+1)*N2]
-        for i in range(360):
-            tita = np.deg2rad(i)
-            signal_ph = signal_k * np.exp(1j * tita)
-            initVal[i] = signal_ph[0].real
+        signal_k = signal[k*N2:(k+1)*N2] * np.exp(1j * tita)
+        signal_k = signal_k.real
+        Z.append(signal_k)
 
-        signal_k = signal_k * np.exp(1j * np.deg2rad(max(initVal, key=initVal.get)))
-        Z.append(signal_k.real)
+    return np.array(Z)
 
-    return np.reshape(Z, (N1, N2))[niniT1:, niniT2:]
+def Norm(Z, RGnorm, N1, N2, niniT1, niniT2):
+    '''
+    Normalización por ganancia, corrección de offset y creación de matriz.
+    '''
 
-def Norm(Z, RGnorm, nH):
-    norm = 1 / ((6.32589E-4 * np.exp(RGnorm/9) - 0.0854) * nH)
-    return Z * norm
+    norm = 1 / (6.32589E-4 * np.exp(RGnorm/9) - 0.0854)
+    Z = np.reshape(Z*norm, (N1, N2))[niniT1:, niniT2:]
+    offset = np.min(Z[:, 0])
+    Z -= offset
+
+    return Z
 
 def NLI_FISTA(K1, K2, Z, alpha, S):
     K1TK1 = K1.T @ K1
@@ -151,8 +163,8 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2m
     axs[0,0].legend()
 
     axins1 = inset_axes(axs[0,0], width="30%", height="30%", loc=5)
-    axins1.scatter(tau1[0:5], Z[:, 0][0:5], color='coral')
-    axins1.plot(tau1[0:5], M1[0:5], color='teal')
+    axins1.scatter(tau1[0:22], Z[:, 0][0:22], color='coral')
+    axins1.plot(tau1[0:22], M1[0:22], color='teal')
 
     # SR: residuos
     axs[1,0].set_title(f'Residuos del ajuste - Dim. indirecta', fontsize='large')
@@ -245,17 +257,18 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2m
     axs[1,2].set_yscale('log')
     axs[1,2].legend(loc='lower right')
 
-    for k in range(5):
-        axs[1,3].scatter(tau2, gaussian_filter1d(Z[k, :], sigma=50), label=f'{k+1}')
-    axs[1,3].legend()
-    axs[1,3].set_title(f'Primeras 5 mediciones (descontando las {niniT1} primeras)', fontsize='large')
+    # for k in range(5):
+    #     axs[1,3].scatter(tau2, gaussian_filter1d(Z[k, :], sigma=50), label=f'{k+1}')
+    # axs[1,3].legend()
+    # axs[1,3].set_title(f'Primeras 5 mediciones (descontando las {niniT1} primeras)', fontsize='large')
+    axs[1,3].axis('off')
 
     if Map == 'fid':
         axs[0,1].set_xlabel(r'$\tau_2^*$ [ms]')
         axs[0,1].set_ylabel('FID')
 
-        axs[1,3].set_xlabel(r'$\tau_2^*$ [ms]')
-        axs[1,3].set_ylabel('FID')
+        # axs[1,3].set_xlabel(r'$\tau_2^*$ [ms]')
+        # axs[1,3].set_ylabel('FID')
 
         axs[1,1].set_xlabel(r'$\tau_2^*$ [ms]')
         axs[1,1].set_ylabel('Res. FID')
@@ -270,8 +283,8 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2m
         axs[0,1].set_xlabel(r'$\tau_2$ [ms]')
         axs[0,1].set_ylabel('CPMG')
 
-        axs[1,3].set_xlabel(r'$\tau_2$ [ms]')
-        axs[1,3].set_ylabel('CPMG')
+        # axs[1,3].set_xlabel(r'$\tau_2$ [ms]')
+        # axs[1,3].set_ylabel('CPMG')
 
         axs[1,1].set_xlabel(r'$\tau_2$ [ms]')
         axs[1,1].set_ylabel('Res. CPMG')
@@ -286,8 +299,8 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2m
         axs[0,1].set_xlabel(r'$\tau_2^* | \tau_2$ [ms]')
         axs[0,1].set_ylabel('FID-CPMG')
 
-        axs[1,3].set_xlabel(r'$\tau_2^* | \tau_2$ [ms]')
-        axs[1,3].set_ylabel('FID-CPMG')
+        # axs[1,3].set_xlabel(r'$\tau_2^* | \tau_2$ [ms]')
+        # axs[1,3].set_ylabel('FID-CPMG')
 
         axs[1,1].set_xlabel(r'$\tau_2^* | \tau_2$ [ms]')
         axs[1,1].set_ylabel('Res. FID-CPMG')
