@@ -38,16 +38,16 @@ def main():
 
     signal = Norm(signal, RG)
 
-    print('Saving...')
+    print('Plotting...')
+
+    plot(t, signal, nP, DW, nS, RDT, RG, att, RD, p90, Out, Back, nini)
+    
+    print('Writing output...')
 
     with open(f'{Out}.csv', 'w') as f:
         f.write("t [ms]\tRe[FID]\tIm[FID] \n")
         for i in range(nP):
             f.write(f'{t[i]:.6f}\t{signal.real[i]:.6f}\t{signal.imag[i]:.6f} \n')
-
-    print('Plotting...')
-
-    plot(t, signal, nP, DW, nS, RDT, RG, att, RD, p90, Out, Back, nini)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

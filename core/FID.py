@@ -92,8 +92,8 @@ def plot(t, signal, nP, DW, nS, RDT, RG, att, RD, p90, Out, Back, nini):
 
     # Plot de la parte real de la FID
     axs[0,0].set_title(f'Se descartaron {nini:.0f} puntos al comienzo.', fontsize='large')
-    axs[0,0].plot(t, signal.real, label='FID (real)')
-    axs[0,0].plot(t[0:points], signal[0:points].real, lw = 10, label = fr'$M_R ({points})$ = ({fid0:.2f} $\pm$ {fid0_SD:.2f})')
+    axs[0,0].scatter(t, signal.real, label='FID (real)', color='coral')
+    axs[0,0].plot(t[0:points], signal[0:points].real, lw = 10, label = fr'$M_R ({points})$ = ({fid0:.2f} $\pm$ {fid0_SD:.2f})', color='teal')
     axs[0,0].axhline(y=0, color='k', ls=':', lw=4)
     axs[0,0].set_xlabel('t [ms]')
     axs[0,0].set_ylabel('FID')
@@ -105,7 +105,7 @@ def plot(t, signal, nP, DW, nS, RDT, RG, att, RD, p90, Out, Back, nini):
     axins1.plot(t[0:points], signal[0:points].real, color='teal')
 
     # Plot de la parte imaginaria de la FID
-    axs[1,0].plot(t, signal.imag, label='FID (imag)')
+    axs[1,0].scatter(t, signal.imag, label='FID (imag)')
     axs[1,0].axhline(y=0, color='k', ls=':', lw=4)
     axs[1,0].set_xlabel('t [ms]')
     axs[1,0].set_ylabel('FID')
@@ -123,7 +123,7 @@ def plot(t, signal, nP, DW, nS, RDT, RG, att, RD, p90, Out, Back, nini):
 
     # Plot de la parte real del espectro, zoom en el pico
     axs[0,1].set_title(f'¿Background restado? {Back}', fontsize='large')
-    axs[0,1].plot(CS, spec.real, label='Spectrum (real)')
+    axs[0,1].plot(CS, spec.real, label='Spectrum (real)', color='coral')
     axs[0,1].fill_between(CS[mask], 0, spec.real[mask], label = fr'Peak area = {area_peak:.0f}', alpha = 0.25, color="teal")
     axs[0,1].set_xlim(-0.1, 0.1)
     axs[0,1].set_ylim(-0.05, 1.2)
@@ -136,10 +136,10 @@ def plot(t, signal, nP, DW, nS, RDT, RG, att, RD, p90, Out, Back, nini):
     # Inset del espectro completo
     axins2 = inset_axes(axs[0,1], width="30%", height="30%", loc=2)
     axins2.tick_params(labelleft=False)
-    axins2.plot(CS, spec.real)
+    axins2.plot(CS, spec.real, color='coral')
 
     # Plot de la parte imaginaria del espectro
-    axs[1,1].plot(CS, spec.imag, label='Spectrum (imag)')
+    axs[1,1].scatter(CS, spec.imag, label='Spectrum (imag)')
     axs[1,1].axhline(y=0, color='k', ls=':', lw=4)
     axs[1,1].axvline(x=0, color='k', ls=':', lw=4)
     axs[1,1].set_xlim(-0.1, 0.1)

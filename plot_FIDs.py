@@ -6,6 +6,10 @@
 
 import argparse
 from core.meanFID import *
+import scipy.fft as FT
+
+plt.rcParams["figure.figsize"] = 37.5, 10
+plt.rcParams["lines.linewidth"] = 4
 
 def main():
 
@@ -17,14 +21,16 @@ def main():
 
     nF = range(len(FileArr))
 
-    fig, axs = plt.subplots(1,2)
-    axins = inset_axes(axs[0], width="30%", height="30%", loc=5)
+    fig, axs = plt.subplots(1,3)
     Min, Max = [], []
 
     for k in nF:
         data = pd.read_csv(FileArr[k], header = None, delim_whitespace = True, comment='#').to_numpy()
         t = data[:, 0] # In ms
+        DW = t[1] - t[0]
         t = t[nini:]
+        nP = len(t) # Number of points
+
         Re = data[:, 1]
         Im = data[:, 2]
         signal = Re + Im * 1j
@@ -36,10 +42,18 @@ def main():
 
         axs[0].plot(t, signal.real, label=Labels[k])
         axs[1].plot(t, signal.real/np.max(signal.real), label=Labels[k])
-        axins.plot(t, signal.real)
 
-    axins.set_xlim(0,0.1)
-    axins.set_ylim(np.min(Min), np.max(Max))
+        # Preparación del espectro
+        zf = FT.next_fast_len(2**5 * nP)
+        freq = FT.fftshift(FT.fftfreq(zf, d=DW)) # Hz scale
+        CS = freq / 20 # ppm for Minispec scale
+        spec = np.flip(FT.fftshift(FT.fft(signal, n = zf)))
+        mask = (CS>-0.05)&(CS<0.05)
+        if k==0:
+            max_peak = np.max(spec.real[mask])
+        spec /= max_peak
+
+        axs[2].plot(CS, spec.real, label=Labels[k])
 
     axs[0].set_xlabel('t [ms]')
     axs[0].set_ylabel('FID')
@@ -50,6 +64,13 @@ def main():
     axs[1].set_ylabel('FID (norm)')
     axs[1].set_xlim(right=20)
     axs[1].legend()
+
+    axs[2].set_xlim(-0.06, 0.06)
+    axs[2].set_ylim(-0.05, 1.2)
+    axs[2].set_xlabel(r'$\delta$ [ppm]')
+    axs[2].axvline(x=0, color='k', ls=':', lw=2)
+    axs[2].axhline(y=0, color='k', ls=':', lw=2)
+    axs[2].legend()
 
     plt.savefig(f'{Out}')
 
