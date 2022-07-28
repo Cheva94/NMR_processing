@@ -181,14 +181,14 @@ def plot(tau, Z, M, T2, S, Out, nS, RDT, RG, att, RD, p90, p180, tEcho, nEcho, a
 
     # Distribución de T2
     T2 = T2[2:-2]
-    S /= np.max(S)
+    Snorm = S / np.max(S)
     peaks, _ = find_peaks(S)
     peaksx, peaksy = T2[peaks], S[peaks]
 
 
     axs[0,1].set_title(rf'$\alpha$ = {alpha}')
     axs[0,1].axhline(y=0.1, color='k', ls=':', lw=4)
-    axs[0,1].plot(T2, S, label = 'Distrib.', color = 'teal')
+    axs[0,1].plot(T2, Snorm, label = 'Distrib.', color = 'teal')
     for i in range(len(peaksx)):
         if peaksy[i] > 0.1:
             axs[0,1].plot(peaksx[i], peaksy[i] + 0.05, lw = 0, marker=11, color='black')
@@ -200,9 +200,9 @@ def plot(tau, Z, M, T2, S, Out, nS, RDT, RG, att, RD, p90, p180, tEcho, nEcho, a
     axs[0,1].set_xlim(10.0**T2min, 10.0**T2max)
 
 
-    cumT2 /= cumT2[-1]
+    cumT2norm = cumT2 / cumT2[-1]
     ax = axs[0,1].twinx()
-    ax.plot(T2, cumT2, label = 'Cumul.', color = 'coral')
+    ax.plot(T2, cumT2norm, label = 'Cumul.', color = 'coral')
     ax.set_ylim(-0.02, 1.2)
     ax.set_ylabel(r'Cumul. $T_2$')
 

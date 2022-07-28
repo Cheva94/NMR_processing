@@ -29,7 +29,7 @@ plt.rcParams["legend.shadow"] = True
 plt.rcParams["legend.fontsize"] = 30
 plt.rcParams["legend.edgecolor"] = 'black'
 
-plt.rcParams["figure.figsize"] = 37.5, 10
+plt.rcParams["figure.figsize"] = 25, 10
 plt.rcParams["figure.autolayout"] = True
 
 plt.rcParams["lines.linewidth"] = 4
@@ -44,28 +44,29 @@ def main():
 
     nF = range(len(FileArr))
 
+    fig, (ax1, ax2) = plt.subplots(1,2)
+
     for k in nF:
-        data = pd.read_csv(FileArr[k], header = None, delim_whitespace = True).to_numpy()
-        Laplace = data[3:153, :3]
-        T2 = Laplace[:, 0]
-        Cumulative = Laplace[:, 2]
+        data = pd.read_csv(FileArr[k], delim_whitespace = True).to_numpy()
+        t = data[:, 0] # In ms
+        Distrib = data[:, 1]
+        Cumul = data[:, 2]
 
-        Time = data[154:, :3]
-        t = Time[:, 0]
-        Decay = Time[:, 1]
+        ax1.plot(t, Distrib, label = Labels[k])
+        ax1.set_xlabel(r'$T_2$ [ms]')
+        ax1.set_xscale('log')
+        ax1.set_ylabel(r'Distrib. $T_2$')
+        ax1.legend()
+        ax1.set_ylim(-0.02, 1.2)
 
-        return t[nini:], Decay[nini:], T2, Cumulative
+        ax2.plot(t, Cumul, label = Labels[k])
+        ax2.set_xlabel(r'$T_2$ [ms]')
+        ax2.set_xscale('log')
+        ax2.set_ylabel(r'Distrib. $T_2$')
+        ax2.legend()
+        ax2.set_ylim(-0.02, 1.2)
 
-
-
-        t, Decay, T2, Cumulative = CPMG_file(F, nini)
-        signalArr.append(Decay)
-        cumulArr.append(Cumulative)
-
-    signalArr = np.reshape(signalArr, (nF, len(t))).T
-    cumulArr = np.reshape(cumulArr, (nF, len(T2))).T
-
-    plot(t, signalArr, T2, cumulArr, nF, Out, Labels)
+    plt.savefig(f'{Out}')
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
