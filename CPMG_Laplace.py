@@ -46,6 +46,7 @@ def main():
 
     M = fitMag(tau, T2, S, nP)
 
+    S = S[2:-2]
     cumT2 = np.cumsum(S)
 
     print('Plotting...')
@@ -58,10 +59,10 @@ def main():
         f.write("t [ms]\tDecay\tFit \n")
         for i in range(nP):
             f.write(f'{tau[i]:.6f}\t{Z[i]:.6f}\t{M[i]:.6f} \n')
-            
+
     with open(f'{Out}_DistribT2.csv', 'w') as f:
         f.write("T2 [ms]\tDistribution\tCumulative (not Norm.) \n")
-        for i in range(len(T2)):
+        for i in range(len(T2[2:-2])):
             f.write(f'{T2[i]:.6f}\t{S[i]:.6f}\t{cumT2[i]:.6f} \n')
 
 
