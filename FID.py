@@ -41,7 +41,7 @@ def main():
     print('Plotting...')
 
     plot(t, signal, nP, DW, nS, RDT, RG, att, RD, p90, Out, Back, nini)
-    
+
     print('Writing output...')
 
     with open(f'{Out}.csv', 'w') as f:

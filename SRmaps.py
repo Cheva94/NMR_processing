@@ -1,7 +1,7 @@
 #!/usr/bin/python3.10
 '''
     Written by: Ignacio J. Chevallier-Boutell.
-    Dated: December, 2021.
+    Dated: July, 2022.
 '''
 
 import argparse

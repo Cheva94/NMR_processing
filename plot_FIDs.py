@@ -1,7 +1,7 @@
 #!/usr/bin/python3.10
 '''
     Written by: Ignacio J. Chevallier-Boutell.
-    Dated: February, 2022.
+    Dated: July, 2022.
 '''
 
 import argparse
@@ -59,7 +59,6 @@ def main():
     nF = range(len(FileArr))
 
     fig, axs = plt.subplots(1,3)
-    Min, Max = [], []
 
     for k in nF:
         data = pd.read_csv(FileArr[k], header = None, delim_whitespace = True).to_numpy()
@@ -71,9 +70,6 @@ def main():
         Im = data[:, 2]
         signal = Re + Im * 1j
         signal = PhCorr(signal)
-
-        Max.append(np.max(signal.real))
-        Min.append(signal.real[40])
 
         axs[0].plot(t, signal.real, label=Labels[k])
         axs[1].plot(t, signal.real/np.max(signal.real), label=Labels[k])
