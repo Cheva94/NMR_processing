@@ -163,19 +163,21 @@ def plot(tau, Z, M, T2, S, Out, nS, RDT, RG, att, RD, p90, p180, tEcho, nEcho, a
     axins1.plot(tau[0:30], M[0:30], color='teal')
 
     # CPMG: experimental y ajustada (en semilog)
-    axs[1,0].set_title(f'¿Background restado? {Back}', fontsize='large')
-    axs[1,0].scatter(tau, Z, label='Exp', color='coral')
-    axs[1,0].plot(tau, M, label='Fit', color='teal')
-    axs[1,0].set_yscale('log')
-    axs[1,0].set_xlabel(r'$\tau$ [ms]')
-    axs[1,0].set_ylabel('log(CPMG)')
-    axs[1,0].legend()
+    axs[1,1].set_title(f'¿Background restado? {Back}', fontsize='large')
+    axs[1,1].scatter(tau, Z, label='Exp', color='coral')
+    axs[1,1].plot(tau, M, label='Fit', color='teal')
+    axs[1,1].set_yscale('log')
+    axs[1,1].set_xlabel(r'$\tau$ [ms]')
+    axs[1,1].set_ylabel('log(CPMG)')
+    axs[1,1].legend()
 
     # CPMG: residuos
-    axs[1,1].set_title('Residuos del ajuste')
-    axs[1,1].scatter(tau, M-Z, color = 'blue')
-    axs[1,1].axhline(0, c = 'k', lw = 4, ls = '-')
-    axs[1,1].set_xlabel(r'$\tau$ [ms]')
+    axs[1,0].set_title('Residuos del ajuste')
+    axs[1,0].scatter(tau, M-Z, color = 'blue')
+    axs[1,0].axhline(0, c = 'k', lw = 4, ls = ':')
+    axs[1,0].set_xlabel(r'$\tau$ [ms]')
+    axs[1,0].axhline(0.1*np.max(Z), c = 'red', lw = 6, ls = '-')
+    axs[1,0].axhline(-0.1*np.max(Z), c = 'red', lw = 6, ls = '-')
 
     # Distribución de T2
     S /= np.max(S)
@@ -196,6 +198,7 @@ def plot(tau, Z, M, T2, S, Out, nS, RDT, RG, att, RD, p90, p180, tEcho, nEcho, a
     axs[0,1].set_xlim(10.0**T2min, 10.0**T2max)
 
 
+    cumT2 /= cumT2[-1]
     ax = axs[0,1].twinx()
     ax.plot(T2, cumT2, label = 'Cumul.', color = 'coral')
     ax.set_ylim(-0.02, 1.2)

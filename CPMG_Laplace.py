@@ -42,27 +42,28 @@ def main():
     S = NLI_FISTA(K, Z, alpha, S0)
 
     print(f'Inversion ready!')
+    print(f'Fitting in time domain...')
 
     M = fitMag(tau, T2, S, nP)
 
     cumT2 = np.cumsum(S)
-    cumT2 /= cumT2[-1]
 
-    print('Saving...')
+    print('Plotting...')
 
-    with open(f'{Out}_DistribT2.csv', 'w') as f:
-        f.write("T2 [ms]\tDistribution\tCumulative \n")
-        for i in range(len(T2)):
-            f.write(f'{T2[i]:.6f}\t{S[i]:.6f}\t{cumT2[i]:.6f} \n')
+    plot(tau, Z, M, T2, S, Out, nS, RDT, RG, att, RD, p90, p180, tEcho, nEcho, alpha, Back, cumT2, nini, T2min, T2max)
+
+    print('Writing output...')
 
     with open(f'{Out}_Decay.csv', 'w') as f:
         f.write("t [ms]\tDecay\tFit \n")
         for i in range(nP):
             f.write(f'{tau[i]:.6f}\t{Z[i]:.6f}\t{M[i]:.6f} \n')
+            
+    with open(f'{Out}_DistribT2.csv', 'w') as f:
+        f.write("T2 [ms]\tDistribution\tCumulative (not Norm.) \n")
+        for i in range(len(T2)):
+            f.write(f'{T2[i]:.6f}\t{S[i]:.6f}\t{cumT2[i]:.6f} \n')
 
-    print('Plotting...')
-
-    plot(tau, Z, M, T2, S, Out, nS, RDT, RG, att, RD, p90, p180, tEcho, nEcho, alpha, Back, cumT2, nini, T2min, T2max)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
