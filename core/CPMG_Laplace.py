@@ -185,7 +185,6 @@ def plot(tau, Z, M, T2, S, Out, nS, RDT, RG, att, RD, p90, p180, tEcho, nEcho, a
     peaks, _ = find_peaks(S)
     peaksx, peaksy = T2[peaks], S[peaks]
 
-
     axs[0,1].set_title(rf'$\alpha$ = {alpha}')
     axs[0,1].axhline(y=0.1, color='k', ls=':', lw=4)
     axs[0,1].plot(T2, Snorm, label = 'Distrib.', color = 'teal')

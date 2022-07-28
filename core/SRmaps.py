@@ -60,8 +60,11 @@ def SRmap_file(File, T1min, T1max, T2min, T2max, niniT1, niniT2, Map):
 
     pAcq = pd.read_csv(File.split(".txt")[0]+'_acqs.txt', header = None, sep='\t')
     nS, RDT, RG, att, RD, p90 = pAcq.iloc[0, 1], pAcq.iloc[1, 1], pAcq.iloc[2, 1], pAcq.iloc[3, 1], pAcq.iloc[4, 1], pAcq.iloc[5, 1]
-    if Map != 'fid'):
+
+    if Map != 'fid':
         p180, tE, nE = pAcq.iloc[6, 1], pAcq.iloc[10, 1], pAcq.iloc[11, 1]
+    else:
+        p180 = tE = nE = None
 
     return S0, T1, T2, tau1, tau2, K1, K2, signal, N1, N2, nS, RDT, RG, att, RD, p90, p180, tE, nE
 
@@ -175,10 +178,13 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, T1min, T1max, T2min, T2max, alph
     '''
 
     fig, axs = plt.subplots(2,4)
-    fig.suptitle(rf'nS={nS:.0f}    |    RDT = {RDT} ms    |    RG = {RG:.0f} dB    |    Atten = {att:.0f} dB    |    RD = {RD:.0f} s    |    p90 = {p90} $\mu$s    |    p180 = {p180} $\mu$s    |    tE = {tE:.1f} ms    |    Ecos = {nE:.0f}', fontsize='large')
+    if Map != 'fid':
+        fig.suptitle(rf'nS={nS:.0f}    |    RDT = {RDT} ms    |    RG = {RG:.0f} dB    |    Atten = {att:.0f} dB    |    RD = {RD:.0f} s    |    p90 = {p90} $\mu$s    |    p180 = {p180} $\mu$s    |    tE = {tE:.1f} ms    |    Ecos = {nE:.0f}', fontsize='large')
+    else:
+        fig.suptitle(rf'nS={nS:.0f}    |    RDT = {RDT} ms    |    RG = {RG:.0f} dB    |    Atten = {att:.0f} dB    |    RD = {RD:.0f} s    |    p90 = {p90} $\mu$s', fontsize='large')
 
     # SR: experimental y ajustada
-    axs[0,0].set_title(f'Se descartaron {niniT1:.0f} puntos al comienzo.', fontsize='large')
+    axs[0,0].set_title(f'{niniT1:.0f} puntos descartados', fontsize='large')
     axs[0,0].scatter(tau1, Z[:, 0], label='Exp', color='coral')
     axs[0,0].plot(tau1, M1, label='Fit', color='teal')
     axs[0,0].set_xlabel(r'$\tau_1$ [ms]')
@@ -191,7 +197,7 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, T1min, T1max, T2min, T2max, alph
     axins1.plot(tau1[0:22], M1[0:22], color='teal')
 
     # SR: residuos
-    axs[1,0].set_title(f'Residuos del ajuste - Dim. indirecta', fontsize='large')
+    axs[1,0].set_title(f'Residuos dim. indirecta', fontsize='large')
     axs[1,0].scatter(tau1, M1-Z[:, 0], color = 'blue')
     axs[1,0].axhline(0.1*np.max(Z[:, 0]), c = 'red', lw = 6, ls = '-')
     axs[1,0].axhline(-0.1*np.max(Z[:, 0]), c = 'red', lw = 6, ls = '-')
@@ -199,7 +205,7 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, T1min, T1max, T2min, T2max, alph
     axs[1,0].set_xlabel(r'$\tau$1 [ms]')
 
     # CPMG/FID/FID-CPMG: experimental y ajustada
-    axs[0,1].set_title(f'Se descartaron {niniT2:.0f} puntos al comienzo.', fontsize='large')
+    axs[0,1].set_title(f'{niniT2:.0f} puntos descartados', fontsize='large')
     axs[0,1].scatter(tau2, Z[-1, :], label='Exp', color='coral')
     axs[0,1].plot(tau2, M2, label='Fit', color='teal')
     axs[0,1].legend()
@@ -210,7 +216,7 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, T1min, T1max, T2min, T2max, alph
     axins2.plot(tau2[0:5], M2[0:5], color='teal')
 
     # CPMG/FID/FID-CPMG: residuos
-    axs[1,1].set_title(f'Residuos del ajuste - Dim. directa', fontsize='large')
+    axs[1,1].set_title(f'Residuos dim. directa', fontsize='large')
     axs[1,1].scatter(tau2, M2-Z[-1, :], color = 'blue')
     axs[1,1].axhline(0, c = 'k', lw = 4, ls = '-')
     axs[1,1].axhline(0.1*np.max(Z[-1,:]), c = 'red', lw = 6, ls = '-')
@@ -268,6 +274,7 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, T1min, T1max, T2min, T2max, alph
     maxi = np.min([T1max, T2max])
     S = S[4:-9, 2:]
 
+    axs[1,2].set_title(rf'$\alpha$ = {alpha}')
     axs[1,2].plot([10.0**mini, 10.0**maxi], [10.0**mini, 10.0**maxi], color='black', ls='-', alpha=0.7, zorder=-2, label = r'$T_1$ = $T_2$')
     for i in range(len(peaks2x)):
         axs[1,2].axvline(x=peaks2x[i], color='k', ls=':', lw=4)
@@ -324,6 +331,9 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, T1min, T1max, T2min, T2max, alph
         axs[1,2].set_xlabel(r'$T_2^* | T_2$ [ms]')
 
     plt.savefig(f'{Out}')
+
+    print('Writing output...')
+    np.savetxt(f"{Out}-DomRates.csv", S, delimiter='\t')
 
     with open(f'{Out}-DomRates1D_T1.csv', 'w') as f:
         f.write("T1 [ms], Distribution, Cumulative \n")

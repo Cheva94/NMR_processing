@@ -50,8 +50,6 @@ def main():
     print('Plotting...')
     plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, T1min, T1max, T2min, T2max, alpha, Back, niniT1, niniT2, Map, nS, RDT, RG, att, RD, p90, p180, tE, nE)
 
-    print('Writing output...')
-    np.savetxt(f"{Out}-DomRates.csv", S, delimiter='\t')
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
