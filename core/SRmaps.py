@@ -212,8 +212,8 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, T1min, T1max, T2min, T2max, alph
 
     # Inset del comienzo de la CPMG/FID/FID-CPMG:
     axins2 = inset_axes(axs[0,1], width="30%", height="30%", loc=5)
-    axins2.scatter(tau2[0:5], Z[-1, :][0:5], color='coral')
-    axins2.plot(tau2[0:5], M2[0:5], color='teal')
+    axins2.scatter(tau2[0:10], Z[-1, :][0:10], color='coral')
+    axins2.plot(tau2[0:10], M2[0:10], color='teal')
 
     # CPMG/FID/FID-CPMG: residuos
     axs[1,1].set_title(f'Residuos dim. directa', fontsize='large')
@@ -232,6 +232,7 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, T1min, T1max, T2min, T2max, alph
     cumT1 = np.cumsum(projT1)
     cumT1 /= cumT1[-1]
 
+    axs[0,2].axhline(y=0.1, color='k', ls=':', lw=4)
     axs[0,2].plot(T1, projT1, label = 'Distrib.', color = 'teal')
     for i in range(len(peaks1x)):
         axs[0,2].plot(peaks1x[i], peaks1y[i] + 0.05, lw = 0, marker=11, color='black')
@@ -257,6 +258,7 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, T1min, T1max, T2min, T2max, alph
     cumT2 = np.cumsum(projT2)
     cumT2 /= cumT2[-1]
 
+    axs[0,3].axhline(y=0.1, color='k', ls=':', lw=4)
     axs[0,3].plot(T2, projT2, label = 'Distrib.', color = 'teal')
     for i in range(len(peaks2x)):
         axs[0,3].plot(peaks2x[i], peaks2y[i] + 0.05, lw = 0, marker=11, color='black')
