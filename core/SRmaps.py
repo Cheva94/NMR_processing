@@ -179,9 +179,9 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, T1min, T1max, T2min, T2max, alph
 
     fig, axs = plt.subplots(2,4)
     if Map != 'fid':
-        fig.suptitle(rf'nS={nS:.0f}    |    RDT = {RDT} ms    |    RG = {RG:.0f} dB    |    Atten = {att:.0f} dB    |    RD = {RD:.0f} s    |    p90 = {p90} $\mu$s    |    p180 = {p180} $\mu$s    |    tE = {tE:.1f} ms    |    Ecos = {nE:.0f}', fontsize='large')
+        fig.suptitle(rf'nS={nS:.0f}    |    RDT = {RDT} ms    |    RG = {RG:.0f} dB    |    Atten = {att:.0f} dB    |    RD = {RD:.3f} s    |    p90 = {p90} $\mu$s    |    p180 = {p180} $\mu$s    |    tE = {tE:.1f} ms    |    Ecos = {nE:.0f}', fontsize='large')
     else:
-        fig.suptitle(rf'nS={nS:.0f}    |    RDT = {RDT} ms    |    RG = {RG:.0f} dB    |    Atten = {att:.0f} dB    |    RD = {RD:.0f} s    |    p90 = {p90} $\mu$s', fontsize='large')
+        fig.suptitle(rf'nS={nS:.0f}    |    RDT = {RDT} ms    |    RG = {RG:.0f} dB    |    Atten = {att:.0f} dB    |    RD = {RD:.3f} s    |    p90 = {p90} $\mu$s', fontsize='large')
 
     # SR: experimental y ajustada
     axs[0,0].set_title(f'{niniT1:.0f} puntos descartados', fontsize='large')
@@ -288,7 +288,10 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, T1min, T1max, T2min, T2max, alph
     axs[1,2].set_yscale('log')
     axs[1,2].legend(loc='lower right')
 
-    axs[1,3].axis('off')
+    for k in range(5):
+        axs[1,3].scatter(tau2, gaussian_filter1d(Z[k, :], sigma=10), label=f'{k+1}')
+    axs[1,3].legend()
+    axs[1,3].set_title(f'Primeras 5 mediciones', fontsize='large')
 
     if Map == 'fid':
         axs[0,1].set_xlabel(r'$\tau_2^*$ [ms]')
