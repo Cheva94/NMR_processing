@@ -286,7 +286,7 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, T1min, T1max, T2min, T2max, alph
         axs[1,2].axvline(x=peaks2x[i], color='k', ls=':', lw=4)
     for i in range(len(peaks1x)):
         axs[1,2].axhline(y=peaks1x[i], color='k', ls=':', lw=4)
-    axs[1,2].contour(T2, T1, S, 50, cmap='rainbow')
+    axs[1,2].contour(T2, T1, S, 100, cmap='rainbow')
     axs[1,2].set_ylabel(r'$T_1$ [ms]')
     axs[1,2].set_xlim(10.0**T2min, 10.0**T2max)
     axs[1,2].set_ylim(10.0**T1min, 10.0**T1max)
