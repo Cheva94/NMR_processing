@@ -148,6 +148,8 @@ def fitMag(tau1, tau2, T1, T2, S):
     Ajuste de los decaimientos a partir de la distribución de T1 y T2.
     '''
 
+    print(f'Fitting T1 projection in time domain...')
+
     t1 = range(len(tau1))
     d1 = range(len(T1))
     S1 = np.sum(S, axis=1)
@@ -158,6 +160,8 @@ def fitMag(tau1, tau2, T1, T2, S):
         for j in d1:
             m1 += S1[j] * (1 - np.exp(-tau1[i] / T1[j]))
         M1.append(m1[0])
+
+    print(f'Fitting T2 projection in time domain...')
 
     t2 = range(len(tau2))
     d2 = range(len(T2))

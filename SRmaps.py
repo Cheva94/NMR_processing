@@ -43,8 +43,7 @@ def main():
 
     S = NLI_FISTA(K1, K2, Z, alpha, S0)
     print(f'Inversion ready!')
-
-    print(f'Fitting in time domain...')
+    
     M1, M2 = fitMag(tau1, tau2, T1, T2, S)
 
     print('Plotting...')
