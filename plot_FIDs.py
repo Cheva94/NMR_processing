@@ -5,19 +5,56 @@
 '''
 
 import argparse
-from core.meanFID import *
+import numpy as np
+import pandas as pd
 import scipy.fft as FT
+import matplotlib.pyplot as plt
+
+plt.rcParams["font.weight"] = "bold"
+plt.rcParams["font.size"] = 35
+
+plt.rcParams["axes.labelweight"] = "bold"
+plt.rcParams["axes.linewidth"] = 5
+
+plt.rcParams['xtick.major.size'] = 10
+plt.rcParams['xtick.major.width'] = 5
+plt.rcParams['xtick.minor.size'] = 8
+plt.rcParams['xtick.minor.width'] = 2
+plt.rcParams['ytick.major.size'] = 10
+plt.rcParams['ytick.major.width'] = 5
+
+plt.rcParams["legend.loc"] = 'best'
+plt.rcParams["legend.frameon"] = True
+plt.rcParams["legend.fancybox"] = True
+plt.rcParams["legend.shadow"] = True
+plt.rcParams["legend.fontsize"] = 30
+plt.rcParams["legend.edgecolor"] = 'black'
 
 plt.rcParams["figure.figsize"] = 37.5, 10
+plt.rcParams["figure.autolayout"] = True
+
 plt.rcParams["lines.linewidth"] = 4
+plt.rcParams["lines.markersize"] = 10
+plt.rcParams["lines.linestyle"] = '-'
+
+def PhCorr(signal):
+    '''
+    Corrección de fase.
+    '''
+
+    initVal = {}
+    for i in range(360):
+        tita = np.deg2rad(i)
+        signal_ph = signal * np.exp(1j * tita)
+        initVal[i] = signal_ph[0].real
+
+    return signal * np.exp(1j * np.deg2rad(max(initVal, key=initVal.get)))
 
 def main():
 
     FileArr = args.input
     Out = args.output
     Labels = args.labels
-    nini = args.niniValues
-    nH = args.protonMoles
 
     nF = range(len(FileArr))
 
@@ -25,17 +62,15 @@ def main():
     Min, Max = [], []
 
     for k in nF:
-        data = pd.read_csv(FileArr[k], header = None, delim_whitespace = True, comment='#').to_numpy()
+        data = pd.read_csv(FileArr[k], header = None, delim_whitespace = True).to_numpy()
         t = data[:, 0] # In ms
         DW = t[1] - t[0]
-        t = t[nini:]
         nP = len(t) # Number of points
 
         Re = data[:, 1]
         Im = data[:, 2]
         signal = Re + Im * 1j
-        signal = signal[nini:]
-        signal = PhCorrNorm(signal, nH)
+        signal = PhCorr(signal)
 
         Max.append(np.max(signal.real))
         Min.append(signal.real[40])
@@ -77,11 +112,9 @@ def main():
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('-nH', '--protonMoles', type = float, default = 1)
     parser.add_argument('input', help = "Path to the FID file.", nargs = '+')
     parser.add_argument('output', help = "Path for the output files.")
     parser.add_argument('-L', '--labels', nargs='+')
-    parser.add_argument('-nini', '--niniValues', help = "Number of values to avoid at the beginning the FID.", type = int, default=0)
 
     args = parser.parse_args()
 

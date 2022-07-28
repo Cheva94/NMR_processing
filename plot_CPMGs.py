@@ -5,7 +5,9 @@
 '''
 
 import argparse
-from core.meanCPMG import *
+
+plt.rcParams["figure.figsize"] = 37.5, 10
+plt.rcParams["lines.linewidth"] = 4
 
 def main():
 
@@ -18,7 +20,7 @@ def main():
     nF = range(len(FileArr))
 
     for k in nF:
-        data = pd.read_csv(FileArr[k], header = None, delim_whitespace = True, comment='#').to_numpy()
+        data = pd.read_csv(FileArr[k], header = None, delim_whitespace = True).to_numpy()
         Laplace = data[3:153, :3]
         T2 = Laplace[:, 0]
         Cumulative = Laplace[:, 2]
