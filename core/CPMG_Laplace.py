@@ -74,12 +74,12 @@ def PhCorr(decay):
 
     return decay.real
 
-def Norm(Z, RGnorm):
+def Norm(Z, RG):
     '''
     Normalización por ganancia.
     '''
 
-    norm = 1 / (6.32589E-4 * np.exp(RGnorm/9) - 0.0854)
+    norm = 1 / (6.32589E-4 * np.exp(RG/9) - 0.0854)
     return Z * norm
 
 def NLI_FISTA(K, Z, alpha, S):

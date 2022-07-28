@@ -34,8 +34,12 @@ plt.rcParams["lines.linewidth"] = 4
 plt.rcParams["lines.markersize"] = 10
 plt.rcParams["lines.linestyle"] = '-'
 
-def SRCPMG_file(File, T1min, T1max, T2min, T2max, niniT1, niniT2):
-    data = pd.read_csv(File, header = None, delim_whitespace = True, comment='#').to_numpy()
+def SRmap_file(File, T1min, T1max, T2min, T2max, niniT1, niniT2, Map):
+    '''
+    Lectura del archivo de la medición.
+    '''
+
+    data = pd.read_csv(File, header = None, delim_whitespace = True).to_numpy()
     Re = data[:, 0]
     Im = data[:, 1]
     signal = Re + Im * 1j # Complex signal
@@ -54,10 +58,18 @@ def SRCPMG_file(File, T1min, T1max, T2min, T2max, niniT1, niniT2):
     K1 = 1 - np.exp(-tau1 / T1)
     K2 = np.exp(-tau2 / T2)
 
-    return S0, T1, T2, tau1, tau2, K1, K2, signal, N1, N2
+    pAcq = pd.read_csv(File.split(".txt")[0]+'_acqs.txt', header = None, sep='\t')
+    nS, RDT, RG, att, RD, p90 = pAcq.iloc[0, 1], pAcq.iloc[1, 1], pAcq.iloc[2, 1], pAcq.iloc[3, 1], pAcq.iloc[4, 1], pAcq.iloc[5, 1]
+    if Map != 'fid'):
+        p180, tE, nE = pAcq.iloc[6, 1], pAcq.iloc[10, 1], pAcq.iloc[11, 1]
 
-# def PhCorr(signal, N1, N2, niniT1, niniT2):
+    return S0, T1, T2, tau1, tau2, K1, K2, signal, N1, N2, nS, RDT, RG, att, RD, p90, p180, tE, nE
+
 def PhCorr(signal, N1, N2):
+    '''
+    Corrección de fase, basándose en la última medición.
+    '''
+
     Z = []
 
     signal_Last = signal[(N1-1)*N2:]
@@ -76,12 +88,12 @@ def PhCorr(signal, N1, N2):
 
     return np.array(Z)
 
-def Norm(Z, RGnorm, N1, N2, niniT1, niniT2):
+def Norm(Z, RG, N1, N2, niniT1, niniT2):
     '''
     Normalización por ganancia, corrección de offset y creación de matriz.
     '''
 
-    norm = 1 / (6.32589E-4 * np.exp(RGnorm/9) - 0.0854)
+    norm = 1 / (6.32589E-4 * np.exp(RG/9) - 0.0854)
     Z = np.reshape(Z*norm, (N1, N2))[niniT1:, niniT2:]
     offset = np.min(Z[:, 0])
     Z -= offset
@@ -89,6 +101,10 @@ def Norm(Z, RGnorm, N1, N2, niniT1, niniT2):
     return Z
 
 def NLI_FISTA(K1, K2, Z, alpha, S):
+    '''
+    Inversión de Laplace
+    '''
+
     K1TK1 = K1.T @ K1
     K2TK2 = K2.T @ K2
     K1TZK2 = K1.T @ Z @ K2
@@ -125,6 +141,10 @@ def NLI_FISTA(K1, K2, Z, alpha, S):
     return S
 
 def fitMag(tau1, tau2, T1, T2, S):
+    '''
+    Ajuste de los decaimientos a partir de la distribución de T1 y T2.
+    '''
+
     t1 = range(len(tau1))
     d1 = range(len(T1))
     S1 = np.sum(S, axis=1)
@@ -149,10 +169,13 @@ def fitMag(tau1, tau2, T1, T2, S):
 
     return M1, M2
 
-def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2max, RGnorm, alpha, Back, nH, niniT1, niniT2, Map):
-    fig, axs = plt.subplots(2,4)
+def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, T1min, T1max, T2min, T2max, alpha, Back, niniT1, niniT2, Map, nS, RDT, RG, att, RD, p90, p180, tE, nE):
+    '''
+    Grafica resultados.
+    '''
 
-    fig.suptitle(f'ns = 4 | RG = {RGnorm} dB | nH = {nH:.6f} | BG = {Back} | Alpha = {alpha} | nini SR = {niniT1} | nini CPMG = {niniT2}', fontsize='large')
+    fig, axs = plt.subplots(2,4)
+    fig.suptitle(rf'nS={nS:.0f}    |    RDT = {RDT} ms    |    RG = {RG:.0f} dB    |    Atten = {att:.0f} dB    |    RD = {RD:.0f} s    |    p90 = {p90} $\mu$s    |    p180 = {p180} $\mu$s    |    tE = {tE:.1f} ms    |    Ecos = {nE:.0f}', fontsize='large')
 
     # SR: experimental y ajustada
     axs[0,0].set_title(f'Se descartaron {niniT1:.0f} puntos al comienzo.', fontsize='large')
@@ -162,6 +185,7 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2m
     axs[0,0].set_ylabel('SR')
     axs[0,0].legend()
 
+    # Inset del comienzo de la SR
     axins1 = inset_axes(axs[0,0], width="30%", height="30%", loc=5)
     axins1.scatter(tau1[0:22], Z[:, 0][0:22], color='coral')
     axins1.plot(tau1[0:22], M1[0:22], color='teal')
@@ -173,7 +197,6 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2m
     axs[1,0].axhline(-0.1*np.max(Z[:, 0]), c = 'red', lw = 6, ls = '-')
     axs[1,0].axhline(0, c = 'k', lw = 4, ls = ':')
     axs[1,0].set_xlabel(r'$\tau$1 [ms]')
-    axs[1,0].set_ylabel('Res. SR')
 
     # CPMG/FID/FID-CPMG: experimental y ajustada
     axs[0,1].set_title(f'Se descartaron {niniT2:.0f} puntos al comienzo.', fontsize='large')
@@ -181,6 +204,7 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2m
     axs[0,1].plot(tau2, M2, label='Fit', color='teal')
     axs[0,1].legend()
 
+    # Inset del comienzo de la CPMG/FID/FID-CPMG:
     axins2 = inset_axes(axs[0,1], width="30%", height="30%", loc=5)
     axins2.scatter(tau2[0:5], Z[-1, :][0:5], color='coral')
     axins2.plot(tau2[0:5], M2[0:5], color='teal')
@@ -249,7 +273,7 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2m
         axs[1,2].axvline(x=peaks2x[i], color='k', ls=':', lw=4)
     for i in range(len(peaks1x)):
         axs[1,2].axhline(y=peaks1x[i], color='k', ls=':', lw=4)
-    axs[1,2].contour(T2, T1, S, nLevel, cmap='rainbow')
+    axs[1,2].contour(T2, T1, S, 50, cmap='rainbow')
     axs[1,2].set_ylabel(r'$T_1$ [ms]')
     axs[1,2].set_xlim(10.0**T2min, 10.0**T2max)
     axs[1,2].set_ylim(10.0**T1min, 10.0**T1max)
@@ -257,18 +281,11 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2m
     axs[1,2].set_yscale('log')
     axs[1,2].legend(loc='lower right')
 
-    # for k in range(5):
-    #     axs[1,3].scatter(tau2, gaussian_filter1d(Z[k, :], sigma=50), label=f'{k+1}')
-    # axs[1,3].legend()
-    # axs[1,3].set_title(f'Primeras 5 mediciones (descontando las {niniT1} primeras)', fontsize='large')
     axs[1,3].axis('off')
 
     if Map == 'fid':
         axs[0,1].set_xlabel(r'$\tau_2^*$ [ms]')
         axs[0,1].set_ylabel('FID')
-
-        # axs[1,3].set_xlabel(r'$\tau_2^*$ [ms]')
-        # axs[1,3].set_ylabel('FID')
 
         axs[1,1].set_xlabel(r'$\tau_2^*$ [ms]')
         axs[1,1].set_ylabel('Res. FID')
@@ -283,9 +300,6 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2m
         axs[0,1].set_xlabel(r'$\tau_2$ [ms]')
         axs[0,1].set_ylabel('CPMG')
 
-        # axs[1,3].set_xlabel(r'$\tau_2$ [ms]')
-        # axs[1,3].set_ylabel('CPMG')
-
         axs[1,1].set_xlabel(r'$\tau_2$ [ms]')
         axs[1,1].set_ylabel('Res. CPMG')
 
@@ -298,9 +312,6 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2m
     elif Map == 'fidcpmg':
         axs[0,1].set_xlabel(r'$\tau_2^* | \tau_2$ [ms]')
         axs[0,1].set_ylabel('FID-CPMG')
-
-        # axs[1,3].set_xlabel(r'$\tau_2^* | \tau_2$ [ms]')
-        # axs[1,3].set_ylabel('FID-CPMG')
 
         axs[1,1].set_xlabel(r'$\tau_2^* | \tau_2$ [ms]')
         axs[1,1].set_ylabel('Res. FID-CPMG')
@@ -323,6 +334,3 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, nLevel, T1min, T1max, T2min, T2m
         f.write("T2 [ms], Distribution, Cumulative \n")
         for i in range(len(T2)):
             f.write(f'{T2[i]:.6f}, {projT2[i]:.6f}, {cumT2[i]:.6f} \n')
-
-def newSS(newS):
-    return pd.read_csv(newS, header = None).to_numpy()
