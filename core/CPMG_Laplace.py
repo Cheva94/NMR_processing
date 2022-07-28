@@ -186,7 +186,7 @@ def plot(tau, Z, M, T2, S, Out, nS, RDT, RG, att, RD, p90, p180, tEcho, nEcho, a
 
     axs[0,1].set_title(rf'$\alpha$ = {alpha}')
     axs[0,1].axhline(y=0.1, color='k', ls=':', lw=4)
-    axs[0,1].plot(T2, S, label = 'Distrib.', color = 'teal')
+    axs[0,1].plot(T2[2:], S[2:], label = 'Distrib.', color = 'teal')
     for i in range(len(peaksx)):
         if peaksy[i] > 0.1:
             axs[0,1].plot(peaksx[i], peaksy[i] + 0.05, lw = 0, marker=11, color='black')
