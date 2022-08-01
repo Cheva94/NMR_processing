@@ -12,7 +12,7 @@ def main():
     File = args.input
     Out = args.output
     Back = args.background
-    nini = args.niniValues
+    nini = args.croppedValues
 
     print('Processing...')
 
@@ -55,7 +55,7 @@ if __name__ == "__main__":
     parser.add_argument('input', help = "Path to the FID file.")
     parser.add_argument('output', help = "Path for the output files.")
     parser.add_argument('-back', '--background', help = "Path to de FID background file.")
-    parser.add_argument('-nini', '--niniValues', help = "Number of values to avoid at the beginning the FID.", type = int, default=0)
+    parser.add_argument('-crop', '--croppedValues', help = "Number of values to avoid at the beginning the FID.", type = int, default=0)
 
     args = parser.parse_args()
 

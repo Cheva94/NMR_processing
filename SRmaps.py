@@ -18,7 +18,7 @@ def main():
     alpha = args.alpha
     T1min, T1max = args.T1Range[0], args.T1Range[1]
     T2min, T2max = args.T2Range[0], args.T2Range[1]
-    niniT1, niniT2 = args.niniValues[0], args.niniValues[1]
+    niniT1, niniT2 = args.croppedValues[0], args.croppedValues[1]
 
     if T1min == 999:
         if Map == 'fid':
@@ -75,7 +75,7 @@ if __name__ == "__main__":
     parser.add_argument('-alpha', '--alpha', help = "Tikhonov regularization parameter.", type = float, default = 0.001)
     parser.add_argument('-T1', '--T1Range', help = "Range to consider for T1 values.", nargs = 2, type = float, default = [999, 999])
     parser.add_argument('-T2', '--T2Range', help = "Range to consider for T2 values.", nargs = 2, type = float, default = [999, 999])
-    parser.add_argument('-nini', '--niniValues', help = "Number of values to avoid at the beginning of T1 and T2.", nargs = 2, type = int, default=[0, 0])
+    parser.add_argument('-crop', '--croppedValues', help = "Number of values to avoid at the beginning of T1 and T2.", nargs = 2, type = int, default=[0, 0])
     parser.add_argument('-back', '--background', help = "Path to de FID background file.")
 
     args = parser.parse_args()
