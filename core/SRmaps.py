@@ -44,6 +44,21 @@ def SRmap_file(File, T1min, T1max, T2min, T2max, niniT1, niniT2, Map):
     Im = data[:, 1]
     signal = Re + Im * 1j # Complex signal
 
+    pAcq = pd.read_csv(File.split(".txt")[0]+'_acqs.txt', header = None, sep='\t')
+    nS, RDT, RG, att, RD, p90 = pAcq.iloc[0, 1], pAcq.iloc[1, 1], pAcq.iloc[2, 1], pAcq.iloc[3, 1], pAcq.iloc[4, 1], pAcq.iloc[5, 1]
+
+    if Map == 'fid':
+        p180 = tE = nE = None
+        nFID = 0
+    elif Map == 'fidcpmg':
+        p180, tE, nE = pAcq.iloc[6, 1], pAcq.iloc[10, 1], pAcq.iloc[11, 1]
+        nFID = 0
+    elif Map == 'cpmg':
+        p180, tE, nE = pAcq.iloc[6, 1], pAcq.iloc[10, 1], pAcq.iloc[11, 1]
+        nFID = 1250 * tE - 54
+
+    niniT2new = niniT2 + nFID
+
     Nx = Ny = 150
     S0 = np.ones((Nx, Ny))
     T1 = np.logspace(T1min, T1max, Nx)
@@ -53,20 +68,12 @@ def SRmap_file(File, T1min, T1max, T2min, T2max, niniT1, niniT2, Map):
     tau2 = pd.read_csv(File.split('.txt')[0]+"_t2.dat", header = None, delim_whitespace = True).to_numpy()
     N1, N2 = len(tau1), len(tau2)
     tau1 = tau1[niniT1:]
-    tau2 = tau2[niniT2:]
+    tau2 = tau2[niniT2new:]
 
     K1 = 1 - np.exp(-tau1 / T1)
     K2 = np.exp(-tau2 / T2)
 
-    pAcq = pd.read_csv(File.split(".txt")[0]+'_acqs.txt', header = None, sep='\t')
-    nS, RDT, RG, att, RD, p90 = pAcq.iloc[0, 1], pAcq.iloc[1, 1], pAcq.iloc[2, 1], pAcq.iloc[3, 1], pAcq.iloc[4, 1], pAcq.iloc[5, 1]
-
-    if Map != 'fid':
-        p180, tE, nE = pAcq.iloc[6, 1], pAcq.iloc[10, 1], pAcq.iloc[11, 1]
-    else:
-        p180 = tE = nE = None
-
-    return S0, T1, T2, tau1, tau2, K1, K2, signal, N1, N2, nS, RDT, RG, att, RD, p90, p180, tE, nE
+    return S0, T1, T2, tau1, tau2, K1, K2, signal, N1, N2, nS, RDT, RG, att, RD, p90, p180, tE, nE, niniT2new
 
 def PhCorr(signal, N1, N2):
     '''
@@ -91,13 +98,13 @@ def PhCorr(signal, N1, N2):
 
     return np.array(Z)
 
-def Norm(Z, RG, N1, N2, niniT1, niniT2):
+def Norm(Z, RG, N1, N2, niniT1, niniT2new):
     '''
     Normalización por ganancia, corrección de offset y creación de matriz.
     '''
 
     norm = 1 / (6.32589E-4 * np.exp(RG/9) - 0.0854)
-    Z = np.reshape(Z*norm, (N1, N2))[niniT1:, niniT2:]
+    Z = np.reshape(Z*norm, (N1, N2))[niniT1:, niniT2new:]
     offset = np.min(Z[:, 0])
     Z -= offset
 
@@ -197,8 +204,8 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, T1min, T1max, T2min, T2max, alph
 
     # Inset del comienzo de la SR
     axins1 = inset_axes(axs[0,0], width="30%", height="30%", loc=5)
-    axins1.scatter(tau1[0:22], Z[:, 0][0:22], color='coral')
-    axins1.plot(tau1[0:22], M1[0:22], color='teal')
+    axins1.scatter(tau1[0:18], Z[:, 0][0:18], color='coral')
+    axins1.plot(tau1[0:18], M1[0:18], color='teal')
 
     # SR: residuos
     axs[1,0].set_title(f'Residuos dim. indirecta', fontsize='large')
@@ -216,8 +223,8 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, T1min, T1max, T2min, T2max, alph
 
     # Inset del comienzo de la CPMG/FID/FID-CPMG:
     axins2 = inset_axes(axs[0,1], width="30%", height="30%", loc=5)
-    axins2.scatter(tau2[0:10], Z[-1, :][0:10], color='coral')
-    axins2.plot(tau2[0:10], M2[0:10], color='teal')
+    axins2.scatter(tau2[0:20], Z[-1, :][0:20], color='coral')
+    axins2.plot(tau2[0:20], M2[0:20], color='teal')
 
     # CPMG/FID/FID-CPMG: residuos
     axs[1,1].set_title(f'Residuos dim. directa', fontsize='large')
@@ -304,7 +311,6 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, T1min, T1max, T2min, T2max, alph
         axs[0,1].set_ylabel('FID')
 
         axs[1,1].set_xlabel(r'$\tau_2^*$ [ms]')
-        axs[1,1].set_ylabel('Res. FID')
 
         axs[0,3].set_xlabel(r'$T_2^*$ [ms]')
         axs[0,3].set_ylabel(r'Distrib. $T_2^*$')
@@ -312,12 +318,15 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, T1min, T1max, T2min, T2max, alph
         ax.set_ylabel(r'Cumul. $T_2^*$')
 
         axs[1,2].set_xlabel(r'$T_2^*$ [ms]')
+
+        axs[1,3].set_xlabel(r'$\tau_2^*$ [ms]')
+        axs[1,3].set_ylabel('FID')
+
     elif Map == 'cpmg':
         axs[0,1].set_xlabel(r'$\tau_2$ [ms]')
         axs[0,1].set_ylabel('CPMG')
 
         axs[1,1].set_xlabel(r'$\tau_2$ [ms]')
-        axs[1,1].set_ylabel('Res. CPMG')
 
         axs[0,3].set_xlabel(r'$T_2$ [ms]')
         axs[0,3].set_ylabel(r'Distrib. $T_2$')
@@ -325,12 +334,15 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, T1min, T1max, T2min, T2max, alph
         ax.set_ylabel(r'Cumul. $T_2$')
 
         axs[1,2].set_xlabel(r'$T_2$ [ms]')
+
+        axs[1,3].set_xlabel(r'$\tau_2$ [ms]')
+        axs[1,3].set_ylabel('CPMG')
+
     elif Map == 'fidcpmg':
         axs[0,1].set_xlabel(r'$\tau_2^* | \tau_2$ [ms]')
         axs[0,1].set_ylabel('FID-CPMG')
 
         axs[1,1].set_xlabel(r'$\tau_2^* | \tau_2$ [ms]')
-        axs[1,1].set_ylabel('Res. FID-CPMG')
 
         axs[0,3].set_xlabel(r'$T_2^* | T_2$ [ms]')
         axs[0,3].set_ylabel(r'Distrib. $T_2^* | T_2$')
@@ -338,6 +350,9 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, T1min, T1max, T2min, T2max, alph
         ax.set_ylabel(r'Cumul. $T_2^* | T_2$')
 
         axs[1,2].set_xlabel(r'$T_2^* | T_2$ [ms]')
+
+        axs[1,3].set_xlabel(r'$\tau_2^* | \tau_2$ [ms]')
+        axs[1,3].set_ylabel('FID-CPMG')
 
     plt.savefig(f'{Out}')
 
