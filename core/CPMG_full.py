@@ -5,6 +5,7 @@ from cycler import cycler
 from scipy.signal import find_peaks
 import matplotlib as mpl
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
+from scipy.optimize import curve_fit
 
 plt.rcParams["font.weight"] = "bold"
 plt.rcParams["font.size"] = 35
@@ -141,18 +142,74 @@ def fitMag(tau, T2, S, nP):
 
     return M
 
-def plot(tau, Z, M, T2, S, Out, nS, RDT, RG, att, RD, p90, p180, tEcho, nEcho, alpha, Back, cumT2, nini, T2min, T2max):
+def r_square(x, y, f, popt):
+    '''
+    Coeficiente de Pearson.
+    '''
+
+    residuals = y - f(x, *popt)
+    ss_res = np.sum(residuals ** 2)
+    ss_tot = np.sum((y - np.mean(y)) ** 2)
+
+    return 1 - ss_res / ss_tot
+
+################################################################################
+######################## Monoexponential section
+################################################################################
+
+def exp_1(t, M0, T2):
+    return M0 * np.exp(- t / T2)
+
+def fit_1(t, decay):
+    popt, pcov = curve_fit(exp_1, t, decay, bounds=(0, np.inf), p0=[70, 2000])
+    perr = np.sqrt(np.diag(pcov))
+
+    r2 = r_square(t, decay, exp_1, popt)
+
+    return popt, perr, r2
+
+################################################################################
+######################## Biexponential section
+################################################################################
+
+def exp_2(t, M0_1, T2_1, M0_2, T2_2):
+    return M0_1 * np.exp(- t / T2_1) + M0_2 * np.exp(- t / T2_2)
+
+def fit_2(t, decay):
+    popt, pcov = curve_fit(exp_2, t, decay, bounds=(0, np.inf), p0=[70, 2000, 30, 1000])
+    perr = np.sqrt(np.diag(pcov))
+
+    r2 = r_square(t, decay, exp_2, popt)
+
+    return popt, perr, r2
+
+################################################################################
+######################## Triexponential section
+################################################################################
+
+def exp_3(t, M0_1, T2_1, M0_2, T2_2, M0_3, T2_3):
+    return M0_1 * np.exp(- t / T2_1) + M0_2 * np.exp(- t / T2_2) + M0_3 * np.exp(- t / T2_3)
+
+def fit_3(t, decay):
+    popt, pcov = curve_fit(exp_3, t, decay, bounds=(0, np.inf), p0=[70, 2000, 30, 1000, 10, 200])
+    perr = np.sqrt(np.diag(pcov))
+
+    r2 = r_square(t, decay, exp_3, popt)
+
+    return popt, perr, r2
+
+def plot(tau, Z, MLaplace, T2, S, Out, nS, RDT, RG, att, RD, p90, p180, tEcho, nEcho, alpha, Back, cumT2, nini, T2min, T2max, dataFit):
     '''
     Grafica resultados.
     '''
 
-    fig, axs = plt.subplots(2, 2, gridspec_kw={'height_ratios': [3,1]})
+    fig, axs = plt.subplots(2, 3, gridspec_kw={'height_ratios': [3,1]})
     fig.suptitle(rf'nS={nS:.0f}    |    RDT = {RDT} ms    |    RG = {RG:.0f} dB    |    Atten = {att:.0f} dB    |    RD = {RD:.0f} s    |    p90 = {p90} $\mu$s    |    p180 = {p180} $\mu$s    |    tE = {tEcho:.1f} ms    |    Ecos = {nEcho:.0f}', fontsize='large')
 
     # CPMG: experimental y ajustada
     axs[0,0].set_title(f'Se descartaron {nini:.0f} puntos al comienzo.', fontsize='large')
-    axs[0,0].scatter(tau, Z, label='Exp', color='coral')
-    axs[0,0].plot(tau, M, label='Fit', color='teal')
+    axs[0,0].scatter(tau, Z, label='Experimento', color='coral')
+    axs[0,0].plot(tau, MLaplace, label='Fit Laplace', color='teal')
     axs[0,0].set_xlabel(r'$\tau$ [ms]')
     axs[0,0].set_ylabel('CPMG')
     axs[0,0].legend()
@@ -160,20 +217,20 @@ def plot(tau, Z, M, T2, S, Out, nS, RDT, RG, att, RD, p90, p180, tEcho, nEcho, a
     # Inset del comienzo de la CPMG
     axins1 = inset_axes(axs[0,0], width="30%", height="30%", loc=5)
     axins1.scatter(tau[0:30], Z[0:30], color='coral')
-    axins1.plot(tau[0:30], M[0:30], color='teal')
+    axins1.plot(tau[0:30], MLaplace[0:30], color='teal')
 
     # CPMG: experimental y ajustada (en semilog)
-    axs[1,1].set_title(f'¿Background restado? {Back}', fontsize='large')
-    axs[1,1].scatter(tau, Z, label='Exp', color='coral')
-    axs[1,1].plot(tau, M, label='Fit', color='teal')
-    axs[1,1].set_yscale('log')
-    axs[1,1].set_xlabel(r'$\tau$ [ms]')
-    axs[1,1].set_ylabel('log(CPMG)')
-    axs[1,1].legend()
+    axs[0,1].set_title(f'¿Background restado? {Back}', fontsize='large')
+    axs[0,1].scatter(tau, Z, label='Experimento', color='coral')
+    axs[0,1].plot(tau, MLaplace, label='Fit Laplace', color='teal')
+    axs[0,1].set_yscale('log')
+    axs[0,1].set_xlabel(r'$\tau$ [ms]')
+    axs[0,1].set_ylabel('log(CPMG)')
+    axs[0,1].legend()
 
     # CPMG: residuos
-    axs[1,0].set_title('Residuos del ajuste')
-    axs[1,0].scatter(tau, M-Z, color = 'blue')
+    axs[1,0].set_title('Residuos del ajuste con Laplace')
+    axs[1,0].scatter(tau, MLaplace-Z, color = 'blue')
     axs[1,0].axhline(0, c = 'k', lw = 4, ls = ':')
     axs[1,0].set_xlabel(r'$\tau$ [ms]')
     axs[1,0].axhline(0.1*np.max(Z), c = 'red', lw = 6, ls = '-')
@@ -185,24 +242,41 @@ def plot(tau, Z, M, T2, S, Out, nS, RDT, RG, att, RD, p90, p180, tEcho, nEcho, a
     peaks, _ = find_peaks(S)
     peaksx, peaksy = T2[peaks], Snorm[peaks]
 
-    axs[0,1].set_title(rf'$\alpha$ = {alpha}')
-    axs[0,1].axhline(y=0.1, color='k', ls=':', lw=4)
-    axs[0,1].plot(T2, Snorm, label = 'Distrib.', color = 'teal')
+    axs[0,2].set_title(rf'$\alpha$ = {alpha}')
+    axs[0,2].axhline(y=0.1, color='k', ls=':', lw=4)
+    axs[0,2].plot(T2, Snorm, label = 'Distrib.', color = 'teal')
     for i in range(len(peaksx)):
         if peaksy[i] > 0.1:
-            axs[0,1].plot(peaksx[i], peaksy[i] + 0.05, lw = 0, marker=11, color='black')
-            axs[0,1].annotate(f'{peaksx[i]:.2f}', xy = (peaksx[i], peaksy[i] + 0.07), fontsize=30, ha='center')
-    axs[0,1].set_xlabel(r'$T_2$ [ms]')
-    axs[0,1].set_ylabel(r'Distrib. $T_2$')
-    axs[0,1].set_xscale('log')
-    axs[0,1].set_ylim(-0.02, 1.2)
-    axs[0,1].set_xlim(10.0**T2min, 10.0**T2max)
-
+            axs[0,2].plot(peaksx[i], peaksy[i] + 0.05, lw = 0, marker=11, color='black')
+            axs[0,2].annotate(f'{peaksx[i]:.2f}', xy = (peaksx[i], peaksy[i] + 0.07), fontsize=30, ha='center')
+    axs[0,2].set_xlabel(r'$T_2$ [ms]')
+    axs[0,2].set_ylabel(r'Distrib. $T_2$')
+    axs[0,2].set_xscale('log')
+    axs[0,2].set_ylim(-0.02, 1.2)
+    axs[0,2].set_xlim(10.0**T2min, 10.0**T2max)
 
     cumT2norm = cumT2 / cumT2[-1]
-    ax = axs[0,1].twinx()
+    ax = axs[0,2].twinx()
     ax.plot(T2, cumT2norm, label = 'Cumul.', color = 'coral')
     ax.set_ylim(-0.02, 1.2)
     ax.set_ylabel(r'Cumul. $T_2$')
+
+    axs[1,1].axis('off')
+    axs[1,2].axis('off')
+
+    axs[1,1].annotate('>>> Ajuste monoexponencial <<<', xy = (0.5, 1.00), fontsize=30, ha='center')
+    axs[1,1].annotate(f'{dataFit[0,0]} --> {dataFit[1,0]}', xy = (0.5, 0.85), fontsize=30, ha='center')
+    axs[1,1].annotate(f'{dataFit[0,3]}', xy = (0.5, 0.70), fontsize=30, ha='center')
+
+    axs[1,1].annotate('>>> Ajuste biexponencial <<<', xy = (0.5, 0.45), fontsize=30, ha='center')
+    axs[1,1].annotate(f'{dataFit[2,0]} --> {dataFit[3,0]}', xy = (0.5, 0.30), fontsize=30, ha='center')
+    axs[1,1].annotate(f'{dataFit[2,1]} --> {dataFit[3,1]}', xy = (0.5, 0.15), fontsize=30, ha='center')
+    axs[1,1].annotate(f'{dataFit[2,3]}', xy = (0.5, 0.00), fontsize=30, ha='center')
+
+    axs[1,2].annotate('>>> Ajuste triexponencial <<<', xy = (0.5, 1.00), fontsize=30, ha='center')
+    axs[1,2].annotate(f'{dataFit[4,0]} --> {dataFit[5,0]}', xy = (0.5, 0.85), fontsize=30, ha='center')
+    axs[1,2].annotate(f'{dataFit[4,1]} --> {dataFit[5,1]}', xy = (0.5, 0.70), fontsize=30, ha='center')
+    axs[1,2].annotate(f'{dataFit[4,2]} --> {dataFit[5,2]}', xy = (0.5, 0.55), fontsize=30, ha='center')
+    axs[1,2].annotate(f'{dataFit[4,3]}', xy = (0.5, 0.40), fontsize=30, ha='center')
 
     plt.savefig(f'{Out}')
