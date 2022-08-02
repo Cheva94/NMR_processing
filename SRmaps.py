@@ -37,18 +37,17 @@ def main():
             # T2min, T2max =
 
     print(f'Alpha = {alpha}')
-    print('Processing...')
 
     if Back == None:
-        S0, T1, T2, tau1, tau2, K1, K2, signal, N1, N2, nS, RDT, RG, att, RD, p90, p180, tE, nE, niniT2new = SRmap_file(File, T1min, T1max, T2min, T2max, niniT1, niniT2, Map)
+        S0, T1, T2, tau1, tau2, K1, K2, signal, N1, N2, nS, RDT, RG, att, RD, p90, p180, tE, nE, niniT2new, S01D, K1D = SRmap_file(File, T1min, T1max, T2min, T2max, niniT1, niniT2, Map)
         Z = PhCorr(signal, N1, N2)
 
         Back = "Nein!"
     else:
-        S0, T1, T2, tau1, tau2, K1, K2, signal, N1, N2, nS, RDT, RG, att, RD, p90, p180, tE, nE, niniT2new = SRmap_file(File, T1min, T1max, T2min, T2max, niniT1, niniT2, Map)
+        S0, T1, T2, tau1, tau2, K1, K2, signal, N1, N2, nS, RDT, RG, att, RD, p90, p180, tE, nE, niniT2new, S01D, K1D = SRmap_file(File, T1min, T1max, T2min, T2max, niniT1, niniT2, Map)
         Z = PhCorr(signal, N1, N2)
 
-        _, _, _, _, _, _, _, back, _, _, _, _, _, _, _, _, _, _, _, _ = SRmap_file(File, T1min, T1max, T2min, T2max, niniT1, niniT2, Map)
+        _, _, _, _, _, _, _, back, _, _, _, _, _, _, _, _, _, _, _, _, _, _ = SRmap_file(File, T1min, T1max, T2min, T2max, niniT1, niniT2, Map)
         back = PhCorr(back, N1, N2)
 
         Z -= back
@@ -57,13 +56,24 @@ def main():
 
     Z = Norm(Z, RG, N1, N2, niniT1, niniT2new)
 
-    S = NLI_FISTA(K1, K2, Z, alpha, S0)
-    print(f'Inversion ready!')
+    print('Processing 2D-Laplace inversion...')
+    S_2D = NLI_FISTA_2D(K1, K2, Z, alpha, S0)
+    print(f'2D inversion ready!')
 
-    M1, M2 = fitMag(tau1, tau2, T1, T2, S)
+    M1, M2 = fitMag_2D(tau1, tau2, T1, T2, S_2D)
+
+    print('Processing 1D-Laplace inversion...')
+    S_1D = NLI_FISTA_1D(K1D, Z[:, 0], alpha, S01D)
+    print(f'1D inversion ready!')
+
+    print(f'Fitting T1 distribution from 1D-Laplace in time domain...')
+    M_1D = fitMag_1D(tau1, T1, S_1D)
+
+    print('Fitting SR with exponential...')
+    SR1D_T1, SR1D_M0, SR1D_T1sd, SR1D_r2  = SR1D_fit(tau1, Z[:, 0],T1min, T1max)
 
     print('Plotting...')
-    plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, T1min, T1max, T2min, T2max, alpha, Back, niniT1, niniT2, Map, nS, RDT, RG, att, RD, p90, p180, tE, nE)
+    plot(tau1, tau2, Z, T1, T2, S_2D, M1, M2, Out, T1min, T1max, T2min, T2max, alpha, Back, niniT1, niniT2, Map, nS, RDT, RG, att, RD, p90, p180, tE, nE, SR1D_T1, SR1D_T1sd, SR1D_r2, SR1D_M0, S_1D, M_1D)
 
 
 if __name__ == "__main__":

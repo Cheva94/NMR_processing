@@ -233,7 +233,7 @@ def plot(tau, Z, MLaplace, T2, S, Out, nS, RDT, RG, att, RD, p90, p180, tEcho, n
     ss_res = np.sum(residuals ** 2)
     ss_tot = np.sum((Z - np.mean(Z)) ** 2)
     R2Laplace = 1 - ss_res / ss_tot
-    axs[1,0].set_title(f'Ajuste con Laplace: R2 = {R2Laplace:.6f}')
+    axs[1,0].set_title(fr'Ajuste con Laplace: R$^2$ = {R2Laplace:.6f}')
     axs[1,0].scatter(tau, residuals, color = 'blue')
     axs[1,0].axhline(0, c = 'k', lw = 4, ls = ':')
     axs[1,0].set_xlabel(r'$\tau$ [ms]')
