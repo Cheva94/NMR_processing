@@ -5,7 +5,7 @@
 '''
 
 import argparse
-from core.CPMG_full import *
+from core.CPMG import *
 import warnings
 warnings.filterwarnings("ignore")
 
