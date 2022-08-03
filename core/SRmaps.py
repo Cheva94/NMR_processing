@@ -58,7 +58,7 @@ def SRmap_file(File, T1min, T1max, T2min, T2max, niniT1, niniT2, Map):
         p180, tE, nE = pAcq.iloc[6, 1], pAcq.iloc[10, 1], pAcq.iloc[11, 1]
         nFID = 1250 * tE - 54
 
-    niniT2new = niniT2 + nFID
+    niniT2new = int(niniT2 + nFID)
 
     Nx = Ny = 150
     S0 = np.ones((Nx, Ny))
@@ -311,6 +311,7 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, T1min, T1max, T2min, T2max, alph
     axs[0,1].scatter(tau2, Z[-1, :], label='Exp', color='coral')
     axs[0,1].plot(tau2, M2, label='Fit 2D-Laplace', color='teal')
     axs[0,1].legend()
+    axs[0,1].axhline(0, c = 'k', lw = 4, ls = '-')
 
     # Inset del comienzo de la CPMG/FID/FID-CPMG:
     axins2 = inset_axes(axs[0,1], width="30%", height="30%", loc=5)
@@ -452,10 +453,12 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, T1min, T1max, T2min, T2max, alph
 
         axs[0,3].set_xlabel(r'$T_2$ [ms]')
         axs[0,3].set_ylabel(r'Distrib. $T_2$')
+        axs[0,3].fill_between([tE, 5 * tE], -0.02, 1.2, color='red', alpha=0.3, zorder=-2)
 
         ax.set_ylabel(r'Cumul. $T_2$')
 
         axs[1,2].set_xlabel(r'$T_2$ [ms]')
+        axs[1,2].fill_between([tE, 5 * tE], 10.0**T1min, 10.0**T1max, color='red', alpha=0.3, zorder=-2)
 
     elif Map == 'fidcpmg':
         axs[0,1].set_xlabel(r'$\tau_2^* | \tau_2$ [ms]')

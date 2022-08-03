@@ -213,6 +213,7 @@ def plot(tau, Z, MLaplace, T2, S, Out, nS, RDT, RG, att, RD, p90, p180, tEcho, n
     axs[0,0].set_xlabel(r'$\tau$ [ms]')
     axs[0,0].set_ylabel('CPMG')
     axs[0,0].legend()
+    axs[0,0].axhline(0, c = 'k', lw = 4, ls = '-')
 
     # Inset del comienzo de la CPMG
     axins1 = inset_axes(axs[0,0], width="30%", height="30%", loc=5)
@@ -246,6 +247,7 @@ def plot(tau, Z, MLaplace, T2, S, Out, nS, RDT, RG, att, RD, p90, p180, tEcho, n
     peaks, _ = find_peaks(S)
     peaksx, peaksy = T2[peaks], Snorm[peaks]
 
+    axs[0,2].fill_between([tEcho, 5 * tEcho], -0.02, 1.2, color='red', alpha=0.3, zorder=-2)
     axs[0,2].set_title(rf'$\alpha$ = {alpha}')
     axs[0,2].axhline(y=0.1, color='k', ls=':', lw=4)
     axs[0,2].plot(T2, Snorm, label = 'Distrib.', color = 'teal')
