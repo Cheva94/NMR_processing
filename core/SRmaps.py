@@ -280,10 +280,13 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, T1min, T1max, T2min, T2max, alph
 
     NegPts = 0
     for k in range(len(tau1)):
-        if Z[k, 0] < 0:
+        if Z[k, 0] < 0.0000:
             NegPts += 1
 
     # SR: experimental y ajustada (Laplace 2D)
+    projOffset = Z[-1, 0] / M1[-1]
+    M1 *= projOffset
+
     axs[0,0].set_title(f'Pts. desc.: {cropT1:.0f}; Neg. pts.: {NegPts}', fontsize='large')
     axs[0,0].scatter(tau1, Z[:, 0], label='Exp', color='coral', zorder=5)
     axs[0,0].plot(tau1, M1, label='2D-Lap', color='teal', zorder=0)
