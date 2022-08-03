@@ -213,7 +213,7 @@ def plot(tau, Z, MLaplace, T2, S, Out, nS, RDT, RG, att, RD, p90, p180, tEcho, n
     axs[0,0].set_xlabel(r'$\tau$ [ms]')
     axs[0,0].set_ylabel('CPMG')
     axs[0,0].legend()
-    axs[0,0].axhline(0, c = 'k', lw = 4, ls = '-')
+    axs[0,0].axhline(0, c = 'k', lw = 4, ls = ':', zorder=-2)
 
     # Inset del comienzo de la CPMG
     axins1 = inset_axes(axs[0,0], width="30%", height="30%", loc=5)

@@ -311,7 +311,7 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, T1min, T1max, T2min, T2max, alph
     axs[0,1].scatter(tau2, Z[-1, :], label='Exp', color='coral')
     axs[0,1].plot(tau2, M2, label='Fit 2D-Laplace', color='teal')
     axs[0,1].legend()
-    axs[0,1].axhline(0, c = 'k', lw = 4, ls = '-')
+    axs[0,1].axhline(0, c = 'k', lw = 4, ls = ':', zorder=-2)
 
     # Inset del comienzo de la CPMG/FID/FID-CPMG:
     axins2 = inset_axes(axs[0,1], width="30%", height="30%", loc=5)
