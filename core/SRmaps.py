@@ -184,7 +184,7 @@ def fitMag_2D(tau1, tau2, T1, T2, S):
             m2 += S2[j] * np.exp(-tau2[i] / T2[j])
         M2.append(m2[0])
 
-    return M1, M2
+    return np.array(M1), np.array(M2)
 
 def NLI_FISTA_1D(K, Z, alpha, S):
     '''
@@ -243,7 +243,7 @@ def fitMag_1D(tau1, T1, S_1D):
             m += S_1D[j] * (1 - np.exp(- tau1[i] / T1[j]))
         M.append(m[0])
 
-    return M
+    return np.array(M)
 
 def SR1D_exp(tau1, T1, M0):
     out = M0 * (1 - np.exp(-tau1 / T1))
@@ -388,19 +388,19 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, T1min, T1max, T2min, T2max, alph
     maxi = np.min([T1max, T2max])
     S = S[4:-9, 2:-2]
 
-    axs[1,2].set_title(rf'$\alpha$ = {alpha}')
-    axs[1,2].plot([10.0**mini, 10.0**maxi], [10.0**mini, 10.0**maxi], color='black', ls='-', alpha=0.7, zorder=-2, label = r'$T_1$ = $T_2$')
+    axs[1,3].set_title(rf'$\alpha$ = {alpha}')
+    axs[1,3].plot([10.0**mini, 10.0**maxi], [10.0**mini, 10.0**maxi], color='black', ls='-', alpha=0.7, zorder=-2, label = r'$T_1$ = $T_2$')
     for i in range(len(peaks2x)):
-        axs[1,2].axvline(x=peaks2x[i], color='k', ls=':', lw=4)
+        axs[1,3].axvline(x=peaks2x[i], color='k', ls=':', lw=4)
     for i in range(len(peaks1x)):
-        axs[1,2].axhline(y=peaks1x[i], color='k', ls=':', lw=4)
-    axs[1,2].contour(T2, T1, S, 100, cmap='rainbow')
-    axs[1,2].set_ylabel(r'$T_1$ [ms]')
-    axs[1,2].set_xlim(10.0**T2min, 10.0**T2max)
-    axs[1,2].set_ylim(10.0**T1min, 10.0**T1max)
-    axs[1,2].set_xscale('log')
-    axs[1,2].set_yscale('log')
-    axs[1,2].legend(loc='lower right')
+        axs[1,3].axhline(y=peaks1x[i], color='k', ls=':', lw=4)
+    axs[1,3].contour(T2, T1, S, 100, cmap='rainbow')
+    axs[1,3].set_ylabel(r'$T_1$ [ms]')
+    axs[1,3].set_xlim(10.0**T2min, 10.0**T2max)
+    axs[1,3].set_ylim(10.0**T1min, 10.0**T1max)
+    axs[1,3].set_xscale('log')
+    axs[1,3].set_yscale('log')
+    axs[1,3].legend(loc='lower right')
 
     # Distribución de T1 con Laplace 1D
     S_1D = S_1D[4:-9]
@@ -416,20 +416,20 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, T1min, T1max, T2min, T2max, alph
     ss_tot = np.sum((Z[:, 0] - np.mean(Z[:, 0]))**2)
     R2_1D = 1 - ss_res / ss_tot
 
-    axs[1,3].set_title(fr'Laplace 1D: R$^2$ = {R2_1D:.6f}', fontsize='large')
-    axs[1,3].axhline(y=0.1, color='k', ls=':', lw=4)
-    axs[1,3].plot(T1, Snorm, label = 'Distrib.', color = 'teal')
+    axs[1,2].set_title(fr'Laplace 1D: R$^2$ = {R2_1D:.6f}', fontsize='large')
+    axs[1,2].axhline(y=0.1, color='k', ls=':', lw=4)
+    axs[1,2].plot(T1, Snorm, label = 'Distrib.', color = 'teal')
     for i in range(len(peaksx)):
         if peaksy[i] > 0.1:
-            axs[1,3].plot(peaksx[i], peaksy[i] + 0.05, lw = 0, marker=11, color='black')
-            axs[1,3].annotate(f'{peaksx[i]:.2f}', xy = (peaksx[i], peaksy[i] + 0.07), fontsize=30, ha='center')
-    axs[1,3].set_xlabel(r'$T_1$ [ms]')
-    axs[1,3].set_ylabel(r'Distrib. $T_1$')
-    axs[1,3].set_xscale('log')
-    axs[1,3].set_ylim(-0.02, 1.2)
-    axs[1,3].set_xlim(10.0**T1min, 10.0**T1max)
+            axs[1,2].plot(peaksx[i], peaksy[i] + 0.05, lw = 0, marker=11, color='black')
+            axs[1,2].annotate(f'{peaksx[i]:.2f}', xy = (peaksx[i], peaksy[i] + 0.07), fontsize=30, ha='center')
+    axs[1,2].set_xlabel(r'$T_1$ [ms]')
+    axs[1,2].set_ylabel(r'Distrib. $T_1$')
+    axs[1,2].set_xscale('log')
+    axs[1,2].set_ylim(-0.02, 1.2)
+    axs[1,2].set_xlim(10.0**T1min, 10.0**T1max)
 
-    ax1d = axs[1,3].twinx()
+    ax1d = axs[1,2].twinx()
     ax1d.plot(T1, cumT1_1D, label = 'Cumul.', color = 'coral')
     ax1d.set_ylim(-0.02, 1.2)
     ax1d.set_ylabel(r'Cumul. $T_1$')
@@ -445,7 +445,7 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, T1min, T1max, T2min, T2max, alph
 
         ax.set_ylabel(r'Cumul. $T_2^*$')
 
-        axs[1,2].set_xlabel(r'$T_2^*$ [ms]')
+        axs[1,3].set_xlabel(r'$T_2^*$ [ms]')
 
     elif Map == 'cpmg':
         axs[0,1].set_xlabel(r'$\tau_2$ [ms]')
@@ -459,8 +459,8 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, T1min, T1max, T2min, T2max, alph
 
         ax.set_ylabel(r'Cumul. $T_2$')
 
-        axs[1,2].set_xlabel(r'$T_2$ [ms]')
-        axs[1,2].fill_between([tE, 5 * tE], 10.0**T1min, 10.0**T1max, color='red', alpha=0.3, zorder=-2)
+        axs[1,3].set_xlabel(r'$T_2$ [ms]')
+        axs[1,3].fill_between([tE, 5 * tE], 10.0**T1min, 10.0**T1max, color='red', alpha=0.3, zorder=-2)
 
     elif Map == 'fidcpmg':
         axs[0,1].set_xlabel(r'$\tau_2^* | \tau_2$ [ms]')
@@ -473,7 +473,7 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, T1min, T1max, T2min, T2max, alph
 
         ax.set_ylabel(r'Cumul. $T_2^* | T_2$')
 
-        axs[1,2].set_xlabel(r'$T_2^* | T_2$ [ms]')
+        axs[1,3].set_xlabel(r'$T_2^* | T_2$ [ms]')
 
     plt.savefig(f'{Out}')
 
