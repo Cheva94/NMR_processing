@@ -5,7 +5,6 @@ from cycler import cycler
 from scipy.signal import find_peaks
 import matplotlib as mpl
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
-# from scipy.ndimage import gaussian_filter1d
 from scipy.optimize import curve_fit
 
 plt.rcParams["font.weight"] = "bold"
@@ -35,7 +34,7 @@ plt.rcParams["lines.linewidth"] = 4
 plt.rcParams["lines.markersize"] = 10
 plt.rcParams["lines.linestyle"] = '-'
 
-def SRmap_file(File, T1min, T1max, T2min, T2max, niniT1, niniT2, Map):
+def SRmap_file(File, T1min, T1max, T2min, T2max, cropT1, cropT2, Map):
     '''
     Lectura del archivo de la medición.
     '''
@@ -58,7 +57,7 @@ def SRmap_file(File, T1min, T1max, T2min, T2max, niniT1, niniT2, Map):
         p180, tE, nE = pAcq.iloc[6, 1], pAcq.iloc[10, 1], pAcq.iloc[11, 1]
         nFID = 1250 * tE - 54
 
-    niniT2new = int(niniT2 + nFID)
+    cropT2new = int(cropT2 + nFID)
 
     Nx = Ny = 150
     S0 = np.ones((Nx, Ny))
@@ -69,17 +68,17 @@ def SRmap_file(File, T1min, T1max, T2min, T2max, niniT1, niniT2, Map):
     tau1 = pd.read_csv(File.split('.txt')[0]+"_t1.dat", header = None, delim_whitespace = True).to_numpy()
     tau2 = pd.read_csv(File.split('.txt')[0]+"_t2.dat", header = None, delim_whitespace = True).to_numpy()
     N1, N2 = len(tau1), len(tau2)
-    tau1 = tau1[niniT1:]
-    tau2 = tau2[niniT2new:]
+    tau1 = tau1[cropT1:]
+    tau2 = tau2[cropT2new:]
 
     K1 = 1 - np.exp(-tau1 / T1)
     K2 = np.exp(-tau2 / T2)
 
-    K1D = np.zeros((N1, Nx))
-    for i in range(N1):
+    K1D = np.zeros((len(tau1), Nx))
+    for i in range(len(tau1)):
         K1D[i, :] = 1 - np.exp(-tau1[i] / T1)
 
-    return S0, T1, T2, tau1, tau2, K1, K2, signal, N1, N2, nS, RDT, RG, att, RD, p90, p180, tE, nE, niniT2new, S01D, K1D
+    return S0, T1, T2, tau1, tau2, K1, K2, signal, N1, N2, nS, RDT, RG, att, RD, p90, p180, tE, nE, cropT2new, S01D, K1D
 
 def PhCorr(signal, N1, N2):
     '''
@@ -104,15 +103,13 @@ def PhCorr(signal, N1, N2):
 
     return np.array(Z)
 
-def Norm(Z, RG, N1, N2, niniT1, niniT2new):
+def Norm(Z, RG, N1, N2, cropT1, cropT2new):
     '''
-    Normalización por ganancia, corrección de offset y creación de matriz.
+    Normalización por ganancia y creación de matriz.
     '''
 
     norm = 1 / (6.32589E-4 * np.exp(RG/9) - 0.0854)
-    Z = np.reshape(Z*norm, (N1, N2))[niniT1:, niniT2new:]
-    offset = np.min(Z[:, 0])
-    Z -= offset
+    Z = np.reshape(Z*norm, (N1, N2))[cropT1:, cropT2new:]
 
     return Z
 
@@ -270,7 +267,7 @@ def SR1D_fit(tau1, Z, T1min, T1max):
 
     return popt[0], popt[1], perr[0], r2
 
-def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, T1min, T1max, T2min, T2max, alpha, Back, niniT1, niniT2, Map, nS, RDT, RG, att, RD, p90, p180, tE, nE, SR1D_T1, SR1D_T1sd, SR1D_r2, SR1D_M0, S_1D, M_1D):
+def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, T1min, T1max, T2min, T2max, alpha, Back, cropT1, cropT2, Map, nS, RDT, RG, att, RD, p90, p180, tE, nE, SR1D_T1, SR1D_T1sd, SR1D_r2, SR1D_M0, S_1D, M_1D):
     '''
     Grafica resultados.
     '''
@@ -281,12 +278,17 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, T1min, T1max, T2min, T2max, alph
     else:
         fig.suptitle(rf'nS={nS:.0f}    |    RDT = {RDT} ms    |    RG = {RG:.0f} dB    |    Atten = {att:.0f} dB    |    RD = {RD:.3f} s    |    p90 = {p90} $\mu$s', fontsize='large')
 
+    NegPts = 0
+    for k in range(len(tau1)):
+        if Z[k, 0] < 0:
+            NegPts += 1
+
     # SR: experimental y ajustada (Laplace 2D)
-    axs[0,0].set_title(f'{niniT1:.0f} puntos descartados', fontsize='large')
+    axs[0,0].set_title(f'Pts. desc.: {cropT1:.0f}; Neg. pts.: {NegPts}', fontsize='large')
     axs[0,0].scatter(tau1, Z[:, 0], label='Exp', color='coral', zorder=5)
-    axs[0,0].plot(tau1, M1, label='Fit 2D-Laplace', color='teal', zorder=0)
-    axs[0,0].plot(tau1, SR1D_exp(tau1, SR1D_T1, SR1D_M0), label='Fit Exponencial', color='darkgreen', zorder=1)
-    axs[0,0].plot(tau1, M_1D, label='Fit 1D-Laplace', color='navy', zorder=2)
+    axs[0,0].plot(tau1, M1, label='2D-Lap', color='teal', zorder=0)
+    axs[0,0].plot(tau1, SR1D_exp(tau1, SR1D_T1, SR1D_M0), label='Monoexp', color='darkgreen', zorder=1)
+    axs[0,0].plot(tau1, M_1D, label='1D-Lap', color='navy', zorder=2)
     axs[0,0].set_xlabel(r'$\tau_1$ [ms]')
     axs[0,0].set_ylabel('SR')
     axs[0,0].legend()
@@ -307,9 +309,9 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, T1min, T1max, T2min, T2max, alph
     axs[1,0].set_xlabel(r'$\tau$1 [ms]')
 
     # CPMG/FID/FID-CPMG: experimental y ajustada (Laplace 2D)
-    axs[0,1].set_title(f'{niniT2:.0f} puntos descartados', fontsize='large')
+    axs[0,1].set_title(f'Pts. desc.: {cropT2:.0f}', fontsize='large')
     axs[0,1].scatter(tau2, Z[-1, :], label='Exp', color='coral')
-    axs[0,1].plot(tau2, M2, label='Fit 2D-Laplace', color='teal')
+    axs[0,1].plot(tau2, M2, label='2D-Lap', color='teal')
     axs[0,1].legend()
     axs[0,1].axhline(0, c = 'k', lw = 4, ls = ':', zorder=-2)
 

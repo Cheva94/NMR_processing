@@ -18,7 +18,7 @@ def main():
     alpha = args.alpha
     T1min, T1max = args.T1Range[0], args.T1Range[1]
     T2min, T2max = args.T2Range[0], args.T2Range[1]
-    niniT1, niniT2 = args.croppedValues[0], args.croppedValues[1]
+    cropT1, cropT2 = args.croppedValues[0], args.croppedValues[1]
 
     if T1min == 999:
         if Map == 'fid':
@@ -39,22 +39,22 @@ def main():
     print(f'Alpha = {alpha}')
 
     if Back == None:
-        S0, T1, T2, tau1, tau2, K1, K2, signal, N1, N2, nS, RDT, RG, att, RD, p90, p180, tE, nE, niniT2new, S01D, K1D = SRmap_file(File, T1min, T1max, T2min, T2max, niniT1, niniT2, Map)
+        S0, T1, T2, tau1, tau2, K1, K2, signal, N1, N2, nS, RDT, RG, att, RD, p90, p180, tE, nE, cropT2new, S01D, K1D = SRmap_file(File, T1min, T1max, T2min, T2max, cropT1, cropT2, Map)
         Z = PhCorr(signal, N1, N2)
 
         Back = "Nein!"
     else:
-        S0, T1, T2, tau1, tau2, K1, K2, signal, N1, N2, nS, RDT, RG, att, RD, p90, p180, tE, nE, niniT2new, S01D, K1D = SRmap_file(File, T1min, T1max, T2min, T2max, niniT1, niniT2, Map)
+        S0, T1, T2, tau1, tau2, K1, K2, signal, N1, N2, nS, RDT, RG, att, RD, p90, p180, tE, nE, cropT2new, S01D, K1D = SRmap_file(File, T1min, T1max, T2min, T2max, cropT1, cropT2, Map)
         Z = PhCorr(signal, N1, N2)
 
-        _, _, _, _, _, _, _, back, _, _, _, _, _, _, _, _, _, _, _, _, _, _ = SRmap_file(File, T1min, T1max, T2min, T2max, niniT1, niniT2, Map)
+        _, _, _, _, _, _, _, back, _, _, _, _, _, _, _, _, _, _, _, _, _, _ = SRmap_file(File, T1min, T1max, T2min, T2max, cropT1, cropT2, Map)
         back = PhCorr(back, N1, N2)
 
         Z -= back
 
         Back = "Ja!"
 
-    Z = Norm(Z, RG, N1, N2, niniT1, niniT2new)
+    Z = Norm(Z, RG, N1, N2, cropT1, cropT2new)
 
     print('Processing 2D-Laplace inversion...')
     S_2D = NLI_FISTA_2D(K1, K2, Z, alpha, S0)
@@ -73,7 +73,7 @@ def main():
     SR1D_T1, SR1D_M0, SR1D_T1sd, SR1D_r2  = SR1D_fit(tau1, Z[:, 0],T1min, T1max)
 
     print('Plotting...')
-    plot(tau1, tau2, Z, T1, T2, S_2D, M1, M2, Out, T1min, T1max, T2min, T2max, alpha, Back, niniT1, niniT2, Map, nS, RDT, RG, att, RD, p90, p180, tE, nE, SR1D_T1, SR1D_T1sd, SR1D_r2, SR1D_M0, S_1D, M_1D)
+    plot(tau1, tau2, Z, T1, T2, S_2D, M1, M2, Out, T1min, T1max, T2min, T2max, alpha, Back, cropT1, cropT2, Map, nS, RDT, RG, att, RD, p90, p180, tE, nE, SR1D_T1, SR1D_T1sd, SR1D_r2, SR1D_M0, S_1D, M_1D)
 
 
 if __name__ == "__main__":
