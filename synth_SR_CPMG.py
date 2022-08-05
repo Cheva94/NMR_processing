@@ -1,8 +1,6 @@
 #!/usr/bin/python3.10
-
+# -*- coding: utf-8 -*-
 '''
-    Description:
-
     Written by: Ignacio J. Chevallier-Boutell.
     Dated: December, 2021.
 '''

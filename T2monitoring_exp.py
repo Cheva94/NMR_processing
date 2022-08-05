@@ -1,4 +1,5 @@
 #!/usr/bin/python3.10
+# -*- coding: utf-8 -*-
 '''
     Written by: Ignacio J. Chevallier-Boutell.
     Dated: November, 2021.
