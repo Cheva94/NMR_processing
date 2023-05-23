@@ -1,16 +1,11 @@
 #!/usr/bin/python3.10
 # -*- coding: utf-8 -*-
-'''
-    Written by: Ignacio J. Chevallier-Boutell.
-    Dated: February, 2022.
-'''
 
 import argparse
 import numpy as np
 import pandas as pd
 from scipy.optimize import curve_fit
 import matplotlib.pyplot as plt
-from cycler import cycler
 
 plt.rcParams["font.weight"] = "bold"
 plt.rcParams["font.size"] = 35

@@ -56,7 +56,7 @@ def SRmap_file(File, T1min, T1max, T2min, T2max, cropT1, cropT2, Map):
     elif Map == 'cpmg':
         p180, tE, nE = pAcq.iloc[6, 1], pAcq.iloc[10, 1], pAcq.iloc[11, 1]
         nFID = 1250 * tE - 54
-
+	
     cropT2new = int(cropT2 + nFID)
 
     Nx = Ny = 150
@@ -274,9 +274,9 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, T1min, T1max, T2min, T2max, alph
 
     fig, axs = plt.subplots(2,4)
     if Map != 'fid':
-        fig.suptitle(rf'nS={nS:.0f}    |    RDT = {RDT} ms    |    RG = {RG:.0f} dB    |    Atten = {att:.0f} dB    |    RD = {RD:.3f} s    |    p90 = {p90} $\mu$s    |    p180 = {p180} $\mu$s    |    tE = {tE:.1f} ms    |    Ecos = {nE:.0f}', fontsize='large')
+        fig.suptitle(rf'nS={nS:.0f}    |    RDT = {RDT} ms    |    RG = {RG:.0f} dB    |    Atten = {att:.0f} dB    |    RD = {RD:.2f} s    |    p90 = {p90} $\mu$s    |    p180 = {p180} $\mu$s    |    tE = {tE:.1f} ms    |    Ecos = {nE:.0f}', fontsize='large')
     else:
-        fig.suptitle(rf'nS={nS:.0f}    |    RDT = {RDT} ms    |    RG = {RG:.0f} dB    |    Atten = {att:.0f} dB    |    RD = {RD:.3f} s    |    p90 = {p90} $\mu$s', fontsize='large')
+        fig.suptitle(rf'nS={nS:.0f}    |    RDT = {RDT} ms    |    RG = {RG:.0f} dB    |    Atten = {att:.0f} dB    |    RD = {RD:.2f} s    |    p90 = {p90} $\mu$s', fontsize='large')
 
     NegPts = 0
     for k in range(len(tau1)):
@@ -339,7 +339,7 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, T1min, T1max, T2min, T2max, alph
     T1 = T1[4:-9]
     projT1 = np.sum(S, axis=1)
     projT1 = projT1[4:-9] / np.max(projT1[4:-9])
-    peaks1, _ = find_peaks(projT1, height=0.1, distance = 5)
+    peaks1, _ = find_peaks(projT1, height=0.025, distance = 5)
     peaks1x, peaks1y = T1[peaks1], projT1[peaks1]
 
     cumT1 = np.cumsum(projT1)
@@ -366,7 +366,7 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, T1min, T1max, T2min, T2max, alph
     T2 = T2[2:-2]
     projT2 = np.sum(S, axis=0)
     projT2 = projT2[2:-2] / np.max(projT2[2:-2])
-    peaks2, _ = find_peaks(projT2, height=0.1, distance = 5)
+    peaks2, _ = find_peaks(projT2, height=0.025, distance = 5)
     peaks2x, peaks2y = T2[peaks2], projT2[peaks2]
 
     cumT2 = np.cumsum(projT2)

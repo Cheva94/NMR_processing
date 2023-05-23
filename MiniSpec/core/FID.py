@@ -5,6 +5,7 @@ from matplotlib.ticker import AutoMinorLocator
 from cycler import cycler
 import scipy.fft as FT
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
+from scipy.signal import find_peaks
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -60,13 +61,15 @@ def PhCorr(signal):
     Corrección de fase.
     '''
 
-    initVal = {}
+    maxVal = {}
     for i in range(360):
         tita = np.deg2rad(i)
         signal_ph = signal * np.exp(1j * tita)
-        initVal[i] = signal_ph[0].real
-
-    return signal * np.exp(1j * np.deg2rad(max(initVal, key=initVal.get)))
+        maxVal[i] = np.max(signal_ph.real[0:30])
+    signal *= np.exp(1j * np.deg2rad(max(maxVal, key=maxVal.get)))
+    niniAutom = signal.real[0:30].argmax()
+    
+    return signal, niniAutom
 
 def Norm(signal, RG):
     '''
@@ -82,18 +85,18 @@ def plot(t, signal, nP, DW, nS, RDT, RG, att, RD, p90, Out, Back, nini):
     '''
 
     fig, axs = plt.subplots(2, 2, gridspec_kw={'height_ratios': [3,1]})
-    fig.suptitle(rf'nS={nS:.0f}    |    RDT = {RDT} ms    |    RG = {RG:.0f} dB    |    Atten = {att:.0f} dB    |    RD = {RD:.0f} s    |    p90 = {p90} $\mu$s', fontsize='large')
+    fig.suptitle(rf'nS={nS:.0f}    |    RDT = {RDT} ms    |    RG = {RG:.0f} dB    |    Atten = {att:.0f} dB    |    RD = {RD:.2f} s    |    p90 = {p90} $\mu$s', fontsize='large')
 
     # Promedio de los primeros 10 puntos de la FID
-    points = 10
-    fid0Arr = signal[0:points].real
+    points = 20 #10
+    fid0Arr = signal.real[nini:nini+points]
     fid0 = sum(fid0Arr) / points
     fid0_SD = (sum([((x - fid0) ** 2) for x in fid0Arr]) / points) ** 0.5
 
     # Plot de la parte real de la FID
     axs[0,0].set_title(f'Se descartaron {nini:.0f} puntos al comienzo.', fontsize='large')
     axs[0,0].scatter(t, signal.real, label='FID (real)', color='coral')
-    axs[0,0].plot(t[0:points], signal[0:points].real, lw = 10, label = fr'$M_R ({points})$ = ({fid0:.2f} $\pm$ {fid0_SD:.2f})', color='teal')
+    axs[0,0].plot(t[nini:nini+points], signal.real[nini:nini+points], lw = 10, label = fr'$M_R ({points})$ = ({fid0:.2f} $\pm$ {fid0_SD:.2f})', color='teal')
     axs[0,0].axhline(y=0, color='k', ls=':', lw=4)
     axs[0,0].set_xlabel('t [ms]')
     axs[0,0].set_ylabel('FID')
@@ -102,10 +105,11 @@ def plot(t, signal, nP, DW, nS, RDT, RG, att, RD, p90, Out, Back, nini):
     # Inset del comienzo de la parte real de la FID
     axins1 = inset_axes(axs[0,0], width="30%", height="30%", loc=5)
     axins1.scatter(t[0:40], signal[0:40].real, color='coral')
-    axins1.plot(t[0:points], signal[0:points].real, color='teal')
+    axins1.plot(t[nini:nini+points], signal.real[nini:nini+points], color='teal')
 
     # Plot de la parte imaginaria de la FID
     axs[1,0].scatter(t, signal.imag, label='FID (imag)')
+    axs[1,0].plot(t[nini:nini+points], signal.imag[nini:nini+points], lw = 10, color='red')
     axs[1,0].axhline(y=0, color='k', ls=':', lw=4)
     axs[1,0].set_xlabel('t [ms]')
     axs[1,0].set_ylabel('FID')
@@ -116,22 +120,26 @@ def plot(t, signal, nP, DW, nS, RDT, RG, att, RD, p90, Out, Back, nini):
     freq = FT.fftshift(FT.fftfreq(zf, d=DW)) # Hz scale
     CS = freq / 20 # ppm for Minispec scale
     spec = np.flip(FT.fftshift(FT.fft(signal, n = zf)))
-    mask = (CS>-0.05)&(CS<0.05)
+    mask = (CS>-0.05)&(CS<0.1)
     max_peak = np.max(spec.real[mask])
     spec /= max_peak
     area_peak = np.sum(spec.real[mask])
-
+    peaks, _ = find_peaks(spec.real[mask], height=0.9)
+    peaksx, peaksy = CS[mask][peaks], spec.real[mask][peaks]
+    
     # Plot de la parte real del espectro, zoom en el pico
     axs[0,1].set_title(f'¿Background restado? {Back}', fontsize='large')
     axs[0,1].plot(CS, spec.real, label='Spectrum (real)', color='coral')
     axs[0,1].fill_between(CS[mask], 0, spec.real[mask], label = fr'Peak area = {area_peak:.0f}', alpha = 0.25, color="teal")
-    axs[0,1].set_xlim(-0.1, 0.1)
+    axs[0,1].plot(peaksx[0], peaksy[0] + 0.05, lw = 0, marker=11, color='black')
+    axs[0,1].annotate(f'{peaksx[0]:.4f}', xy = (peaksx[0], peaksy[0] + 0.07), fontsize=30, ha='center') 
+    axs[0,1].set_xlim(-0.2, 0.2)
     axs[0,1].set_ylim(-0.05, 1.2)
     axs[0,1].xaxis.set_minor_locator(AutoMinorLocator())
     axs[0,1].set_xlabel(r'$\delta$ [ppm]')
     axs[0,1].axvline(x=0, color='k', ls=':', lw=2)
     axs[0,1].axhline(y=0, color='k', ls=':', lw=2)
-    axs[0,1].legend()
+    axs[0,1].legend(loc='upper right')
 
     # Inset del espectro completo
     axins2 = inset_axes(axs[0,1], width="30%", height="30%", loc=2)

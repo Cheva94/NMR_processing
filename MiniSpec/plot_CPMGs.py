@@ -57,13 +57,13 @@ def main():
         ax1.set_xlabel(r'$T_2$ [ms]')
         ax1.set_xscale('log')
         ax1.set_ylabel(r'Distrib. $T_2$')
-        ax1.legend()
+        ax1.legend(loc='upper left')
 
         ax2.plot(t, Cumul, label = Labels[k])
         ax2.set_xlabel(r'$T_2$ [ms]')
         ax2.set_xscale('log')
         ax2.set_ylabel(r'Distrib. $T_2$')
-        ax2.legend()
+        ax2.legend(loc='upper left')
 
     plt.savefig(f'{Out}')
 

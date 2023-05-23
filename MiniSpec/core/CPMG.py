@@ -204,7 +204,7 @@ def plot(tau, Z, MLaplace, T2, S, Out, nS, RDT, RG, att, RD, p90, p180, tEcho, n
     '''
 
     fig, axs = plt.subplots(2, 3, gridspec_kw={'height_ratios': [3,1]})
-    fig.suptitle(rf'nS={nS:.0f}    |    RDT = {RDT} ms    |    RG = {RG:.0f} dB    |    Atten = {att:.0f} dB    |    RD = {RD:.0f} s    |    p90 = {p90} $\mu$s    |    p180 = {p180} $\mu$s    |    tE = {tEcho:.1f} ms    |    Ecos = {nEcho:.0f}', fontsize='large')
+    fig.suptitle(rf'nS={nS:.0f}    |    RDT = {RDT} ms    |    RG = {RG:.0f} dB    |    Atten = {att:.0f} dB    |    RD = {RD:.2f} s    |    p90 = {p90} $\mu$s    |    p180 = {p180} $\mu$s    |    tE = {tEcho:.1f} ms    |    Ecos = {nEcho:.0f}', fontsize='large')
 
     # CPMG: experimental y ajustada
     axs[0,0].set_title(f'Se descartaron {nini:.0f} puntos al comienzo.', fontsize='large')
@@ -244,7 +244,7 @@ def plot(tau, Z, MLaplace, T2, S, Out, nS, RDT, RG, att, RD, p90, p180, tEcho, n
     # Distribución de T2
     T2 = T2[2:-2]
     Snorm = S / np.max(S)
-    peaks, _ = find_peaks(S)
+    peaks, _ = find_peaks(Snorm,height=0.025, distance = 5)
     peaksx, peaksy = T2[peaks], Snorm[peaks]
 
     axs[0,2].fill_between([tEcho, 5 * tEcho], -0.02, 1.2, color='red', alpha=0.3, zorder=-2)
@@ -252,7 +252,6 @@ def plot(tau, Z, MLaplace, T2, S, Out, nS, RDT, RG, att, RD, p90, p180, tEcho, n
     axs[0,2].axhline(y=0.1, color='k', ls=':', lw=4)
     axs[0,2].plot(T2, Snorm, label = 'Distrib.', color = 'teal')
     for i in range(len(peaksx)):
-        if peaksy[i] > 0.1:
             axs[0,2].plot(peaksx[i], peaksy[i] + 0.05, lw = 0, marker=11, color='black')
             axs[0,2].annotate(f'{peaksx[i]:.2f}', xy = (peaksx[i], peaksy[i] + 0.07), fontsize=30, ha='center')
     axs[0,2].set_xlabel(r'$T_2$ [ms]')

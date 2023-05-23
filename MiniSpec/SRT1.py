@@ -1,5 +1,4 @@
 #!/usr/bin/python3.10
-# -*- coding: utf-8 -*-
 '''
     Written by: Ignacio J. Chevallier-Boutell.
     Dated: July, 2022.
@@ -56,27 +55,25 @@ def main():
         Back = "Ja!"
 
     Z = Norm(Z, RG, N1, N2, cropT1, cropT2new)
-
-    print('Processing 2D-Laplace inversion...')
-    S_2D = NLI_FISTA_2D(K1, K2, Z, alpha, S0)
-    print(f'2D inversion ready!')
-
-    M1, M2 = fitMag_2D(tau1, tau2, T1, T2, S_2D)
-
+    SR = Z[:, 0]
+    # offset = np.min(SR)
+    # SR -= offset
+    
     print('Processing 1D-Laplace inversion...')
-    S_1D = NLI_FISTA_1D(K1D, Z[:, 0], alpha, S01D)
+    S_1D = NLI_FISTA_1D(K1D, SR, alpha, S01D)
     print(f'1D inversion ready!')
 
     print(f'Fitting T1 distribution from 1D-Laplace in time domain...')
     M_1D = fitMag_1D(tau1, T1, S_1D)
 
     print('Fitting SR with exponential...')
-    SR1D_T1, SR1D_M0, SR1D_T1sd, SR1D_r2  = SR1D_fit(tau1, Z[:, 0],T1min, T1max)
+    SR1D_T1, SR1D_M0, SR1D_T1sd, SR1D_M0sd, SR1D_r2  = SR1D_fit1cte(tau1, Z[:, 0],T1min, T1max)
+    
+    SR1D_T1bis, SR1D_M0bis, SR1D_y0, SR1D_T1sdbis, SR1D_M0sdbis, SR1D_y0sd, SR1D_r2bis  = SR1D_fit2cte(tau1, Z[:, 0],T1min, T1max)
 
     print('Plotting...')
-    plot(tau1, tau2, Z, T1, T2, S_2D, M1, M2, Out, T1min, T1max, T2min, T2max, alpha, Back, cropT1, cropT2, Map, nS, RDT, RG, att, RD, p90, p180, tE, nE, SR1D_T1, SR1D_T1sd, SR1D_r2, SR1D_M0, S_1D, M_1D)
-
-
+    test_plot(tau1, SR, T1, S_1D, M_1D, SR1D_T1, SR1D_M0, SR1D_T1sd, SR1D_M0sd, SR1D_r2, SR1D_T1bis, SR1D_M0bis, SR1D_y0, SR1D_T1sdbis, SR1D_M0sdbis, SR1D_y0sd, SR1D_r2bis, T1min, T1max, Out)
+    
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 

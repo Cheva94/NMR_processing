@@ -11,7 +11,8 @@ from core.FID import *
 def main():
 
     File = args.input
-    Out = args.output
+#    Out = args.output
+    Out = File.split(".txt")[0]
     Back = args.background
     nini = args.croppedValues
 
@@ -19,8 +20,9 @@ def main():
 
     if Back == None:
         t, signal, nP, DW, nS, RDT, RG, att, RD, p90 = FID_file(File, nini)
-        signal = PhCorr(signal)
-
+        signal, niniAutom = PhCorr(signal)
+        nini += niniAutom
+        
         Back = "Nein!"
 
     else:
@@ -54,7 +56,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument('input', help = "Path to the FID file.")
-    parser.add_argument('output', help = "Path for the output files.")
+#    parser.add_argument('output', help = "Path for the output files.")
     parser.add_argument('-back', '--background', help = "Path to de FID background file.")
     parser.add_argument('-crop', '--croppedValues', help = "Number of values to avoid at the beginning the FID.", type = int, default=0)
 
