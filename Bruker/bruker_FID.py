@@ -6,18 +6,18 @@ import brukerPlot as graph
 
 def main():
 
-    print('Analysing raw data...')
+    print('Analysing FID raw data...')
     fileDir = args.input
-    Out = fileDir+'/'+'proc_FID'
+    Out = fileDir+'proc_FID'
 
     t, SGL, nP, SW, nS, RDT, RG, att, RD, p90 = IO.readFID(fileDir)
     SGL = IO.PhCorrFID(SGL)
-    CS, spec = IO.spectrum(SGL, nP, SW)
+    CS, spec = IO.specFID(SGL, nP, SW)
 
-    print('Writing processed data...')
+    print('Writing FID processed data...')
     IO.writeFID(t, SGL, nP, CS, spec, Out)
 
-    print('Plotting processed data...')
+    print('Plotting FID processed data...')
     graph.FID(t, SGL, nS, RDT, RG, att, RD, p90, CS, spec, Out)
 
 if __name__ == "__main__":

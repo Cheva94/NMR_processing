@@ -47,7 +47,7 @@ def PhCorrFID(SGL):
     return SGL
 
 
-def spectrum(SGL, nP, SW):
+def specFID(SGL, nP, SW):
     '''
     Creación del espectro.
     '''
@@ -63,7 +63,7 @@ def spectrum(SGL, nP, SW):
 
 def writeFID(t, SGL, nP, CS, spec, Out):
 
-    with open(f'{Out}_td.csv', 'w') as f:
+    with open(f'{Out}FID_td.csv', 'w') as f:
         f.write("t [ms]\tRe[FID]\tIm[FID] \n")
         for i in range(nP):
             f.write(f'{t[i]:.6f}\t{SGL[i].real:.6f}\t{SGL[i].imag:.6f} \n')
@@ -72,7 +72,7 @@ def writeFID(t, SGL, nP, CS, spec, Out):
     CS = CS[mask]
     spec = spec[mask]
 
-    with open(f'{Out}_fd.csv', 'w') as f:
+    with open(f'{Out}FID_fd.csv', 'w') as f:
         f.write("CS [ppm]\tRe[spec]\tIm[spec] \n")
         for i in range(len(CS)):
             f.write(f'{CS[i]:.6f}\t{spec[i].real:.6f}\t{spec[i].imag:.6f} \n')
@@ -105,6 +105,7 @@ def readDQ(fileDir):
     zFilter = dic["acqus"]["D"][10] # s
     p90 = dic["acqus"]["P"][1] # us
     att = dic["acqus"]["PL"][1] # dB
+    DQfilter = None
 
     filter = 69 # Puntos que no sirven tema de filtro digital
     SGL = rawdata[:, filter:]
@@ -112,17 +113,16 @@ def readDQ(fileDir):
     nP = len(SGL[0, :]) # Cantidad total de puntos que me quedan en la FID
     t = np.array([x * 1E6 / SW for x in range(nP)]) # eje temporal en microsegundos
 
-    return t, SGL, nP, SW, nS, RDT, RG, att, RD, evol, zFilter, p90, vd
+    return t, SGL, nP, SW, nS, RDT, RG, att, RD, evol, zFilter, p90, vd, DQfilter
 
 
-def PhCorrDQ(SGL):
+def PhCorrDQ(SGL, lenvd):
     '''
     Corrección de fase.
     '''
 
     maxVal = {}
-    lvd = len(SGL[:, 0])
-    for k in range(lvd):
+    for k in range(lenvd):
         for i in range(360):
             tita = np.deg2rad(i)
             SGL_ph = SGL[k, :] * np.exp(1j * tita)
@@ -132,7 +132,7 @@ def PhCorrDQ(SGL):
     return SGL
 
 
-def specDQ(SGL, nP, SW):
+def specDQ(SGL, nP, SW, lenvd):
     '''
     Creación del espectro.
     '''
@@ -143,28 +143,26 @@ def specDQ(SGL, nP, SW):
     CS = freq / 300 # ppm for Bruker scale
     spec = []
 
-    lvd = len(SGL[:, 0])
-    for k in range(lvd):
+    for k in range(lenvd):
         spec.append(np.flip(FT.fftshift(FT.fft(SGL[k, :], n = zf))))
     spec = np.array(spec)
 
     return CS, spec
 
 
-def writeDQ_verbose(t, SGL, nP, CS, spec, Out):
+def writeDQ_verbose(t, SGL, nP, CS, spec, Out, lenvd):
 
     mask = (CS>-5)&(CS<5)
     CS = CS[mask]
     spec = spec[:, mask]
 
-    lvd = len(SGL[:, 0])
-    for k in range(lvd):
-        with open(f'{Out}_td_{k}.csv', 'w') as f:
+    for k in range(lenvd):
+        with open(f'{Out}FID_td_{k}.csv', 'w') as f:
             f.write("t [ms]\tRe[FID]\tIm[FID] \n")
             for i in range(nP):
                 f.write(f'{t[i]:.6f}\t{SGL[k, i].real:.6f}\t{SGL[k, i].imag:.6f} \n')
 
-        with open(f'{Out}_fd_{k}.csv', 'w') as f:
+        with open(f'{Out}FID_fd_{k}.csv', 'w') as f:
             f.write("CS [ppm]\tRe[spec]\tIm[spec] \n")
             for i in range(len(CS)):
                 f.write(f'{CS[i]:.6f}\t{spec[k, i].real:.6f}\t{spec[k, i].imag:.6f} \n')
@@ -172,7 +170,7 @@ def writeDQ_verbose(t, SGL, nP, CS, spec, Out):
 
 def writeDQ(vd, fid00, fidPts, fidPtsSD, pArea, Out):
 
-    with open(f'{Out}_bu.csv', 'w') as f:
+    with open(f'{Out}DQ_bu.csv', 'w') as f:
             f.write("vd [us]\tFID00\tFID Pts\tFID Pts (SD)\tPeak Area\n")
             for i in range(len(vd)):
                 f.write(f'{vd[i]:.1f}\t{fid00[i]:.6f}\t{fidPts[i]:.6f}\t{fidPtsSD[i]:.6f}\t{pArea[i]:.6f}\n')
