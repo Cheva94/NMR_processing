@@ -38,7 +38,7 @@ def FID(t, SGL, nS, RDT, RG, att, RD, p90, CS, spec, Out):
     '''
     
     fig, axs = plt.subplots(2, 2, figsize=(50, 20), gridspec_kw={'height_ratios': [3,1]})
-    fig.suptitle(rf'nS = {nS:.0f}    |    RDT = {RDT} $\mu$s    |    RG = {RG:.1f} dB    |    Atten = {att:.0f} dB    |    RD = {RD:.4f} s    |    p90 = {p90} $\mu$s', fontsize='medium')
+    fig.suptitle(rf'nS = {nS:.0f} | RDT = {RDT} $\mu$s | RG = {RG:.1f} dB | Atten = {att:.0f} dB | RD = {RD:.4f} s | p90 = {p90} $\mu$s', fontsize='medium')
 
     # Promedio de los primeros 10 puntos de la FID
     points = 10
@@ -105,7 +105,7 @@ def FID(t, SGL, nS, RDT, RG, att, RD, p90, CS, spec, Out):
     plt.savefig(f'{Out}FID')
 
 
-def DQ_bu(SGL, nS, RDT, RG, att, RD, evol, zFilter, p90, vd, CS, spec, DQfilter, Out, lenvd):
+def DQ_bu(SGL, nS, RDT, RG, att, RD, evol, zFilter, p90, vd, CS, spec, DQfilter, DQfilterzFil, Out, lenvd):
     '''
     Grafica resultados de la DQ.
     '''
@@ -135,13 +135,10 @@ def DQ_bu(SGL, nS, RDT, RG, att, RD, evol, zFilter, p90, vd, CS, spec, DQfilter,
     pArea = np.array(pArea)
 
     fig, axs = plt.subplots(1, 3, figsize=(37.5, 10))
-
-    if DQfilter == None:
-            fig.suptitle(rf'nS = {nS:.0f}    |    RDT = {RDT} $\mu$s    |    RG = {RG:.1f} dB    |    Atten = {att:.0f} dB    |    p90 = {p90} $\mu$s  \
-                 DQ-filter = None    |    RD = {RD:.4f} s    |    Evol = {evol:.6f} s    |    z-Filter = {zFilter:.6f} s', fontsize='medium')
-    else:
-        fig.suptitle(rf'nS = {nS:.0f}    |    RDT = {RDT} $\mu$s    |    RG = {RG:.1f} dB    |    Atten = {att:.0f} dB    |    p90 = {p90} $\mu$s  \
-                DQ-filter = {DQfilter:.4f} us    |    RD = {RD:.4f} s    |    Evol = {evol:.6f} s    |    z-Filter = {zFilter:.6f} s', fontsize='medium')
+    acqgral = rf'RDT = {RDT} $\mu$s | RG = {RG:.1f} dB | Atten = {att:.0f} dB | p90 = {p90} $\mu$s | nS = {nS:.0f} | RD = {RD:.4f} s'
+    acqdq = rf'DQ-filter = {DQfilter:.6f} s | DQ-fil (z-fil) = {DQfilterzFil:.6f} s | Evol = {evol:.6f} s | z-Filter = {zFilter:.6f} s'
+    fig.suptitle(acqgral+'\n'+acqdq, fontsize='large')
+        
     # Plot del primer punto de la FID
     axs[0].set_title('Primer punto de cada FID')
     axs[0].scatter(vd, fid00, label=rf'Max = {vd[fid00 == np.max(fid00)][0]} $\mu$s', color='tab:blue')
@@ -168,15 +165,17 @@ def DQ_bu(SGL, nS, RDT, RG, att, RD, evol, zFilter, p90, vd, CS, spec, DQfilter,
     return fid00, fidPts, fidPtsSD, pArea
 
 
-def DQ_verbose(t, SGL, nS, RDT, RG, att, RD, evol, zFilter, p90, vd, CS, spec, DQfilter, Out):
+def DQ_verbose(t, SGL, nS, RDT, RG, att, RD, evol, zFilter, p90, vd, CS, spec, DQfilter, DQfilterzFil, Out, lenvd):
     
-    for k in range(len(vd)):
-        fig, axs = plt.subplots(2, 2, figsize=(50, 20), gridspec_kw={'height_ratios': [3,1]})
-        if DQfilter == None:
-            fig.suptitle(rf'vd = {vd[k]:.2f} $\mu$s    |    nS = {nS:.0f}    |    RDT = {RDT} $\mu$s    |    RG = {RG:.1f} dB    |    Atten = {att:.0f} dB    |    p90 = {p90} $\mu$s    |    DQ-filter = None    |    RD = {RD:.4f} s    |    Evol = {evol:.6f} s    |    z-Filter = {zFilter:.6f} s', fontsize='medium')
-        else:
-            fig.suptitle(rf'vd = {vd[k]:.2f} $\mu$s    |    nS = {nS:.0f}    |    RDT = {RDT} $\mu$s    |    RG = {RG:.1f} dB    |    Atten = {att:.0f} dB    |    p90 = {p90} $\mu$s    |    DQ-filter = {DQfilter:.4f} us    |    RD = {RD:.4f} s    |    Evol = {evol:.6f} s    |    z-Filter = {zFilter:.6f} s', fontsize='medium')
+    print('Progress:')
 
+    for k in range(lenvd):
+        fig, axs = plt.subplots(2, 2, figsize=(50, 20), gridspec_kw={'height_ratios': [3,1]})
+
+        acqgral = rf'RDT = {RDT} $\mu$s | RG = {RG:.1f} dB | Atten = {att:.0f} dB | p90 = {p90} $\mu$s | nS = {nS:.0f} | RD = {RD:.4f} s'
+        acqdq = rf'vd = {vd[k]:.2f} $\mu$s | DQ-filter = {DQfilter:.6f} s | DQ-fil (z-fil) = {DQfilterzFil:.6f} s | Evol = {evol:.6f} s | z-Filter = {zFilter:.6f} s'
+        fig.suptitle(acqgral+'\n'+acqdq, fontsize='large')
+    
         # Promedio de los primeros 10 puntos de la FID
         points = 10
         fid0Arr = SGL[k, :points].real
@@ -240,3 +239,9 @@ def DQ_verbose(t, SGL, nS, RDT, RG, att, RD, evol, zFilter, p90, vd, CS, spec, D
         axs[1,1].set_ylabel('Norm. Spec. (imag. part)')
 
         plt.savefig(f'{Out}FID_{k}')
+        
+        if k % 5 == 0:
+            print(f'\t\t{(k+1)*100/lenvd:.0f} %')
+        
+        elif k == (lenvd-1):
+            print(f'\t\t100 %')

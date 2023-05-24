@@ -105,7 +105,8 @@ def readDQ(fileDir):
     zFilter = dic["acqus"]["D"][10] # s
     p90 = dic["acqus"]["P"][1] # us
     att = dic["acqus"]["PL"][1] # dB
-    DQfilter = None
+    DQfilter = dic["acqus"]["D"][5] # s
+    DQfilterzFil = dic["acqus"]["D"][8] # s
 
     filter = 69 # Puntos que no sirven tema de filtro digital
     SGL = rawdata[:, filter:]
@@ -113,7 +114,7 @@ def readDQ(fileDir):
     nP = len(SGL[0, :]) # Cantidad total de puntos que me quedan en la FID
     t = np.array([x * 1E6 / SW for x in range(nP)]) # eje temporal en microsegundos
 
-    return t, SGL, nP, SW, nS, RDT, RG, att, RD, evol, zFilter, p90, vd, DQfilter
+    return t, SGL, nP, SW, nS, RDT, RG, att, RD, evol, zFilter, p90, vd, DQfilter, DQfilterzFil
 
 
 def PhCorrDQ(SGL, lenvd):
@@ -150,7 +151,30 @@ def specDQ(SGL, nP, SW, lenvd):
     return CS, spec
 
 
+def writeDQ_acq(nS, RDT, RG, att, RD, evol, zFilter, p90, vd, DQfilter, DQfilterzFil, Out, lenvd):
+
+    with open(f'{Out}acq_param.csv', 'w') as f:
+        f.write("DQ-filter:\n")
+        f.write(f"\t\t Filtro utilizado >>> {DQfilter:.6f} s\n")
+        f.write(f"\t\t z-Filter del filtro utilizado >>> {DQfilterzFil:.6f} s\n\n")
+        
+        f.write("DQ:\n")
+        f.write(f"\t\t Rango de tiempo variable >>> {vd[0]:.2f} us - {vd[-1]:.2f} us\n")
+        f.write(f"\t\t Cantidad total de puntos >>> {lenvd}\n")
+        f.write(f"\t\t Tiempo de evolución entre bloques >>> {evol:.6f} s\n")
+        f.write(f"\t\t z-Filter preadquisición >>> {zFilter:.6f} s\n\n")
+
+        f.write("Otros parámetros de adquisición:\n")
+        f.write(f"\t\t Cantidad de scans >>> {nS:.0f}\n")
+        f.write(f"\t\t Tiempo entre scans >>> {RD:.4f} s\n")
+        f.write(f"\t\t Tiempo muerto >>> {RDT} us\n")
+        f.write(f"\t\t Ganancia >>> {RG:.1f} dB\n")
+        f.write(f"\t\t Atenuación >>> {att:.0f} dB\n")
+        f.write(f"\t\t Ancho del pulso de 90 >>> {p90} us")
+
 def writeDQ_verbose(t, SGL, nP, CS, spec, Out, lenvd):
+
+    print('Progress:')
 
     mask = (CS>-5)&(CS<5)
     CS = CS[mask]
@@ -166,6 +190,12 @@ def writeDQ_verbose(t, SGL, nP, CS, spec, Out, lenvd):
             f.write("CS [ppm]\tRe[spec]\tIm[spec] \n")
             for i in range(len(CS)):
                 f.write(f'{CS[i]:.6f}\t{spec[k, i].real:.6f}\t{spec[k, i].imag:.6f} \n')
+        
+        if k % 5 == 0:
+            print(f'\t\t{(k+1)*100/lenvd:.0f} %')
+        
+        elif k == (lenvd-1):
+            print(f'\t\t100 %')
 
 
 def writeDQ(vd, fid00, fidPts, fidPtsSD, pArea, Out):

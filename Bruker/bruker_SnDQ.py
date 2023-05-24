@@ -35,7 +35,13 @@ def main():
 
     SDQ = args.DQ
     Sref = args.ref
-    Out = SDQ.split('.csv')[0] + '_norm'
+    Out = SDQ.split('/')[0] + '/DQ_norm'
+
+    acq = pd.read_csv(SDQ.split('/')[0] + '/acq_param.csv').to_numpy()
+    DQfilter = acq[0][0].split('>>> ')[1]
+    DQfilterzFil = acq[1][0].split('>>> ')[1]
+    evol = acq[5][0].split('>>> ')[1]
+    zFilter = acq[6][0].split('>>> ')[1]
 
     SDQ = pd.read_csv(f'{SDQ}', sep='\t').to_numpy()
     vd = SDQ[:, 0]
@@ -47,23 +53,29 @@ def main():
 
     fig, axs = plt.subplots(1, 3, figsize=(37.5, 10))
 
+    acqdq = rf'DQ-filter = {DQfilter} s | DQ-fil (z-fil) = {DQfilterzFil} s | Evol = {evol} s | z-Filter = {zFilter} s'
+    fig.suptitle(acqdq, fontsize='large')
+
     # Plot del primer punto de la FID
     axs[0].set_title('Primer punto de cada FID')
-    axs[0].scatter(vd, SnDQ[:, 0], label=rf'Max = {vd[SnDQ[:, 0] == np.max(SnDQ[:, 0])][0]} $\mu$s', color='tab:blue')
+    # axs[0].scatter(vd, Ssigma[:, 0] / Ssigma[0, 0], label=rf'S$_\Sigma$')
+    # axs[0].scatter(vd, Sref[:, 0] / Ssigma[0, 0], label=rf'S$_r$$_e$$_f$')
+    # axs[0].scatter(vd, SDQ[:, 0] / Ssigma[0, 0], label=rf'S$_D$$_Q$ ({vd[SDQ[:, 0] == np.max(SDQ[:, 0])][0]} $\mu$s)')
+    axs[0].scatter(vd, SnDQ[:, 0], label=rf'S$_n$$_D$$_Q$ ({vd[SnDQ[:, 0] == np.max(SnDQ[:, 0])][0]} $\mu$s)', color='tab:blue')
     axs[0].axhline(y=0, color='k', ls=':', lw=4)
     axs[0].set_xlabel(r't [$\mu$s]')
     axs[0].legend()
 
     # Plot del promedio de los primeros puntos de la FID
     axs[1].set_title('Primeros 10 puntos de cada FID')
-    axs[1].scatter(vd, SnDQ[:, 1], label=rf'Max = {vd[SnDQ[:, 1] == np.max(SnDQ[:, 1])][0]} $\mu$s', color='tab:orange')
+    axs[1].scatter(vd, SnDQ[:, 1], label=rf'S$_n$$_D$$_Q$ ({vd[SnDQ[:, 1] == np.max(SnDQ[:, 1])][0]} $\mu$s)', color='tab:orange')
     axs[1].axhline(y=0, color='k', ls=':', lw=4)
     axs[1].set_xlabel(r't [$\mu$s]')
     axs[1].legend()
 
     # Plot de las áreas de los espectros
     axs[2].set_title('Área de los picos de cada espectro')
-    axs[2].scatter(vd, SnDQ[:, 3], label=rf'Max = {vd[SnDQ[:, 3] == np.max(SnDQ[:, 3])][0]} $\mu$s', color='tab:green')
+    axs[2].scatter(vd, SnDQ[:, 3], label=rf'S$_n$$_D$$_Q$ ({vd[SnDQ[:, 3] == np.max(SnDQ[:, 3])][0]} $\mu$s)', color='tab:green')
     axs[2].axhline(y=0, color='k', ls=':', lw=4)
     axs[2].set_xlabel(r't [$\mu$s]')
     axs[2].legend()
