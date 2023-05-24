@@ -90,6 +90,76 @@ def writeFID_acq(nS, RDT, RG, att, RD, p90, Out):
         f.write(f"\t\t Ancho del pulso de 90 >>> {p90} us")
 
 
+# Nutation related functions
+
+
+def readNutac(fileDir):
+    '''
+    Lectura del archivo de la medición y sus parámetros.
+    '''
+
+    # read in the bruker formatted data
+    dic, rawdata = rb.read(fileDir)
+
+    vp = []
+    vplist = pd.read_csv(f'{fileDir}/vplist', header=None).to_numpy()
+    for k in range(len(vplist)):
+        vp.append(vplist[k][0].split('u')[0])
+    vp = np.array(vp).astype(float) # us
+
+    nS = dic["acqus"]["NS"]
+    RDT = dic["acqus"]["DE"] # us
+    RG = dic["acqus"]["RG"] # dB
+    
+    RD = dic["acqus"]["D"][1] # s
+    att = dic["acqus"]["PL"][1] # dB
+
+    filter = 69 # Puntos que no sirven tema de filtro digital
+    SGL = rawdata[:, filter:]
+    SGL[:, 0] = 2*SGL[:, 0] # arreglo lo que el bruker rompe
+
+    return vp, SGL, nS, RDT, RG, att, RD
+
+
+def PhCorrNutac(SGL, lenvp):
+    '''
+    Corrección de fase.
+    '''
+
+    maxVal = {}
+    for k in range(lenvp):
+        for i in range(360):
+            tita = np.deg2rad(i)
+            SGL_ph = SGL[k, :] * np.exp(1j * tita)
+            maxVal[i] = np.max(SGL_ph[0:30].real)
+        SGL[k, :] *= np.exp(1j * np.deg2rad(max(maxVal, key=maxVal.get)))
+    
+    return SGL
+
+
+def writeNutac_acq(nS, RDT, RG, att, RD, vp, Out, lenvp):
+    
+    with open(f'{Out}acq_param.csv', 'w') as f:
+        f.write("Barrido de pulsos:\n")
+        f.write(f"\t\t Rango de tiempo variable >>> {vp[0]:.2f} us - {vp[-1]:.2f} us\n")
+        f.write(f"\t\t Cantidad total de puntos >>> {lenvp}\n")
+
+        f.write("Otros parámetros de adquisición:\n")
+        f.write(f"\t\t Cantidad de scans >>> {nS:.0f}\n")
+        f.write(f"\t\t Tiempo entre scans >>> {RD:.4f} s\n")
+        f.write(f"\t\t Tiempo muerto >>> {RDT} us\n")
+        f.write(f"\t\t Ganancia >>> {RG:.1f} dB\n")
+        f.write(f"\t\t Atenuación >>> {att:.0f} dB\n")
+
+
+def writeNutac(vp, fid00, fidPts, Out):
+
+    with open(f'{Out}Nutac.csv', 'w') as f:
+        f.write("vp [us]\tFID00\tFID Pts\n")
+        for i in range(len(vp)):
+            f.write(f'{vp[i]:.1f}\t{fid00[i]:.6f}\t{fidPts[i]:.6f}\n')
+
+
 # DQ related functions
 
 

@@ -32,6 +32,10 @@ plt.rcParams["lines.linestyle"] = '-'
 
 plt.rcParams["figure.autolayout"] = True
 
+
+# FID related funcitons
+
+
 def FID(t, SGL, nS, RDT, RG, att, RD, p90, CS, spec, Out, mlim):
     '''
     Grafica resultados de la FID.
@@ -103,6 +107,54 @@ def FID(t, SGL, nS, RDT, RG, att, RD, p90, CS, spec, Out, mlim):
     axs[1,1].set_ylabel('Norm. Spec. (imag. part)')
 
     plt.savefig(f'{Out}FID')
+
+
+# Nutation related funcitons
+
+
+def Nutac(SGL, nS, RDT, RG, att, RD, vp, Out, lenvp):
+    '''
+    Grafica resultados de la nutación
+    '''
+
+    points = 10
+    fid00, fidPts = [], []
+    
+    for k in range(lenvp):
+        # Sólo el primer punto de la FID
+        fid00.append(SGL[k, 0].real)
+
+        # Promedio de los primeros 10 puntos de la FID
+        fid0Arr = SGL[k, :points].real
+        fid0 = sum(fid0Arr) / points
+        fidPts.append(fid0)
+    
+    fid00 = np.array(fid00)
+    fidPts = np.array(fidPts)
+
+    fig, axs = plt.subplots(1, 2, figsize=(25, 10))
+    acqgral = rf'RDT = {RDT} $\mu$s | RG = {RG:.1f} dB | Atten = {att:.0f} dB | nS = {nS:.0f} | RD = {RD:.4f} s'
+    fig.suptitle(acqgral, fontsize='small')
+        
+    # Plot del primer punto de la FID
+    axs[0].set_title('Primer punto de cada FID')
+    axs[0].scatter(vp, fid00, label=rf'Max = {vp[fid00 == np.max(fid00)][0]} $\mu$s', color='tab:blue')
+    axs[0].axhline(y=0, color='k', ls=':', lw=4)
+    axs[0].set_xlabel(r't [$\mu$s]')
+    axs[0].legend()
+
+    # Plot del promedio de los primeros puntos de la FID
+    axs[1].set_title('Primeros 10 puntos de cada FID')
+    axs[1].scatter(vp, fidPts, label=rf'Max = {vp[fidPts == np.max(fidPts)][0]} $\mu$s', color='tab:orange')
+    axs[1].axhline(y=0, color='k', ls=':', lw=4)
+    axs[1].set_xlabel(r't [$\mu$s]')
+    axs[1].legend()
+
+    plt.savefig(f'{Out}Nutac')
+
+    return fid00, fidPts
+
+# DQ related funcitons
 
 
 def DQ_bu(SGL, nS, RDT, RG, att, RD, evol, zFilter, p90, vd, CS, spec, DQfilter, DQfilterzFil, Out, lenvd):
