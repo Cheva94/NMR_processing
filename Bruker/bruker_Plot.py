@@ -32,7 +32,7 @@ plt.rcParams["lines.linestyle"] = '-'
 
 plt.rcParams["figure.autolayout"] = True
 
-def FID(t, SGL, nS, RDT, RG, att, RD, p90, CS, spec, Out):
+def FID(t, SGL, nS, RDT, RG, att, RD, p90, CS, spec, Out, mlim):
     '''
     Grafica resultados de la FID.
     '''
@@ -67,7 +67,7 @@ def FID(t, SGL, nS, RDT, RG, att, RD, p90, CS, spec, Out):
     axs[1,0].set_ylabel('FID (imag. part)')
 
     # Preparación del espectro
-    mask = (CS>-5)&(CS<5)
+    mask = (CS>-mlim)&(CS<mlim)
     max_peak = np.max(spec[mask].real)
     specNorm = spec / max_peak
     area_peak = np.sum(spec[mask].real)
@@ -79,7 +79,7 @@ def FID(t, SGL, nS, RDT, RG, att, RD, p90, CS, spec, Out):
     axs[0,1].fill_between(CS[mask], 0, specNorm[mask].real, label = fr'Peak area = {area_peak:.0f}', alpha = 0.25, color="teal")
     axs[0,1].plot(peaksx[0], peaksy[0] + 0.05, lw = 0, marker=11, color='black')
     axs[0,1].annotate(f'{peaksx[0]:.4f} ppm', xy = (peaksx[0], peaksy[0] + 0.07), fontsize=30, ha='center') 
-    axs[0,1].set_xlim(-5, 5)
+    axs[0,1].set_xlim(-2*mlim, 2*mlim)
     axs[0,1].set_ylim(-0.05, 1.2)
     axs[0,1].xaxis.set_minor_locator(AutoMinorLocator())
     axs[0,1].set_xlabel(r'$\delta$ [ppm]')
@@ -97,7 +97,7 @@ def FID(t, SGL, nS, RDT, RG, att, RD, p90, CS, spec, Out):
     axs[1,1].scatter(CS, specNorm.imag)
     axs[1,1].axhline(y=0, color='k', ls=':', lw=4)
     axs[1,1].axvline(x=0, color='k', ls=':', lw=4)
-    axs[1,1].set_xlim(-5, 5)
+    axs[1,1].set_xlim(-2*mlim, 2*mlim)
     axs[1,1].xaxis.set_minor_locator(AutoMinorLocator())
     axs[1,1].set_xlabel(r'$\delta$ [ppm]')
     axs[1,1].set_ylabel('Norm. Spec. (imag. part)')

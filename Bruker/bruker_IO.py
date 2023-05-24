@@ -61,14 +61,14 @@ def specFID(SGL, nP, SW):
     return CS, spec
 
 
-def writeFID(t, SGL, nP, CS, spec, Out):
+def writeFID(t, SGL, nP, CS, spec, Out, mlim):
 
     with open(f'{Out}FID_td.csv', 'w') as f:
         f.write("t [ms]\tRe[FID]\tIm[FID] \n")
         for i in range(nP):
             f.write(f'{t[i]:.6f}\t{SGL[i].real:.6f}\t{SGL[i].imag:.6f} \n')
 
-    mask = (CS>-5)&(CS<5)
+    mask = (CS>-mlim)&(CS<mlim)
     CS = CS[mask]
     spec = spec[mask]
 
@@ -76,6 +76,18 @@ def writeFID(t, SGL, nP, CS, spec, Out):
         f.write("CS [ppm]\tRe[spec]\tIm[spec] \n")
         for i in range(len(CS)):
             f.write(f'{CS[i]:.6f}\t{spec[i].real:.6f}\t{spec[i].imag:.6f} \n')
+
+
+def writeFID_acq(nS, RDT, RG, att, RD, p90, Out):
+
+    with open(f'{Out}acq_param.csv', 'w') as f:
+        f.write("Otros parámetros de adquisición:\n")
+        f.write(f"\t\t Cantidad de scans >>> {nS:.0f}\n")
+        f.write(f"\t\t Tiempo entre scans >>> {RD:.4f} s\n")
+        f.write(f"\t\t Tiempo muerto >>> {RDT} us\n")
+        f.write(f"\t\t Ganancia >>> {RG:.1f} dB\n")
+        f.write(f"\t\t Atenuación >>> {att:.0f} dB\n")
+        f.write(f"\t\t Ancho del pulso de 90 >>> {p90} us")
 
 
 # DQ related functions
