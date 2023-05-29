@@ -209,7 +209,10 @@ def DQ_bu(SGL, nS, RDT, RG, att, RD, evol, zFilter, p90, vd, CS, spec, DQfilter,
 
     fig, axs = plt.subplots(1, 3, figsize=(37.5, 10))
     acqgral = rf'RDT = {RDT} $\mu$s | RG = {RG:.1f} dB | Atten = {att:.0f} dB | p90 = {p90} $\mu$s | nS = {nS:.0f} | RD = {RD:.4f} s'
-    acqdq = rf'DQ-filter = {DQfilter:.6f} s | DQ-fil (z-fil) = {DQfilterzFil:.6f} s | Evol = {evol:.6f} s | z-Filter = {zFilter:.6f} s'
+    if DQfilter == 0:
+        acqdq = rf'No filter used | Evol = {evol:.6f} s | z-Filter = {zFilter:.6f} s'
+    else:
+        acqdq = rf'DQ-filter = {DQfilter:.6f} s | DQ-fil (z-fil) = {DQfilterzFil:.6f} s | Evol = {evol:.6f} s | z-Filter = {zFilter:.6f} s'
     fig.suptitle(acqgral+'\n'+acqdq, fontsize='large')
         
     # Plot del primer punto de la FID
@@ -252,7 +255,11 @@ def DQ_verbose(t, SGL, nS, RDT, RG, att, RD, evol, zFilter, p90, vd, CS, spec, D
         fig, axs = plt.subplots(2, 2, figsize=(50, 20), gridspec_kw={'height_ratios': [3,1]})
 
         acqgral = rf'RDT = {RDT} $\mu$s | RG = {RG:.1f} dB | Atten = {att:.0f} dB | p90 = {p90} $\mu$s | nS = {nS:.0f} | RD = {RD:.4f} s'
-        acqdq = rf'vd = {vd[k]:.2f} $\mu$s | DQ-filter = {DQfilter:.6f} s | DQ-fil (z-fil) = {DQfilterzFil:.6f} s | Evol = {evol:.6f} s | z-Filter = {zFilter:.6f} s'
+        if DQfilter == 0:
+            acqdq = rf'vd = {vd[k]:.2f} $\mu$s | No filter used | Evol = {evol:.6f} s | z-Filter = {zFilter:.6f} s'
+        else:
+            acqdq = rf'vd = {vd[k]:.2f} $\mu$s | DQ-filter = {DQfilter:.6f} s | DQ-fil (z-fil) = {DQfilterzFil:.6f} s | Evol = {evol:.6f} s | z-Filter = {zFilter:.6f} s'
+
         fig.suptitle(acqgral+'\n'+acqdq, fontsize='large')
     
         # Promedio de los primeros 10 puntos de la FID
