@@ -14,10 +14,12 @@ def main():
     isExist = os.path.exists(Out)
     if not isExist:
         os.makedirs(Out)
+    phasecorr = args.phasecorr
 
     t, SGL, nP, SW, nS, RDT, RG, att, RD, evol, zFilter, p90, vd, DQfilter, DQfilterzFil = IO.readDQ(fileDir)
     lenvd = len(vd)
-    SGL = IO.PhCorrDQ(SGL, lenvd)
+    SGL, phasecorr = IO.PhCorrDQ(SGL, lenvd, phasecorr)
+    print(f'La correción de fase se hizo con {phasecorr}.')
     CS, spec = IO.specDQ(SGL, nP, SW, lenvd)
 
     print('Writing acquisition parameters...')
@@ -40,5 +42,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('input', help = "Path to the DQ fileDir.")
     parser.add_argument('-v', '--verbose', help = "Write every single FID and spectrum.", type = bool, default=False)
+    parser.add_argument('-ph', '--phasecorr', help = "Phase correction to use.", type = int, default=None)
     args = parser.parse_args()
     main()
