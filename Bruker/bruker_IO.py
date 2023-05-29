@@ -41,7 +41,7 @@ def PhCorrFID(SGL):
     for i in range(360):
         tita = np.deg2rad(i)
         SGL_ph = SGL * np.exp(1j * tita)
-        maxVal[i] = np.max(SGL_ph[0:30].real)
+        maxVal[i] = np.max(SGL_ph[0].real)
     SGL *= np.exp(1j * np.deg2rad(max(maxVal, key=maxVal.get)))
     
     return SGL
@@ -131,7 +131,7 @@ def PhCorrNutac(SGL, lenvp):
         for i in range(360):
             tita = np.deg2rad(i)
             SGL_ph = SGL[k, :] * np.exp(1j * tita)
-            maxVal[i] = np.max(SGL_ph[0:30].real)
+            maxVal[i] = np.max(SGL_ph[0].real)
         SGL[k, :] *= np.exp(1j * np.deg2rad(max(maxVal, key=maxVal.get)))
     
     return SGL
@@ -209,7 +209,7 @@ def PhCorrDQ(SGL, lenvd):
         for i in range(360):
             tita = np.deg2rad(i)
             SGL_ph = SGL[k, :] * np.exp(1j * tita)
-            maxVal[i] = np.max(SGL_ph[0:30].real)
+            maxVal[i] = np.max(SGL_ph[0].real)
         SGL[k, :] *= np.exp(1j * np.deg2rad(max(maxVal, key=maxVal.get)))
     
     return SGL
