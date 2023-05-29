@@ -52,8 +52,12 @@ def main():
     SnDQ = SDQ/Ssigma
 
     fig, axs = plt.subplots(1, 3, figsize=(37.5, 10))
+    
+    if DQfilter == '0.000000 s':
+        acqdq = rf'No filter used | Evol = {evol} | z-Filter = {zFilter}'
+    else:
+        acqdq = rf'DQ-filter = {DQfilter} | DQ-fil (z-fil) = {DQfilterzFil} | Evol = {evol} | z-Filter = {zFilter}'
 
-    acqdq = rf'DQ-filter = {DQfilter} s | DQ-fil (z-fil) = {DQfilterzFil} s | Evol = {evol} s | z-Filter = {zFilter} s'
     fig.suptitle(acqdq, fontsize='large')
 
     # Plot del primer punto de la FID
