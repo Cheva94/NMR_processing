@@ -16,7 +16,6 @@ def main():
 
     vp, SGL, nS, RDT, RG, att, RD = IO.readNutac(fileDir)
     lenvp = len(vp)
-    # SGL = IO.PhCorrNutac(SGL, lenvp)
 
     print('Writing acquisition parameters...')
     IO.writeNutac_acq(nS, RDT, RG, att, RD, vp, Out, lenvp)

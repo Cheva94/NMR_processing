@@ -78,6 +78,8 @@ def main():
         axs[0].set_xlabel('t [us]')
         axs[0].set_ylabel('M')
         axs[0].legend()
+        m = np.floor(np.log10(np.max(M0)))
+        axs[0].ticklabel_format(axis='y', style='sci', scilimits=(m,m))
 
         # Plot del promedio de los primeros puntos de la FID
         popt, _ = fit(t, MPts, p0)
@@ -88,7 +90,9 @@ def main():
         axs[1].set_xlabel('t [us]')
         axs[1].set_ylabel('M')
         axs[1].legend()
-
+        m = np.floor(np.log10(np.max(MPts)))
+        axs[1].ticklabel_format(axis='y', style='sci', scilimits=(m,m))
+        
         plt.savefig(f'{Out}')
     
     else:
@@ -103,6 +107,8 @@ def main():
         axs[0].set_xlabel('t [us]')
         axs[0].set_ylabel('M')
         axs[0].legend()
+        m = np.floor(np.log10(np.max(M0)))
+        axs[0].ticklabel_format(axis='y', style='sci', scilimits=(m,m))
 
         # Plot del promedio de los primeros puntos de la FID
         popt, _ = fit(t, MPts, p0)
@@ -113,6 +119,8 @@ def main():
         axs[1].set_xlabel('t [us]')
         axs[1].set_ylabel('M')
         axs[1].legend()
+        m = np.floor(np.log10(np.max(MPts)))
+        axs[1].ticklabel_format(axis='y', style='sci', scilimits=(m,m))
 
         plt.savefig(f'{Out}')
 

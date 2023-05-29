@@ -159,6 +159,8 @@ def Nutac(SGL, nS, RDT, RG, att, RD, vp, Out, lenvp):
     axs[0].axhline(y=0, color='k', ls=':', lw=4)
     axs[0].set_xlabel(r't [$\mu$s]')
     axs[0].legend()
+    m = np.floor(np.log10(np.max(fid00)))
+    axs[0].ticklabel_format(axis='y', style='sci', scilimits=(m,m))
 
     # Plot del promedio de los primeros puntos de la FID
     axs[1].set_title('Primeros 10 puntos de cada FID')
@@ -166,6 +168,8 @@ def Nutac(SGL, nS, RDT, RG, att, RD, vp, Out, lenvp):
     axs[1].axhline(y=0, color='k', ls=':', lw=4)
     axs[1].set_xlabel(r't [$\mu$s]')
     axs[1].legend()
+    m = np.floor(np.log10(np.max(fidPts)))
+    axs[1].ticklabel_format(axis='y', style='sci', scilimits=(m,m))
 
     plt.savefig(f'{Out}Nutac')
 
