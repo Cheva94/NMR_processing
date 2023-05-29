@@ -19,7 +19,7 @@ def main():
     t, SGL, nP, SW, nS, RDT, RG, att, RD, evol, zFilter, p90, vd, DQfilter, DQfilterzFil = IO.readDQ(fileDir)
     lenvd = len(vd)
     SGL, phasecorr = IO.PhCorrDQ(SGL, lenvd, phasecorr)
-    print(f'La correción de fase se hizo con {phasecorr}.')
+    print(f'La correción de fase se hizo con {phasecorr}°.')
     CS, spec = IO.specDQ(SGL, nP, SW, lenvd)
 
     print('Writing acquisition parameters...')

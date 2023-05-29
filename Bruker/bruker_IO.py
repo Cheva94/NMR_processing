@@ -215,28 +215,26 @@ def PhCorrDQ(SGL, lenvd, phasecorr):
     # # <<<< Corrige cada FID individualmente.
 
     # >>>> Corrige en función de la FID más intensa
-    fidsint = []
-    for k in range(lenvd):
-        fidsint.append(SGL[k, 0])
+    if phasecorr == None:
+        fidsint = []
+        for k in range(lenvd):
+            fidsint.append(SGL[k, 0])
 
-    fid_idx = fidsint.index(np.max(fidsint))
-    for i in range(360):
-        tita = np.deg2rad(i)
-        SGL_ph = SGL[fid_idx, :] * np.exp(1j * tita)
-        maxVal[i] = np.max(SGL_ph[0].real)
-    SGL[k, :] *= np.exp(1j * np.deg2rad(max(maxVal, key=maxVal.get)))
-
-
-    maxVal = {}
-    for k in range(lenvd):
+        fid_idx = fidsint.index(np.max(fidsint))
+        maxVal = {}
         for i in range(360):
             tita = np.deg2rad(i)
-            SGL_ph = SGL[k, :] * np.exp(1j * tita)
+            SGL_ph = SGL[fid_idx, :] * np.exp(1j * tita)
             maxVal[i] = np.max(SGL_ph[0].real)
-        SGL[k, :] *= np.exp(1j * np.deg2rad(max(maxVal, key=maxVal.get)))
-    # <<<< Corrige en función de la FID más intensa
-    # if phasecorr == None:
+        phasecorr = max(maxVal, key=maxVal.get)
 
+        for k in range(lenvd):
+            SGL[k, :] *= np.exp(1j * np.deg2rad(phasecorr))
+    
+    else:
+        for k in range(lenvd):
+            SGL[k, :] *= np.exp(1j * np.deg2rad(phasecorr))
+    # <<<< Corrige en función de la FID más intensa
     return SGL, phasecorr
 
 
