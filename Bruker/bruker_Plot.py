@@ -196,6 +196,8 @@ def DQ_bu(SGL, nS, RDT, RG, att, RD, evol, zFilter, p90, vd, CS, spec, DQfilter,
     axs[0].scatter(vd, fid00, label=rf'Max = {vd[fid00 == np.max(fid00)][0]} $\mu$s', color='tab:blue')
     axs[0].axhline(y=0, color='k', ls=':', lw=4)
     axs[0].set_xlabel(r't [$\mu$s]')
+    m = np.floor(np.log10(np.max(fid00)))
+    axs[0].ticklabel_format(axis='y', style='sci', scilimits=(m,m))
     axs[0].legend()
 
     # Plot del promedio de los primeros puntos de la FID
@@ -203,6 +205,8 @@ def DQ_bu(SGL, nS, RDT, RG, att, RD, evol, zFilter, p90, vd, CS, spec, DQfilter,
     axs[1].scatter(vd, fidPts, label=rf'Max = {vd[fidPts == np.max(fidPts)][0]} $\mu$s', color='tab:orange')
     axs[1].axhline(y=0, color='k', ls=':', lw=4)
     axs[1].set_xlabel(r't [$\mu$s]')
+    m = np.floor(np.log10(np.max(fidPts)))
+    axs[1].ticklabel_format(axis='y', style='sci', scilimits=(m,m))
     axs[1].legend()
 
     # Plot de las áreas de los espectros
@@ -210,6 +214,8 @@ def DQ_bu(SGL, nS, RDT, RG, att, RD, evol, zFilter, p90, vd, CS, spec, DQfilter,
     axs[2].scatter(vd, pArea, label=rf'Max = {vd[pArea == np.max(pArea)][0]} $\mu$s', color='tab:green')
     axs[2].axhline(y=0, color='k', ls=':', lw=4)
     axs[2].set_xlabel(r't [$\mu$s]')
+    m = np.floor(np.log10(np.max(pArea)))
+    axs[2].ticklabel_format(axis='y', style='sci', scilimits=(m,m))
     axs[2].legend()
 
     plt.savefig(f'{Out}DQ_bu')
