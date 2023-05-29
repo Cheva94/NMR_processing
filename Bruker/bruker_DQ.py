@@ -9,6 +9,7 @@ def main():
 
     print('Analysing FID raw data from DQ...')
     fileDir = args.input
+    mlim = args.mlim
     verbose = args.verbose
     Out = fileDir.split('/')[0]+'_procDQ/'
     isExist = os.path.exists(Out)
@@ -30,10 +31,10 @@ def main():
         IO.writeDQ_verbose(t, SGL, nP, CS, spec, Out, lenvd)
 
         print('Plotting FID processed data from DQ...')
-        graph.DQ_verbose(t, SGL, nS, RDT, RG, att, RD, evol, zFilter, p90, vd, CS, spec, DQfilter, DQfilterzFil, Out, lenvd)
+        graph.DQ_verbose(t, SGL, nS, RDT, RG, att, RD, evol, zFilter, p90, vd, CS, spec, DQfilter, DQfilterzFil, Out, lenvd, mlim)
 
     print('Plotting build-up processed data...')
-    fid00, fidPts, fidPtsSD, pArea = graph.DQ_bu(SGL, nS, RDT, RG, att, RD, evol, zFilter, p90, vd, CS, spec, DQfilter, DQfilterzFil, Out, lenvd)
+    fid00, fidPts, fidPtsSD, pArea = graph.DQ_bu(SGL, nS, RDT, RG, att, RD, evol, zFilter, p90, vd, CS, spec, DQfilter, DQfilterzFil, Out, lenvd, mlim)
 
     print('Writing build-up results...')
     IO.writeDQ(vd, fid00, fidPts, fidPtsSD, pArea, Out)
@@ -41,6 +42,7 @@ def main():
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('input', help = "Path to the DQ fileDir.")
+    parser.add_argument('mlim', help = "Mask limits to integrate spectrum.", type=int)
     parser.add_argument('-v', '--verbose', help = "Write every single FID and spectrum.", type = bool, default=False)
     parser.add_argument('-ph', '--phasecorr', help = "Phase correction to use.", type = int, default=None)
     args = parser.parse_args()

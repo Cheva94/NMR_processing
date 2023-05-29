@@ -178,14 +178,14 @@ def Nutac(SGL, nS, RDT, RG, att, RD, vp, Out, lenvp):
 # DQ related funcitons
 
 
-def DQ_bu(SGL, nS, RDT, RG, att, RD, evol, zFilter, p90, vd, CS, spec, DQfilter, DQfilterzFil, Out, lenvd):
+def DQ_bu(SGL, nS, RDT, RG, att, RD, evol, zFilter, p90, vd, CS, spec, DQfilter, DQfilterzFil, Out, lenvd, mlim):
     '''
     Grafica resultados de la DQ.
     '''
 
     points = 10
     fid00, fidPts, fidPtsSD, pArea = [], [], [], []
-    mask = (CS>-5)&(CS<5)
+    mask = (CS>-mlim)&(CS<mlim)
     
     for k in range(lenvd):
         # Sólo el primer punto de la FID
@@ -244,7 +244,7 @@ def DQ_bu(SGL, nS, RDT, RG, att, RD, evol, zFilter, p90, vd, CS, spec, DQfilter,
     return fid00, fidPts, fidPtsSD, pArea
 
 
-def DQ_verbose(t, SGL, nS, RDT, RG, att, RD, evol, zFilter, p90, vd, CS, spec, DQfilter, DQfilterzFil, Out, lenvd):
+def DQ_verbose(t, SGL, nS, RDT, RG, att, RD, evol, zFilter, p90, vd, CS, spec, DQfilter, DQfilterzFil, Out, lenvd, mlim):
     
     print('Progress:')
 
@@ -262,12 +262,14 @@ def DQ_verbose(t, SGL, nS, RDT, RG, att, RD, evol, zFilter, p90, vd, CS, spec, D
         fid0_SD = (sum([((x - fid0) ** 2) for x in fid0Arr]) / points) ** 0.5
 
         # Plot de la parte real de la FID
-        axs[0,0].scatter(t, SGL[k, :].real, label = fr'$M_R (0)$ = {SGL[k, 0].real:.0f}', color='coral')
-        axs[0,0].plot(t[:points], SGL[k, :points].real, lw = 10, label = fr'$M_R ({points})$ = ({fid0:.0f} $\pm$ {fid0_SD:.0f})', color='teal')
+        m = np.floor(np.log10(np.max(SGL.real)))
+        axs[0,0].scatter(t, SGL[k, :].real, label = fr'$M_R (0)$ = {SGL[k, 0].real * 10**-m:.4f} x10$^{m:.0f}$', color='coral')
+        axs[0,0].plot(t[:points], SGL[k, :points].real, lw = 10, label = fr'$M_R ({points})$ = ({fid0 * 10**-m:.4f} $\pm$ {fid0_SD * 10**-m:.4f}) x10$^{m:.0f}$', color='teal')
         axs[0,0].axhline(y=0, color='k', ls=':', lw=4)
         axs[0,0].set_xlabel(r't [$\mu$s]')
         axs[0,0].set_ylabel('FID (real part)')
         axs[0,0].legend()
+        axs[0,0].ticklabel_format(axis='y', style='sci', scilimits=(m,m))
 
         # Inset del comienzo de la parte real de la FID
         axins1 = inset_axes(axs[0,0], width="30%", height="30%", loc=5)
@@ -280,9 +282,11 @@ def DQ_verbose(t, SGL, nS, RDT, RG, att, RD, evol, zFilter, p90, vd, CS, spec, D
         axs[1,0].axhline(y=0, color='k', ls=':', lw=4)
         axs[1,0].set_xlabel(r't [$\mu$s]')
         axs[1,0].set_ylabel('FID (imag. part)')
+        m = np.floor(np.log10(np.max(SGL[k, :].imag)))
+        axs[1,0].ticklabel_format(axis='y', style='sci', scilimits=(m,m))
 
         # Preparación del espectro
-        mask = (CS>-5)&(CS<5)
+        mask = (CS>-mlim)&(CS<mlim)
         max_peak = np.max(spec[k, mask].real)
         specNorm = spec[k, :] / max_peak
         area_peak = np.sum(spec[k, mask].real)
@@ -290,8 +294,9 @@ def DQ_verbose(t, SGL, nS, RDT, RG, att, RD, evol, zFilter, p90, vd, CS, spec, D
         peaksx, peaksy = CS[mask][peaks], specNorm[mask][peaks].real
         
         # Plot de la parte real del espectro, zoom en el pico
+        m = np.floor(np.log10(np.max(area_peak)))
         axs[0,1].plot(CS, specNorm.real, color='coral')
-        axs[0,1].fill_between(CS[mask], 0, specNorm[mask].real, label = fr'Peak area = {area_peak:.0f}', alpha = 0.25, color="teal")
+        axs[0,1].fill_between(CS[mask], 0, specNorm[mask].real, label = fr'Peak area = {area_peak * 10**-m:.4f} x10$^{m:.0f}$', alpha = 0.25, color="teal")
         axs[0,1].plot(peaksx[0], peaksy[0] + 0.05, lw = 0, marker=11, color='black')
         axs[0,1].annotate(f'{peaksx[0]:.4f} ppm', xy = (peaksx[0], peaksy[0] + 0.07), fontsize=30, ha='center') 
         axs[0,1].set_xlim(-10, 10)
@@ -302,6 +307,8 @@ def DQ_verbose(t, SGL, nS, RDT, RG, att, RD, evol, zFilter, p90, vd, CS, spec, D
         axs[0,1].axhline(y=0, color='k', ls=':', lw=2)
         axs[0,1].legend(loc='upper right')
         axs[0,1].set_ylabel('Norm. Spec. (real part)')
+        secax = axs[0,1].secondary_xaxis('top', functions=(CS2freq, freq2CS))
+        secax.set_xlabel(r'$\omega$ [Hz]')
 
         # Inset del espectro completo
         axins2 = inset_axes(axs[0,1], width="30%", height="30%", loc=2)
@@ -316,6 +323,8 @@ def DQ_verbose(t, SGL, nS, RDT, RG, att, RD, evol, zFilter, p90, vd, CS, spec, D
         axs[1,1].xaxis.set_minor_locator(AutoMinorLocator())
         axs[1,1].set_xlabel(r'$\delta$ [ppm]')
         axs[1,1].set_ylabel('Norm. Spec. (imag. part)')
+        secax = axs[1,1].secondary_xaxis('top', functions=(CS2freq, freq2CS))
+        secax.set_xlabel(r'$\omega$ [Hz]')
 
         plt.savefig(f'{Out}FID_{k}')
         
