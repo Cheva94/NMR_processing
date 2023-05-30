@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.ticker import AutoMinorLocator
+from matplotlib.ticker import AutoMinorLocator, MultipleLocator
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from scipy.signal import find_peaks
 import warnings
@@ -106,6 +106,8 @@ def FID(t, SGL, nS, RDT, RG, att, RD, p90, CS, spec, Out, mlim):
     axs[0,1].set_ylabel('Norm. Spec. (real part)')
     secax = axs[0,1].secondary_xaxis('top', functions=(CS2freq, freq2CS))
     secax.set_xlabel(r'$\omega$ [Hz]')
+    axs[0,1].yaxis.set_minor_locator(MultipleLocator(0.05))
+    axs[0,1].grid(which='both', color='gray', alpha=1, zorder=-5)
 
     # Inset del espectro completo
     axins2 = inset_axes(axs[0,1], width="30%", height="30%", loc=2)
@@ -316,6 +318,8 @@ def DQ_verbose(t, SGL, nS, RDT, RG, att, RD, evol, zFilter, p90, vd, CS, spec, D
         axs[0,1].set_ylabel('Norm. Spec. (real part)')
         secax = axs[0,1].secondary_xaxis('top', functions=(CS2freq, freq2CS))
         secax.set_xlabel(r'$\omega$ [Hz]')
+        axs[0,1].yaxis.set_minor_locator(MultipleLocator(0.05))
+        axs[0,1].grid(which='both', color='gray', alpha=1, zorder=-5)
 
         # Inset del espectro completo
         axins2 = inset_axes(axs[0,1], width="30%", height="30%", loc=2)
