@@ -121,22 +121,6 @@ def readNutac(fileDir):
     return vp, SGL, nS, RDT, RG, att, RD
 
 
-def PhCorrNutac(SGL, lenvp):
-    '''
-    Corrección de fase.
-    '''
-
-    maxVal = {}
-    for k in range(lenvp):
-        for i in range(360):
-            tita = np.deg2rad(i)
-            SGL_ph = SGL[k, :] * np.exp(1j * tita)
-            maxVal[i] = np.max(SGL_ph[0].real)
-        SGL[k, :] *= np.exp(1j * np.deg2rad(max(maxVal, key=maxVal.get)))
-    
-    return SGL
-
-
 def writeNutac_acq(nS, RDT, RG, att, RD, vp, Out, lenvp):
     
     with open(f'{Out}acq_param.csv', 'w') as f:
