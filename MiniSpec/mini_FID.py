@@ -1,26 +1,21 @@
 #!/usr/bin/python3.10
 
 import argparse
-import bruker_IO as IO
-import bruker_Plot as graph
-import os
+import mini_IO as IO
+import mini_Plot as graph
+
 
 def main():
 
     print('Analysing FID raw data...')
-    fileDir = args.input
+    File = args.input
     mlim = args.mlim
-    Out = fileDir.split('/')[0]+'_procFID/'
-    isExist = os.path.exists(Out)
-    if not isExist:
-        os.makedirs(Out)
+    Out = File.split(".txt")[0]
 
-    t, SGL, nP, SW, nS, RDT, RG, att, RD, p90 = IO.readFID(fileDir)
+    t, SGL, nP, DW, nS, RDT, RG, att, RD, p90 = IO.readFID(File)
     SGL = IO.PhCorrFID(SGL)
-    CS, spec = IO.specFID(SGL, nP, SW)
-
-    print('Writing acquisition parameters...')
-    IO.writeFID_acq(nS, RDT, RG, att, RD, p90, Out)
+    SGL = IO.NormFID(SGL, RG)
+    CS, spec = IO.specFID(SGL, nP, DW)
 
     print('Writing FID processed data...')
     IO.writeFID(t, SGL, nP, CS, spec, Out, mlim)
