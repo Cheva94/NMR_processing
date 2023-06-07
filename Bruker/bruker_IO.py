@@ -204,7 +204,7 @@ def PhCorrDQ(SGL, lenvd, phasecorr):
         for k in range(lenvd):
             fidsint.append(SGL[k, 0])
 
-        fid_idx = fidsint.index(np.max(fidsint))
+        fid_idx = fidsint.index(np.max(fidsint[1:]))
         maxVal = {}
         for i in range(360):
             tita = np.deg2rad(i)
