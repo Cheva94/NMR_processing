@@ -7,4 +7,6 @@ config.py
 __pycache__/
 
 # exclude data from source control by default
-needsReview/
+Bruker/
+Comparison/
+MOUSE/
