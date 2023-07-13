@@ -45,16 +45,16 @@ def SRmap_file(File, T1min, T1max, T2min, T2max, cropT1, cropT2, Map):
     signal = Re + Im * 1j # Complex signal
 
     pAcq = pd.read_csv(File.split(".txt")[0]+'_acqs.txt', header = None, sep='\t')
-    nS, RDT, RG, att, RD, p90 = pAcq.iloc[0, 1], pAcq.iloc[1, 1], pAcq.iloc[2, 1], pAcq.iloc[3, 1], pAcq.iloc[4, 1], pAcq.iloc[5, 1]
+    nS, RDT, RG, att, RD, p90 = int(pAcq.iloc[0, 1]), float(pAcq.iloc[1, 1]), int(pAcq.iloc[2, 1]), int(pAcq.iloc[3, 1]), str(pAcq.iloc[4, 1]), float(pAcq.iloc[5, 1])
 
     if Map == 'fid':
         p180 = tE = nE = None
         nFID = 0
     elif Map == 'fidcpmg':
-        p180, tE, nE = pAcq.iloc[6, 1], pAcq.iloc[10, 1], pAcq.iloc[11, 1]
+        p180, tE, nE = pAcq.iloc[6, 1], int(pAcq.iloc[10, 1]), pAcq.iloc[11, 1]
         nFID = 0
     elif Map == 'cpmg':
-        p180, tE, nE = pAcq.iloc[6, 1], pAcq.iloc[10, 1], pAcq.iloc[11, 1]
+        p180, tE, nE = float(pAcq.iloc[6, 1]), int(pAcq.iloc[10, 1]), int(pAcq.iloc[11, 1])
         nFID = 1250 * tE - 54
 	
     cropT2new = int(cropT2 + nFID)
@@ -274,9 +274,9 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, T1min, T1max, T2min, T2max, alph
 
     fig, axs = plt.subplots(2,4)
     if Map != 'fid':
-        fig.suptitle(rf'nS={nS:.0f}    |    RDT = {RDT} ms    |    RG = {RG:.0f} dB    |    Atten = {att:.0f} dB    |    RD = {RD:.2f} s    |    p90 = {p90} $\mu$s    |    p180 = {p180} $\mu$s    |    tE = {tE:.1f} ms    |    Ecos = {nE:.0f}', fontsize='large')
+        fig.suptitle(rf'nS={nS}    |    RDT = {RDT} ms    |    RG = {RG} dB    |    Atten = {att} dB    |    RD = {RD} s    |    p90 = {p90} $\mu$s    |    p180 = {p180} $\mu$s    |    tE = {tE} ms    |    Ecos = {nE}', fontsize='large')
     else:
-        fig.suptitle(rf'nS={nS:.0f}    |    RDT = {RDT} ms    |    RG = {RG:.0f} dB    |    Atten = {att:.0f} dB    |    RD = {RD:.2f} s    |    p90 = {p90} $\mu$s', fontsize='large')
+        fig.suptitle(rf'nS={nS}    |    RDT = {RDT} ms    |    RG = {RG} dB    |    Atten = {att} dB    |    RD = {RD} s    |    p90 = {p90} $\mu$s', fontsize='large')
 
     NegPts = 0
     for k in range(len(tau1)):

@@ -16,6 +16,7 @@ def main():
 #    Out = args.output
     Out = File.split(".txt")[0]
 #    Map = args.mapType
+    # Map = 'fidcpmg'
     Map = 'cpmg'
     Back = args.background
     alpha = args.alpha

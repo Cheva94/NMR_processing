@@ -1,0 +1,10 @@
+$ cat .gitignore
+
+# config
+config.py
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+
+# exclude data from source control by default
+needsReview/
