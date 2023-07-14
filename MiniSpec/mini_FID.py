@@ -12,12 +12,12 @@ def main():
     ppm = args.ppm
 
     print('Reading FID raw data...')
-    t, SGL, nP, DW = IO.readFID(path)
-    nS, RDT, RG, att, RD, p90 = IO.readFIDparams(path)
+    t, SGL, nP, DW = IO.read1Dsgl(path)
+    nS, RDT, RG, att, RD, p90, _, _, _ = IO.read1Dparams(root)
 
     print('Analysing FID raw data...')
-    SGL = IO.PhCorrFID(SGL)
-    SGL = IO.NormFID(SGL, RG)
+    SGL = IO.PhCorr1D(SGL)
+    SGL = IO.NormRG(SGL, RG)
     
     # Nomber of points to drop at the FID beginning.
     pDrop = SGL.real[0:30].argmax()
