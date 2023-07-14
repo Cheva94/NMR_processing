@@ -55,14 +55,14 @@ def CS2freq(CS):
     return CS * 20
 
 
-def FID(t, SGL, nS, RDT, RG, att, RD, p90, CS, spec, root, ppm, pDrop):
+def FID(t, SGL, CS, spec, root, ppm, params, pDrop):
     '''
     Plots FID results.
     '''
 
     fig, axs = plt.subplots(2, 2, figsize=(50, 20),
                             gridspec_kw={'height_ratios': [3,1]})
-    fig.suptitle(rf'RDT = {RDT} $\mu$s | Atten = {att} dB | RG = {RG} dB | nS = {nS} | RD = {RD:.2f} s | p90 = {p90} $\mu$s', fontsize='medium')
+    fig.suptitle(params, fontsize='large')
 
     # Mean of the first `pts` FID points
     pts = 20
@@ -74,9 +74,12 @@ def FID(t, SGL, nS, RDT, RG, att, RD, p90, CS, spec, root, ppm, pDrop):
     m = int(np.floor(np.log10(np.max(SGL.real))))
     axs[0,0].set_title(f'Discarded points: {pDrop}.', fontsize='large')
     axs[0,0].scatter(t, SGL.real, 
-                     label = fr'$M_R (0)$ = {SGL[0].real * 10**-m:.4f} E{m}', color='coral')
+                     label = fr'$M_R (0)$ = {SGL[0].real * 10**-m:.4f} E{m}', 
+                     color='coral')
+    lbl = (fr'$M_R ({pts})$ = ({fid0 * 10**-m:.4f} $\pm$'
+           fr'{fid0_SD * 10**-m:.4f}) E{m}')
     axs[0,0].plot(t[:pts], SGL[:pts].real, lw = 10, 
-                  label = fr'$M_R ({pts})$ = ({fid0 * 10**-m:.4f} $\pm$ {fid0_SD * 10**-m:.4f}) E{m}', color='teal')
+                  label = lbl, color='teal')
     axs[0,0].axhline(y=0, color='k', ls=':', lw=4)
     axs[0,0].set_xlabel('t [ms]')
     axs[0,0].set_ylabel('FID (Real)')
@@ -109,7 +112,8 @@ def FID(t, SGL, nS, RDT, RG, att, RD, p90, CS, spec, root, ppm, pDrop):
     m = int(np.floor(np.log10(np.max(area_peak))))
     axs[0,1].plot(CS, specNorm.real, color='coral')
     axs[0,1].fill_between(CS[mask], 0, specNorm[mask].real, 
-                          label = fr'Peak area = {area_peak * 10**-m:.4f} E{m}', alpha = 0.25, color="teal")
+                          label = fr'Area = {area_peak * 10**-m:.4f} E{m}',
+                          alpha = 0.25, color="teal")
     axs[0,1].plot(peaksx[0], peaksy[0] + 0.05, lw = 0, marker=11, color='black')
     axs[0,1].annotate(f'{peaksx[0]:.4f} ppm', 
                       xy = (peaksx[0], peaksy[0] + 0.07), 
@@ -156,83 +160,98 @@ def FID(t, SGL, nS, RDT, RG, att, RD, p90, CS, spec, root, ppm, pDrop):
 ################################################################################
 
 
-def CPMG(t, Z, MLaplace, T2, S, root, nS, RDT, RG, att, RD, p90, p180, tEcho, nEcho, alpha, cumT2, T2min, T2max, dataFit):
+def CPMG(t, Z, T2, S, MLaplace, root, alpha, T2min, T2max, params, 
+         dataFit, tEcho):
     '''
     Plots CPMG results.
     '''
+    
+    # Remove edge effects from NLI on the plots
+    S = S[2:-2]
+    T2 = T2[2:-2]
 
     fig, axs = plt.subplots(2, 3, figsize=(50, 20), 
                             gridspec_kw={'height_ratios': [3,1]})
-    fig.suptitle(rf'nS={nS:.0f}    |    RDT = {RDT} ms    |    RG = {RG:.0f} dB    |    Atten = {att:.0f} dB    |    RD = {RD:.2f} s    |    p90 = {p90} $\mu$s    |    p180 = {p180} $\mu$s    |    tE = {tEcho:.1f} ms    |    Ecos = {nEcho:.0f}', fontsize='large')
+    fig.suptitle(params, fontsize='large')
 
-    # CPMG: experimental y ajustada
-    axs[0,0].scatter(t, Z, label='Experimento', color='coral')
-    axs[0,0].plot(t, MLaplace, label='Fit Laplace', color='teal')
-    axs[0,0].set_xlabel(r'$\t$ [ms]')
+    # CPMG: experimental and fit
+    axs[0,0].scatter(t, Z, label='Exp', color='coral')
+    axs[0,0].plot(t, MLaplace, label='NLI Fit', color='teal')
+    axs[0,0].set_xlabel(r'$\tau$ [ms]')
     axs[0,0].set_ylabel('CPMG')
     axs[0,0].legend()
     axs[0,0].axhline(0, c = 'k', lw = 4, ls = ':', zorder=-2)
 
-    # Inset del comienzo de la CPMG
+    # CPMG: experimental and fit (inset: zoom at the beginning)
     axins1 = inset_axes(axs[0,0], width="30%", height="30%", loc=5)
     axins1.scatter(t[0:30], Z[0:30], color='coral')
     axins1.plot(t[0:30], MLaplace[0:30], color='teal')
 
-    # CPMG: experimental y ajustada (en semilog)
-    axs[0,1].scatter(t, Z, label='Experimento', color='coral')
-    axs[0,1].plot(t, MLaplace, label='Fit Laplace', color='teal')
+    # CPMG: experimental and fit (semilog)
+    axs[0,1].scatter(t, Z, label='Exp', color='coral')
+    axs[0,1].plot(t, MLaplace, label='NLI Fit', color='teal')
     axs[0,1].set_yscale('log')
-    axs[0,1].set_xlabel(r'$\t$ [ms]')
+    axs[0,1].set_xlabel(r'$\tau$ [ms]')
     axs[0,1].set_ylabel('log(CPMG)')
     axs[0,1].legend()
 
-    # CPMG: residuos de Laplace
+    # CPMG: NLI residuals
     residuals = MLaplace-Z
     ss_res = np.sum(residuals ** 2)
     ss_tot = np.sum((Z - np.mean(Z)) ** 2)
     R2Laplace = 1 - ss_res / ss_tot
-    axs[1,0].set_title(fr'Ajuste con Laplace: R$^2$ = {R2Laplace:.6f}')
+    axs[1,0].set_title(fr'NLI: R$^2$ = {R2Laplace:.6f}')
     axs[1,0].scatter(t, residuals, color = 'blue')
     axs[1,0].axhline(0, c = 'k', lw = 4, ls = ':')
-    axs[1,0].set_xlabel(r'$\t$ [ms]')
+    axs[1,0].set_xlabel(r'$\tau$ [ms]')
     axs[1,0].axhline(0.1*np.max(Z), c = 'red', lw = 6, ls = '-')
     axs[1,0].axhline(-0.1*np.max(Z), c = 'red', lw = 6, ls = '-')
 
-    # Distribución de T2
-    T2 = T2[2:-2]
+    # T2 distribution
     Snorm = S / np.max(S)
     peaks, _ = find_peaks(Snorm,height=0.025, distance = 5)
     peaksx, peaksy = T2[peaks], Snorm[peaks]
 
-    axs[0,2].fill_between([tEcho, 5 * tEcho], -0.02, 1.2, color='red', alpha=0.3, zorder=-2)
+    axs[0,2].fill_between([tEcho, 5 * tEcho], -0.02, 1.2, color='red', 
+                          alpha=0.3, zorder=-2)
     axs[0,2].set_title(rf'$\alpha$ = {alpha}')
     axs[0,2].axhline(y=0.1, color='k', ls=':', lw=4)
     axs[0,2].plot(T2, Snorm, label = 'Distrib.', color = 'teal')
     for i in range(len(peaksx)):
-            axs[0,2].plot(peaksx[i], peaksy[i] + 0.05, lw = 0, marker=11, color='black')
-            axs[0,2].annotate(f'{peaksx[i]:.2f}', xy = (peaksx[i], peaksy[i] + 0.07), fontsize=30, ha='center')
+            axs[0,2].plot(peaksx[i], peaksy[i] + 0.05, lw = 0, marker=11, 
+                          color='black')
+            axs[0,2].annotate(f'{peaksx[i]:.2f}', 
+                              xy = (peaksx[i], peaksy[i] + 0.07), 
+                              fontsize=30, ha='center')
     axs[0,2].set_xlabel(r'$T_2$ [ms]')
-    axs[0,2].set_ylabel(r'Distrib. $T_2$')
     axs[0,2].set_xscale('log')
     axs[0,2].set_ylim(-0.02, 1.2)
     axs[0,2].set_xlim(10.0**T2min, 10.0**T2max)
 
+    cumT2 = np.cumsum(S)
     cumT2norm = cumT2 / cumT2[-1]
     ax = axs[0,2].twinx()
     ax.plot(T2, cumT2norm, label = 'Cumul.', color = 'coral')
     ax.set_ylim(-0.02, 1.2)
-    ax.set_ylabel(r'Cumul. $T_2$')
 
     axs[1,1].axis('off')
     axs[1,2].axis('off')
 
-    axs[1,1].annotate('>>> Ajuste monoexponencial <<<', xy = (0.5, 1.00), fontsize=30, ha='center')
-    axs[1,1].annotate(f'{dataFit[0,0]} --> {dataFit[1,0]}', xy = (0.5, 0.85), fontsize=30, ha='center')
-    axs[1,1].annotate(f'{dataFit[0,2]}', xy = (0.5, 0.70), fontsize=30, ha='center')
+    # Exponential fit resutls
+    axs[1,1].annotate('>>> Monoexponential fit <<<', xy = (0.5, 1.00), 
+                      fontsize=30, ha='center')
+    axs[1,1].annotate(f'{dataFit[0,0]} --> {dataFit[1,0]}', xy = (0.5, 0.85), 
+                      fontsize=30, ha='center')
+    axs[1,1].annotate(f'{dataFit[0,2]}', xy = (0.5, 0.70), 
+                      fontsize=30, ha='center')
 
-    axs[1,1].annotate('>>> Ajuste biexponencial <<<', xy = (0.5, 0.45), fontsize=30, ha='center')
-    axs[1,1].annotate(f'{dataFit[2,0]} --> {dataFit[3,0]}', xy = (0.5, 0.30), fontsize=30, ha='center')
-    axs[1,1].annotate(f'{dataFit[2,1]} --> {dataFit[3,1]}', xy = (0.5, 0.15), fontsize=30, ha='center')
-    axs[1,1].annotate(f'{dataFit[2,2]}', xy = (0.5, 0.00), fontsize=30, ha='center')
+    axs[1,1].annotate('>>> Biexponential fit <<<', xy = (0.5, 0.45), 
+                      fontsize=30, ha='center')
+    axs[1,1].annotate(f'{dataFit[2,0]} --> {dataFit[3,0]}', xy = (0.5, 0.30), 
+                      fontsize=30, ha='center')
+    axs[1,1].annotate(f'{dataFit[2,1]} --> {dataFit[3,1]}', xy = (0.5, 0.15), 
+                      fontsize=30, ha='center')
+    axs[1,1].annotate(f'{dataFit[2,2]}', xy = (0.5, 0.00), 
+                      fontsize=30, ha='center')
 
     plt.savefig(f'{root}')

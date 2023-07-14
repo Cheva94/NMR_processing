@@ -117,24 +117,24 @@ def specFID(SGL, nP, DW):
     return CS, spec
 
 
-def writeFID(t, SGL, nP, CS, spec, Out, ppm):
+def writeFID(t, SGL, nP, CS, spec, root, ppm):
     '''
     Saves processed data.
     '''
 
-    with open(f'{Out}_TimeDom.csv', 'w') as f:
-        f.write("t [ms]\tRe[FID]\t\tIm[FID]\n")
+    with open(f'{root}_TimeDom.csv', 'w') as f:
+        f.write("t [ms]\t\tRe[FID]\t\tIm[FID]\n")
         for i in range(nP):
-            f.write(f'{t[i]:.6f}\t{SGL.real[i]:.6f}\t{SGL.imag[i]:.6f} \n')
+            f.write(f'{t[i]:.6f}\t{SGL.real[i]:.6f}\t{SGL.imag[i]:.6f}\n')
 
     mask = (CS>-2*ppm)&(CS<2*ppm)
     CS = CS[mask]
     spec = spec[mask]
 
-    with open(f'{Out}_FreqDom.csv', 'w') as f:
+    with open(f'{root}_FreqDom.csv', 'w') as f:
         f.write("CS [ppm]\tRe[spec]\tIm[spec]\n")
         for i in range(len(CS)):
-            f.write(f'{CS[i]:.6f}\t{spec[i].real:.6f}\t{spec[i].imag:.6f} \n')
+            f.write(f'{CS[i]:.6f}\t{spec[i].real:.6f}\t{spec[i].imag:.6f}\n')
 
 
 #-------------------------------------------------------------------------------
@@ -266,6 +266,22 @@ def fitLapMag(t, T2, S, nP):
 
     return M
 
+
+def writeCPMG(t, Z, MLaplace, T2, S, root):
+    '''
+    Saves processed data.
+    '''
+
+    with open(f'{root}_TimeDom.csv', 'w') as f:
+        f.write("t [ms]\t\tDecay\t\tFit (NLI)\n")
+        for i in range(len(t)):
+            f.write(f'{t[i]:.6f}\t{Z[i]:.6f}\t{MLaplace[i]:.6f}\n')
+
+    cumT2 = np.cumsum(S)
+    with open(f'{root}_RatesDom.csv', 'w') as f:
+        f.write("T2 [ms]\t\tDistribution\tCumulative\n")
+        for i in range(len(T2[2:-2])):
+            f.write(f'{T2[i]:.6f}\t{S[i]:.6f}\t{cumT2[i]:.6f}\n')
 
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
