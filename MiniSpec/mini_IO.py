@@ -88,7 +88,7 @@ def writeFID(t, SGL, nP, CS, spec, Out, ppm):
         for i in range(nP):
             f.write(f'{t[i]:.6f}\t{SGL.real[i]:.6f}\t{SGL.imag[i]:.6f} \n')
 
-    mask = (CS>-ppm)&(CS<ppm)
+    mask = (CS>-2*ppm)&(CS<2*ppm)
     CS = CS[mask]
     spec = spec[mask]
 

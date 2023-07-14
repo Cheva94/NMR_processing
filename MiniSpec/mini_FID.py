@@ -33,7 +33,7 @@ def main():
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('path', help = "Path to the FID signal.")
+    parser.add_argument('-path', help = "Path to the FID signal.", type=str, default = 'FID.txt')
     parser.add_argument('-ppm', help = "Plus/minus limits (in ppm) to integrate spectrum.", type=float, default = 0.05)
     args = parser.parse_args()
     main()
