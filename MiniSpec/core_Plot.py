@@ -415,7 +415,7 @@ def SRCPMG(tau1, tau2, Z, T1, T2, S, MLap_SR, MLap_CPMG, root, alpha,
     axs[1,3].set_yscale('log')
     axs[1,3].legend(loc='lower right')
 
-    # axs[1,1].axis('off')
+    axs[0,3].axis('off')
 
     plt.savefig(f'{root}')
 

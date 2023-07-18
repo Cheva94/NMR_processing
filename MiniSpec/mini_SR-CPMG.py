@@ -20,7 +20,7 @@ def main():
     S0, T1, T2, K1, K2 = IO.initKernel2D(nP1, nP2, tau1, tau2, 
                                          T1min, T1max, T2min, T2max)
     params = (rf'Acquisition: RDT = {RDT} $\mu$s | Atten = {att} dB | '
-              rf'RG = {RG} dB | nS = {nS} | RD = {RD:.2f} s | '
+              rf'RG = {RG} dB | nS = {nS} | RD = {RD} s | '
               rf'p90 = {p90} $\mu$s | p180 = {p180} $\mu$s | '
               rf'tE = {tEcho:.1f} ms | nE = {nEcho}')
 
@@ -49,7 +49,7 @@ def main():
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('-path', type=str, default = 'CPMG.txt', 
+    parser.add_argument('-path', type=str, default = 'SR-FID-CPMG.txt', 
                         help = "Path to the CPMG signal.")
     parser.add_argument('-alpha', type = float, default = 0.1, 
                         help = "Tikhonov regularization parameter.")

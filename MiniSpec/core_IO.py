@@ -101,8 +101,8 @@ def read2Dsgl(path, root):
 
     data = pd.read_csv(path, header = None, delim_whitespace=True).to_numpy()
     
-    Re = data[:, 1]
-    Im = data[:, 2]
+    Re = data[:, 0]
+    Im = data[:, 1]
     SGL = Re + Im * 1j # Complex signal
 
     tau1 = pd.read_csv(root+"_t1.dat", header = None, delim_whitespace = True).to_numpy()
@@ -120,13 +120,19 @@ def read2Dparams(root):
     pAcq = pd.read_csv(root+'_acqs.txt', header = None,  sep='\t')
     
     RDT, att, RG = pAcq.iloc[1, 1], pAcq.iloc[3, 1], pAcq.iloc[2, 1]
-    RDT = int(RDT*1E3)
+    try:
+        RDT = int(RDT*1E3)
+    except TypeError:
+        RDT = int(float(RDT)*1E3)
     att = int(att)
     RG = int(RG)
 
     nS, RD, p90 = pAcq.iloc[0, 1], pAcq.iloc[4, 1], pAcq.iloc[5, 1]
     nS = int(nS)
-    RD = float(RD)
+    try:
+        RD = float(RD)
+    except ValueError:
+        RD = str(RD)
     p90 = float(p90)
 
     p180, tEcho, nEcho = pAcq.iloc[6, 1], pAcq.iloc[10, 1], pAcq.iloc[11, 1]
