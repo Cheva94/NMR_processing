@@ -61,7 +61,7 @@ def read1Dparams(root):
     if lines > 7:
         p180, tEcho, nEcho = pAcq.iloc[6, 1], pAcq.iloc[7, 1], pAcq.iloc[8, 1]
         p180 = float(p180)
-        tEcho = int(tEcho)
+        tEcho = float(tEcho)
         nEcho = int(nEcho)
     else:
         p180, tEcho, nEcho = None, None, None
@@ -137,7 +137,7 @@ def read2Dparams(root):
 
     p180, tEcho, nEcho = pAcq.iloc[6, 1], pAcq.iloc[10, 1], pAcq.iloc[11, 1]
     p180 = float(p180)
-    tEcho = int(tEcho)
+    tEcho = float(tEcho)
     nEcho = int(nEcho)
 
     nFID = int(1250 * tEcho - 54)
