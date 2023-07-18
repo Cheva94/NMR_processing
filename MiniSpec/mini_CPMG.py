@@ -1,8 +1,8 @@
 #!/usr/bin/python3.10
 
 import argparse
-import mini_IO as IO
-import mini_Plot as graph
+import core_IO as IO
+import core_Plot as graph
 import numpy as np
 
 def main():
