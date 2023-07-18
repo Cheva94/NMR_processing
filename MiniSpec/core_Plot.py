@@ -255,3 +255,171 @@ def CPMG(t, Z, T2, S, MLaplace, root, alpha, T2min, T2max, params,
                       fontsize=30, ha='center')
 
     plt.savefig(f'{root}')
+
+
+#-------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
+
+
+################################################################################
+###################### SR-CPMG related functions ###############################
+################################################################################
+
+
+def SRCPMG(tau1, tau2, Z, T1, T2, S, MLap_SR, MLap_CPMG, root, alpha, 
+           T1min, T1max, T2min, T2max, params, tEcho):
+    '''
+    Plots SR-CPMG results.
+    '''
+    
+    # Counts negative signal points
+    NegPts = 0
+    for k in range(len(tau1)):
+        if Z[k, 0] < 0.0000:
+            NegPts += 1
+
+    # Remove edge effects from NLI on the plots
+    S = S[4:-9, 2:-2]
+    T1 = T1[4:-9]
+    T2 = T2[2:-2]
+
+    fig, axs = plt.subplots(2, 4, figsize=(50, 20))
+    fig.suptitle(params, fontsize='large')
+
+    # SR: experimental and fit
+    projOffset = Z[-1, 0] / MLap_SR[-1]
+    MLap_SR *= projOffset
+
+    axs[0,0].set_title(f'Neg. pts.: {NegPts}', fontsize='large')
+    axs[0,0].scatter(tau1, Z[:, 0], label='Exp', color='coral')
+    axs[0,0].plot(tau1, MLap_SR, label='NLI Fit', color='teal')
+    axs[0,0].set_xlabel(r'$\tau_1$ [ms]')
+    axs[0,0].set_ylabel('SR')
+    axs[0,0].legend()
+    axs[0,0].axhline(0, c = 'k', lw = 4, ls = ':', zorder=-2)
+
+    # SR: NLI residuals
+    residuals = MLap_SR-Z[:, 0]
+    ss_res = np.sum(residuals ** 2)
+    ss_tot = np.sum((Z[:, 0] - np.mean(Z[:, 0])) ** 2)
+    R2_indir = 1 - ss_res / ss_tot
+
+    axs[1,0].set_title(fr'NLI: R$^2$ = {R2_indir:.6f}')
+    axs[1,0].scatter(tau1, residuals, color = 'blue')
+    axs[1,0].axhline(0.1*np.max(Z[:, 0]), c = 'red', lw = 6, ls = '-')
+    axs[1,0].axhline(-0.1*np.max(Z[:, 0]), c = 'red', lw = 6, ls = '-')
+    axs[1,0].axhline(0, c = 'k', lw = 4, ls = ':')
+    axs[1,0].set_xlabel(r'$\tau_1$ [ms]')
+    
+    # CPMG: experimental and fit
+    projOffset = Z[-1, 0] / MLap_SR[-1]
+    MLap_SR *= projOffset
+
+    axs[0,1].set_title(f'Disc. pts.: 1', fontsize='large')
+    axs[0,1].scatter(tau2, Z[-1, :], label='Exp', color='coral')
+    axs[0,1].plot(tau2, MLap_CPMG, label='NLI Fit', color='teal')
+    axs[0,1].set_xlabel(r'$\tau_2$ [ms]')
+    axs[0,1].set_ylabel('CPMG')
+    axs[0,1].legend()
+    axs[0,1].axhline(0, c = 'k', lw = 4, ls = ':', zorder=-2)
+
+    # CPMG: experimental and fit (inset: zoom at the beginning)
+    axins2 = inset_axes(axs[0,1], width="30%", height="30%", loc=5)
+    axins2.scatter(tau2[0:30], Z[-1, :][0:30], color='coral')
+    axins2.plot(tau2[0:30], MLap_CPMG[0:30], color='teal')
+
+    # CPMG: NLI residuals
+    residuals = MLap_CPMG-Z[-1, :]
+    ss_res = np.sum(residuals ** 2)
+    ss_tot = np.sum((Z[-1, :] - np.mean(Z[-1, :])) ** 2)
+    R2_dir = 1 - ss_res / ss_tot
+
+    axs[1,1].set_title(fr'NLI: R$^2$ = {R2_dir:.6f}')
+    axs[1,1].scatter(tau2, residuals, color = 'blue')
+    axs[1,1].axhline(0.1*np.max(Z[-1, :]), c = 'red', lw = 6, ls = '-')
+    axs[1,1].axhline(-0.1*np.max(Z[-1, :]), c = 'red', lw = 6, ls = '-')
+    axs[1,1].axhline(0, c = 'k', lw = 4, ls = ':')
+    axs[1,1].set_xlabel(r'$\tau_2$ [ms]')
+
+    # Projected T1 distribution
+    projT1 = np.sum(S, axis=1)
+    projT1 = projT1 / np.max(projT1)
+    peaks1, _ = find_peaks(projT1, height=0.025, distance = 5)
+    peaks1x, peaks1y = T1[peaks1], projT1[peaks1]
+    
+    axs[0,2].axhline(y=0.1, color='k', ls=':', lw=4)
+    axs[0,2].plot(T1, projT1, label = 'Distrib.', color = 'teal')
+    for i in range(len(peaks1x)):
+        axs[0,2].plot(peaks1x[i], peaks1y[i] + 0.05, lw = 0, marker=11, 
+                      color='black')
+        axs[0,2].annotate(f'{peaks1x[i]:.2f}', 
+                          xy = (peaks1x[i], peaks1y[i] + 0.07), 
+                          fontsize=30, ha = 'center')
+    axs[0,2].set_xlabel(r'$T_1$ [ms]')
+    axs[0,2].set_xscale('log')
+    axs[0,2].set_ylim(-0.02, 1.2)
+    axs[0,2].set_xlim(10.0**T1min, 10.0**T1max)
+
+    cumT1 = np.cumsum(projT1)
+    cumT1 /= cumT1[-1]
+    ax = axs[0,2].twinx()
+    ax.plot(T1, cumT1, label = 'Cumul.', color = 'coral')
+    ax.set_ylim(-0.02, 1.2)
+
+    # Projected T2 distribution
+    projT2 = np.sum(S, axis=0)
+    projT2 = projT2 / np.max(projT2)
+    peaks2, _ = find_peaks(projT2, height=0.025, distance = 5)
+    peaks2x, peaks2y = T2[peaks2], projT2[peaks2]
+    
+    axs[0,3].axhline(y=0.1, color='k', ls=':', lw=4)
+    axs[0,3].plot(T2, projT2, label = 'Distrib.', color = 'teal')
+    for i in range(len(peaks2x)):
+        axs[0,3].plot(peaks2x[i], peaks2y[i] + 0.05, lw = 0, marker=11, 
+                      color='black')
+        axs[0,3].annotate(f'{peaks2x[i]:.2f}', 
+                          xy = (peaks2x[i], peaks2y[i] + 0.07), 
+                          fontsize=30, ha = 'center')
+    axs[0,3].set_xlabel(r'$T_2$ [ms]')
+    axs[0,3].set_xscale('log')
+    axs[0,3].set_ylim(-0.02, 1.2)
+    axs[0,3].set_xlim(10.0**T2min, 10.0**T2max)
+    axs[0,3].fill_between([tEcho, 5 * tEcho], -0.02, 1.2, color='red', 
+                          alpha=0.3, zorder=-2)
+    
+    cumT2 = np.cumsum(projT2)
+    cumT2 /= cumT2[-1]
+    ax = axs[0,3].twinx()
+    ax.plot(T2, cumT2, label = 'Cumul.', color = 'coral')
+    ax.set_ylim(-0.02, 1.2)
+
+    # T1-T2 map
+    mini = np.max([T1min, T2min])
+    maxi = np.min([T1max, T2max])
+
+    axs[1,3].set_title(rf'$\alpha$ = {alpha}')
+    axs[1,3].plot([10.0**mini, 10.0**maxi], [10.0**mini, 10.0**maxi], 
+                  color='black', ls='-', alpha=0.7, zorder=-2, 
+                  label = r'$T_1$ = $T_2$')
+    for i in range(len(peaks2x)):
+        axs[1,3].axvline(x=peaks2x[i], color='k', ls=':', lw=4)
+    for i in range(len(peaks1x)):
+        axs[1,3].axhline(y=peaks1x[i], color='k', ls=':', lw=4)
+    axs[1,3].contour(T2, T1, S, 100, cmap='rainbow')
+    axs[1,3].set_xlabel(r'$T_2$ [ms]')
+    axs[1,3].set_ylabel(r'$T_1$ [ms]')
+    axs[1,3].set_xlim(10.0**T2min, 10.0**T2max)
+    axs[1,3].set_ylim(10.0**T1min, 10.0**T1max)
+    axs[1,3].set_xscale('log')
+    axs[1,3].set_yscale('log')
+    axs[1,3].legend(loc='lower right')
+
+    # axs[1,1].axis('off')
+
+    plt.savefig(f'{root}')
+
+
+#-------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------

@@ -44,8 +44,8 @@ def main():
     IO.writeSRCPMG(T1, T2, S, root)
 
     print('Plotting CPMG processed data...')
-    graph.CPMG(t, Z, T2, S, MLaplace, root, alpha, T2min, T2max, params, 
-               dataFit, tEcho)
+    graph.SRCPMG(tau1, tau2, Z, T1, T2, S, MLap_SR, MLap_CPMG, root, 
+                 alpha, T1min, T1max, T2min, T2max, params, tEcho)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
