@@ -34,240 +34,8 @@ plt.rcParams["lines.linewidth"] = 4
 plt.rcParams["lines.markersize"] = 10
 plt.rcParams["lines.linestyle"] = '-'
 
-def SRmap_file(File, T1min, T1max, T2min, T2max, cropT1, cropT2, Map):
-    '''
-    Lectura del archivo de la medición.
-    '''
 
-    data = pd.read_csv(File, header = None, delim_whitespace = True).to_numpy()
-    Re = data[:, 0]
-    Im = data[:, 1]
-    signal = Re + Im * 1j # Complex signal
-
-    pAcq = pd.read_csv(File.split(".txt")[0]+'_acqs.txt', header = None, sep='\t')
-    nS, RDT, RG, att, RD, p90 = int(pAcq.iloc[0, 1]), float(pAcq.iloc[1, 1]), int(pAcq.iloc[2, 1]), int(pAcq.iloc[3, 1]), str(pAcq.iloc[4, 1]), float(pAcq.iloc[5, 1])
-
-    if Map == 'fid':
-        p180 = tE = nE = None
-        nFID = 0
-    elif Map == 'fidcpmg':
-        p180, tE, nE = pAcq.iloc[6, 1], int(pAcq.iloc[10, 1]), pAcq.iloc[11, 1]
-        nFID = 0
-    elif Map == 'cpmg':
-        p180, tE, nE = float(pAcq.iloc[6, 1]), int(pAcq.iloc[10, 1]), int(pAcq.iloc[11, 1])
-        nFID = 1250 * tE - 54
-	
-    cropT2new = int(cropT2 + nFID)
-
-    Nx = Ny = 150
-    S0 = np.ones((Nx, Ny))
-    S01D = np.ones(Nx)
-    T1 = np.logspace(T1min, T1max, Nx)
-    T2 = np.logspace(T2min, T2max, Ny)
-
-    tau1 = pd.read_csv(File.split('.txt')[0]+"_t1.dat", header = None, delim_whitespace = True).to_numpy()
-    tau2 = pd.read_csv(File.split('.txt')[0]+"_t2.dat", header = None, delim_whitespace = True).to_numpy()
-    N1, N2 = len(tau1), len(tau2)
-    tau1 = tau1[cropT1:]
-    tau2 = tau2[cropT2new:]
-
-    K1 = 1 - np.exp(-tau1 / T1)
-    K2 = np.exp(-tau2 / T2)
-
-    K1D = np.zeros((len(tau1), Nx))
-    for i in range(len(tau1)):
-        K1D[i, :] = 1 - np.exp(-tau1[i] / T1)
-
-    return S0, T1, T2, tau1, tau2, K1, K2, signal, N1, N2, nS, RDT, RG, att, RD, p90, p180, tE, nE, cropT2new, S01D, K1D
-
-def PhCorr(signal, N1, N2):
-    '''
-    Corrección de fase, basándose en la última medición.
-    '''
-
-    Z = []
-
-    signal_Last = signal[(N1-1)*N2:]
-    initVal = {}
-    for i in range(360):
-        tita = np.deg2rad(i)
-        signal_ph = signal_Last * np.exp(1j * tita)
-        initVal[i] = signal_ph[0].real
-
-    tita = np.deg2rad(max(initVal, key=initVal.get))
-
-    for k in range(N1):
-        signal_k = signal[k*N2:(k+1)*N2] * np.exp(1j * tita)
-        signal_k = signal_k.real
-        Z.append(signal_k)
-
-    return np.array(Z)
-
-def Norm(Z, RG, N1, N2, cropT1, cropT2new):
-    '''
-    Normalización por ganancia y creación de matriz.
-    '''
-
-    norm = 1 / (6.32589E-4 * np.exp(RG/9) - 0.0854)
-    Z = np.reshape(Z*norm, (N1, N2))[cropT1:, cropT2new:]
-
-    return Z
-
-def NLI_FISTA_2D(K1, K2, Z, alpha, S):
-    '''
-    Inversión de Laplace 2D
-    '''
-
-    K1TK1 = K1.T @ K1
-    K2TK2 = K2.T @ K2
-    K1TZK2 = K1.T @ Z @ K2
-    ZZT = np.trace(Z @ Z.T)
-
-    invL = 1 / (np.trace(K1TK1) * np.trace(K2TK2) + alpha)
-    factor = 1 - alpha * invL
-
-    Y = S
-    tstep = 1
-    lastRes = np.inf
-
-    for iter in range(100000):
-        term2 = K1TZK2 - K1TK1 @ Y @ K2TK2
-        Snew = factor * Y + invL * term2
-        Snew[Snew<0] = 0
-
-        tnew = 0.5 * (1 + np.sqrt(1 + 4 * tstep**2))
-        tRatio = (tstep - 1) / tnew
-        Y = Snew + tRatio * (Snew - S)
-        tstep = tnew
-        S = Snew
-
-        if iter % 1000 == 0:
-            TikhTerm = alpha * np.linalg.norm(S)**2
-            ObjFunc = ZZT - 2 * np.trace(S.T @ K1TZK2) + np.trace(S.T @ K1TK1 @ S @ K2TK2) + TikhTerm
-
-            Res = np.abs(ObjFunc - lastRes) / ObjFunc
-            lastRes = ObjFunc
-            print(f'# It = {iter} >>> Residue = {Res:.6f}')
-
-            if Res < 1E-5:
-                break
-    return S
-
-def fitMag_2D(tau1, tau2, T1, T2, S):
-    '''
-    Ajuste de los decaimientos a partir de la distribución de T1 y T2.
-    '''
-
-    print(f'Fitting T1 projection from 2D-Laplace in time domain...')
-
-    t1 = range(len(tau1))
-    d1 = range(len(T1))
-    S1 = np.sum(S, axis=1)
-    M1 = []
-
-    for i in t1:
-        m1 = 0
-        for j in d1:
-            m1 += S1[j] * (1 - np.exp(-tau1[i] / T1[j]))
-        M1.append(m1[0])
-
-    print(f'Fitting T2 projection from 2D-Laplace in time domain...')
-
-    t2 = range(len(tau2))
-    d2 = range(len(T2))
-    S2 = np.sum(S, axis=0)
-    M2 = []
-
-    for i in t2:
-        m2 = 0
-        for j in d2:
-            m2 += S2[j] * np.exp(-tau2[i] / T2[j])
-        M2.append(m2[0])
-
-    return np.array(M1), np.array(M2)
-
-def NLI_FISTA_1D(K, Z, alpha, S):
-    '''
-    Inversión de Laplace 1D
-    '''
-
-    Z = np.reshape(Z, (len(Z), 1))
-    S = np.reshape(S, (len(S), 1))
-
-    KTK = K.T @ K
-    KTZ = K.T @ Z
-    ZZT = np.trace(Z @ Z.T)
-
-    invL = 1 / (np.trace(KTK) + alpha)
-    factor = 1 - alpha * invL
-
-    Y = S
-    tstep = 1
-    lastRes = np.inf
-
-    for iter in range(100000):
-        term2 = KTZ - KTK @ Y
-        Snew = factor * Y + invL * term2
-        Snew[Snew<0] = 0
-
-        tnew = 0.5 * (1 + np.sqrt(1 + 4 * tstep**2))
-        tRatio = (tstep - 1) / tnew
-        Y = Snew + tRatio * (Snew - S)
-        tstep = tnew
-        S = Snew
-
-        if iter % 1000 == 0:
-            TikhTerm = alpha * np.linalg.norm(S)**2
-            ObjFunc = ZZT - 2 * np.trace(S.T @ KTZ) + np.trace(S.T @ KTK @ S) + TikhTerm
-
-            Res = np.abs(ObjFunc - lastRes) / ObjFunc
-            lastRes = ObjFunc
-            print(f'# It = {iter} >>> Residue = {Res:.6f}')
-
-            if Res < 1E-5:
-                break
-
-    return S[:, 0]
-
-def fitMag_1D(tau1, T1, S_1D):
-    '''
-    Ajuste del decaimiento a partir de la distribución de T1 de la Laplace 1D.
-    '''
-
-    t = range(len(tau1))
-    d = range(len(T1))
-    M = []
-    for i in t:
-        m = 0
-        for j in d:
-            m += S_1D[j] * (1 - np.exp(- tau1[i] / T1[j]))
-        M.append(m[0])
-
-    return np.array(M)
-
-def SR1D_exp(tau1, T1, M0):
-    out = M0 * (1 - np.exp(-tau1 / T1))
-    return out.flatten()
-
-def SR1D_fit(tau1, Z, T1min, T1max):
-    '''
-    Ajusta la SR aislada.
-    '''
-
-    guess_T1 = 10**((T1max-T1min) / 2)
-    guess_M0 = (Z[-1] - Z[0]) / 2
-
-    popt, pcov = curve_fit(SR1D_exp, tau1, Z, bounds=(0, np.inf), p0=[guess_T1, guess_M0])
-    perr = np.sqrt(np.diag(pcov))
-
-    residuals = Z - SR1D_exp(tau1, *popt)
-    ss_res = np.sum(residuals ** 2)
-    ss_tot = np.sum((Z - np.mean(Z)) ** 2)
-    r2 = 1 - ss_res / ss_tot
-
-    return popt[0], popt[1], perr[0], r2
-
-def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, T1min, T1max, T2min, T2max, alpha, Back, cropT1, cropT2, Map, nS, RDT, RG, att, RD, p90, p180, tE, nE, SR1D_T1, SR1D_T1sd, SR1D_r2, SR1D_M0, S_1D, M_1D):
+def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, T1min, T1max, T2min, T2max, alpha, cropT1, cropT2, Map, nS, RDT, RG, att, RD, p90, p180, tE, nE):
     '''
     Grafica resultados.
     '''
@@ -290,14 +58,10 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, T1min, T1max, T2min, T2max, alph
     axs[0,0].set_title(f'Pts. desc.: {cropT1:.0f}; Neg. pts.: {NegPts}', fontsize='large')
     axs[0,0].scatter(tau1, Z[:, 0], label='Exp', color='coral', zorder=5)
     axs[0,0].plot(tau1, M1, label='2D-Lap', color='teal', zorder=0)
-    axs[0,0].plot(tau1, SR1D_exp(tau1, SR1D_T1, SR1D_M0), label='Monoexp', color='darkgreen', zorder=1)
-    axs[0,0].plot(tau1, M_1D, label='1D-Lap', color='navy', zorder=2)
     axs[0,0].set_xlabel(r'$\tau_1$ [ms]')
     axs[0,0].set_ylabel('SR')
     axs[0,0].legend()
-    axs[0,0].annotate(fr'R$^2$={SR1D_r2:.6f}', xy = (0.3 * tau1[-1], 0.70 * Z[-1, 0]), fontsize=30, ha = 'left', color='darkgreen')
-    axs[0,0].annotate(fr'T$_1$=({SR1D_T1:.2f}$\pm${SR1D_T1sd:.2f})', xy = (0.3 * tau1[-1], 0.60 * Z[-1, 0]), fontsize=30, ha = 'left', color='darkgreen')
-
+    
     # SR: residuos
     residuals = M1-Z[:, 0]
     ss_res = np.sum(residuals ** 2)
@@ -405,96 +169,18 @@ def plot(tau1, tau2, Z, T1, T2, S, M1, M2, Out, T1min, T1max, T2min, T2max, alph
     axs[1,3].set_yscale('log')
     axs[1,3].legend(loc='lower right')
 
-    # Distribución de T1 con Laplace 1D
-    S_1D = S_1D[4:-9]
-    Snorm = S_1D / np.max(S_1D)
-    peaks, _ = find_peaks(S_1D)
-    peaksx, peaksy = T1[peaks], Snorm[peaks]
+    axs[0,1].set_xlabel(r'$\tau_2$ [ms]')
+    axs[0,1].set_ylabel('CPMG')
 
-    cumT1_1D = np.cumsum(Snorm)
-    cumT1_1D /= cumT1_1D[-1]
+    axs[1,1].set_xlabel(r'$\tau_2$ [ms]')
 
-    residuals = M_1D-Z[:, 0]
-    ss_res = np.sum(residuals**2)
-    ss_tot = np.sum((Z[:, 0] - np.mean(Z[:, 0]))**2)
-    R2_1D = 1 - ss_res / ss_tot
+    axs[0,3].set_xlabel(r'$T_2$ [ms]')
+    axs[0,3].set_ylabel(r'Distrib. $T_2$')
+    axs[0,3].fill_between([tE, 5 * tE], -0.02, 1.2, color='red', alpha=0.3, zorder=-2)
 
-    axs[1,2].set_title(fr'Laplace 1D: R$^2$ = {R2_1D:.6f}', fontsize='large')
-    axs[1,2].axhline(y=0.1, color='k', ls=':', lw=4)
-    axs[1,2].plot(T1, Snorm, label = 'Distrib.', color = 'teal')
-    for i in range(len(peaksx)):
-        if peaksy[i] > 0.1:
-            axs[1,2].plot(peaksx[i], peaksy[i] + 0.05, lw = 0, marker=11, color='black')
-            axs[1,2].annotate(f'{peaksx[i]:.2f}', xy = (peaksx[i], peaksy[i] + 0.07), fontsize=30, ha='center')
-    axs[1,2].set_xlabel(r'$T_1$ [ms]')
-    axs[1,2].set_ylabel(r'Distrib. $T_1$')
-    axs[1,2].set_xscale('log')
-    axs[1,2].set_ylim(-0.02, 1.2)
-    axs[1,2].set_xlim(10.0**T1min, 10.0**T1max)
+    ax.set_ylabel(r'Cumul. $T_2$')
 
-    ax1d = axs[1,2].twinx()
-    ax1d.plot(T1, cumT1_1D, label = 'Cumul.', color = 'coral')
-    ax1d.set_ylim(-0.02, 1.2)
-    ax1d.set_ylabel(r'Cumul. $T_1$')
-
-    if Map == 'fid':
-        axs[0,1].set_xlabel(r'$\tau_2^*$ [ms]')
-        axs[0,1].set_ylabel('FID')
-
-        axs[1,1].set_xlabel(r'$\tau_2^*$ [ms]')
-
-        axs[0,3].set_xlabel(r'$T_2^*$ [ms]')
-        axs[0,3].set_ylabel(r'Distrib. $T_2^*$')
-
-        ax.set_ylabel(r'Cumul. $T_2^*$')
-
-        axs[1,3].set_xlabel(r'$T_2^*$ [ms]')
-
-    elif Map == 'cpmg':
-        axs[0,1].set_xlabel(r'$\tau_2$ [ms]')
-        axs[0,1].set_ylabel('CPMG')
-
-        axs[1,1].set_xlabel(r'$\tau_2$ [ms]')
-
-        axs[0,3].set_xlabel(r'$T_2$ [ms]')
-        axs[0,3].set_ylabel(r'Distrib. $T_2$')
-        axs[0,3].fill_between([tE, 5 * tE], -0.02, 1.2, color='red', alpha=0.3, zorder=-2)
-
-        ax.set_ylabel(r'Cumul. $T_2$')
-
-        axs[1,3].set_xlabel(r'$T_2$ [ms]')
-        axs[1,3].fill_between([tE, 5 * tE], 10.0**T1min, 10.0**T1max, color='red', alpha=0.3, zorder=-2)
-
-    elif Map == 'fidcpmg':
-        axs[0,1].set_xlabel(r'$\tau_2^* | \tau_2$ [ms]')
-        axs[0,1].set_ylabel('FID-CPMG')
-
-        axs[1,1].set_xlabel(r'$\tau_2^* | \tau_2$ [ms]')
-
-        axs[0,3].set_xlabel(r'$T_2^* | T_2$ [ms]')
-        axs[0,3].set_ylabel(r'Distrib. $T_2^* | T_2$')
-
-        ax.set_ylabel(r'Cumul. $T_2^* | T_2$')
-
-        axs[1,3].set_xlabel(r'$T_2^* | T_2$ [ms]')
+    axs[1,3].set_xlabel(r'$T_2$ [ms]')
+    axs[1,3].fill_between([tE, 5 * tE], 10.0**T1min, 10.0**T1max, color='red', alpha=0.3, zorder=-2)
 
     plt.savefig(f'{Out}')
-
-    print('Writing output...')
-    np.savetxt(f"{Out}-DomRates2D.csv", S, delimiter='\t')
-    np.savetxt(f"{Out}-DomRates1D.csv", S_1D, delimiter='\t')
-
-    with open(f'{Out}-DomRates2D_T1.csv', 'w') as f:
-        f.write("T1 [ms], Distribution, Cumulative \n")
-        for i in range(len(T1)):
-            f.write(f'{T1[i]:.6f}, {projT1[i]:.6f}, {cumT1[i]:.6f} \n')
-
-    with open(f'{Out}-DomRates2D_T2.csv', 'w') as f:
-        f.write("T2 [ms], Distribution, Cumulative \n")
-        for i in range(len(T2)):
-            f.write(f'{T2[i]:.6f}, {projT2[i]:.6f}, {cumT2[i]:.6f} \n')
-
-    with open(f'{Out}-DomRates1D_T1.csv', 'w') as f:
-        f.write("T1 [ms], Distribution, Cumulative \n")
-        for i in range(len(T1)):
-            f.write(f'{T1[i]:.6f}, {Snorm[i]:.6f}, {cumT1_1D[i]:.6f} \n')
