@@ -1,8 +1,8 @@
 #!/usr/bin/python3.10
 
 import argparse
-import mini_IO as IO
-import mini_Plot as graph
+import core_IO as IO
+import core_Plot as graph
 
 
 def main():
@@ -20,7 +20,7 @@ def main():
 
     print('Analysing FID raw data...')
     SGL = IO.PhCorr1D(SGL)
-    SGL = IO.NormRG(SGL, RG)
+    SGL = IO.NormRG1D(SGL, RG)
     
     # Nomber of points to drop at the FID beginning.
     pDrop = SGL.real[0:30].argmax()
