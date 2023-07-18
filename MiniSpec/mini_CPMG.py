@@ -18,7 +18,7 @@ def main():
     S0, T2, K = IO.initKernel1D(nP, t, T2min, T2max)
     params = (rf'Acquisition: RDT = {RDT} $\mu$s | Atten = {att} dB | '
               rf'RG = {RG} dB | nS = {nS} | RD = {RD:.2f} s | '
-              rf'p90 = {p90} $\mu$s | p180 = {p90} $\mu$s | '
+              rf'p90 = {p90} $\mu$s | p180 = {p180} $\mu$s | '
               rf'tE = {tEcho:.1f} ms | nE = {nEcho}')
 
     print('Analysing CPMG raw data...')
@@ -41,7 +41,7 @@ def main():
                          np.array([Pearson]).T))
 
     print(f'Starting NLI: Alpha = {alpha}.')
-    S, iter = IO.NLI_FISTA(K, Z, alpha, S0)
+    S, iter = IO.NLI_FISTA_1D(K, Z, alpha, S0)
     if iter < 100000:
         print('Inversion ready!')
     else:
@@ -50,7 +50,7 @@ def main():
         print('Try modifying T2Range and/or alpha settings.')
 
     print(f'Fitting NLI results in time domain...')
-    MLaplace = IO.fitLapMag(t, T2, S, nP)
+    MLaplace = IO.fitLapMag_1D(t, T2, S, nP)
 
     print('Writing CPMG processed data...')
     IO.writeCPMG(t, Z, MLaplace, T2, S, root)

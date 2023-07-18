@@ -25,22 +25,8 @@ def main():
     cropT1, cropT2 = args.croppedValues[0], args.croppedValues[1]
 
     print(f'Alpha = {alpha}')
-
-    if Back == None:
-        S0, T1, T2, tau1, tau2, K1, K2, signal, N1, N2, nS, RDT, RG, att, RD, p90, p180, tE, nE, cropT2new, S01D, K1D = SRmap_file(File, T1min, T1max, T2min, T2max, cropT1, cropT2, Map)
-        Z = PhCorr(signal, N1, N2)
-
-        Back = "Nein!"
-    else:
-        S0, T1, T2, tau1, tau2, K1, K2, signal, N1, N2, nS, RDT, RG, att, RD, p90, p180, tE, nE, cropT2new, S01D, K1D = SRmap_file(File, T1min, T1max, T2min, T2max, cropT1, cropT2, Map)
-        Z = PhCorr(signal, N1, N2)
-
-        _, _, _, _, _, _, _, back, _, _, _, _, _, _, _, _, _, _, _, _, _, _ = SRmap_file(File, T1min, T1max, T2min, T2max, cropT1, cropT2, Map)
-        back = PhCorr(back, N1, N2)
-
-        Z -= back
-
-        Back = "Ja!"
+    S0, T1, T2, tau1, tau2, K1, K2, signal, N1, N2, nS, RDT, RG, att, RD, p90, p180, tE, nE, cropT2new, S01D, K1D = SRmap_file(File, T1min, T1max, T2min, T2max, cropT1, cropT2, Map)
+    Z = PhCorr(signal, N1, N2)
 
     Z = Norm(Z, RG, N1, N2, cropT1, cropT2new)
 

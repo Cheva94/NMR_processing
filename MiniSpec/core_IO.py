@@ -20,6 +20,16 @@ def r_square(x, y, f, popt):
     return 1 - ss_res / ss_tot
 
 
+def NormRG(SGL, RG):
+    '''
+    Normalization by receiver gain.
+    '''
+
+    norm = 1 / (6.32589E-4 * np.exp(RG/9) - 0.0854)
+
+    return SGL * norm
+
+
 def read1Dsgl(path):
     '''
     Reads signal file.
@@ -84,14 +94,49 @@ def PhCorr1D(SGL):
     return SGL
 
 
-def NormRG(SGL, RG):
+def read2Dsgl(path, root):
     '''
-    Normalization by receiver gain.
+    Reads signal file.
     '''
 
-    norm = 1 / (6.32589E-4 * np.exp(RG/9) - 0.0854)
+    data = pd.read_csv(path, header = None, delim_whitespace=True).to_numpy()
+    
+    Re = data[:, 1]
+    Im = data[:, 2]
+    SGL = Re + Im * 1j # Complex signal
 
-    return SGL * norm
+    tau1 = pd.read_csv(root+"_t1.dat", header = None, delim_whitespace = True).to_numpy()
+    tau2 = pd.read_csv(root+"_t2.dat", header = None, delim_whitespace = True).to_numpy()
+    nP1, nP2 = len(tau1), len(tau2)
+    
+    return tau1, tau2, SGL, nP1, nP2
+
+
+def read2Dparams(root):
+    '''
+    Reads acquisition parameters.
+    '''
+
+    pAcq = pd.read_csv(root+'_acqs.txt', header = None,  sep='\t')
+    
+    RDT, att, RG = pAcq.iloc[1, 1], pAcq.iloc[3, 1], pAcq.iloc[2, 1]
+    RDT = int(RDT*1E3)
+    att = int(att)
+    RG = int(RG)
+
+    nS, RD, p90 = pAcq.iloc[0, 1], pAcq.iloc[4, 1], pAcq.iloc[5, 1]
+    nS = int(nS)
+    RD = float(RD)
+    p90 = float(p90)
+
+    p180, tEcho, nEcho = pAcq.iloc[6, 1], pAcq.iloc[10, 1], pAcq.iloc[11, 1]
+    p180 = float(p180)
+    tEcho = int(tEcho)
+    nEcho = int(nEcho)
+
+    nFID = int(1250 * tEcho - 54)
+
+    return RDT, att, RG, nS, RD, p90, p180, tEcho, nEcho, nFID
 
 
 #-------------------------------------------------------------------------------
@@ -206,7 +251,7 @@ def expFit_2(t, Z):
     return Mag_2, T2_2, r2
 
 
-def NLI_FISTA(K, Z, alpha, S):
+def NLI_FISTA_1D(K, Z, alpha, S):
     '''
     Numeric Laplace inversion, based on FISTA.
     '''
@@ -250,7 +295,7 @@ def NLI_FISTA(K, Z, alpha, S):
     return S[:, 0], iter
 
 
-def fitLapMag(t, T2, S, nP):
+def fitLapMag_1D(t, T2, S, nP):
     '''
     Fits decay from T2 distribution.
     '''
@@ -286,3 +331,42 @@ def writeCPMG(t, Z, MLaplace, T2, S, root):
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
+
+
+#-------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
+
+
+################################################################################
+###################### SR-CPMG related functions ###############################
+################################################################################
+
+
+def initKernel2D(nP1, nP2, tau1, tau2, T1min, T1max, T2min, T2max):
+    '''
+    Initialize variables for Laplace transform.
+    '''
+
+    nBinx = nBiny = 150
+    S0 = np.ones((nBinx, nBiny))
+    T1 = np.logspace(T1min, T1max, nBinx)
+    T2 = np.logspace(T2min, T2max, nBiny)    
+
+    K1 = 1 - np.exp(-tau1 / T1)
+    K2 = np.exp(-tau2 / T2)
+
+    return S0, T1, T2, K1, K2
+
+
+
+def SRmap_file(T1min, T1max, T2min, T2max):
+    '''
+    Lectura del archivo de la medición.
+    '''
+	
+    
+
+
+
+    return 
