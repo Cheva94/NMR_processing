@@ -22,7 +22,7 @@ def main():
     SGL = IO.PhCorr1D(SGL)
     SGL = IO.NormRG1D(SGL, RG)
     
-    # Nomber of points to drop at the FID beginning.
+    # Number of points to drop at the FID beginning.
     pDrop = SGL.real[0:30].argmax()
     t, SGL, nP = t[pDrop:], SGL[pDrop:], nP-pDrop
 
