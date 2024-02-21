@@ -175,7 +175,8 @@ def NormRG2D(Z, RG, nP1, nP2, nFID):
     '''
 
     norm = 1 / (6.32589E-4 * np.exp(RG/9) - 0.0854)
-    Z = np.reshape(Z*norm, (nP1, nP2))[:, nFID+1:]
+    # Z = np.reshape(Z*norm, (nP1, nP2))[:, nFID+1:]
+    Z = np.reshape(Z*norm, (nP1, nP2))[:, nFID:]
 
     return Z
 

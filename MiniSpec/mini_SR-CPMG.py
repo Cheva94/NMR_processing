@@ -16,7 +16,8 @@ def main():
     print('Reading SR-CPMG map raw data...')
     tau1, tau2, SGL, nP1, nP2 = IO.read2Dsgl(path, root)
     RDT, att, RG, nS, RD, p90, p180, tEcho, nEcho, nFID = IO.read2Dparams(root)
-    tau2 = tau2[nFID+1:] # Discards FID part of signal + First CPMG point
+    # tau2 = tau2[nFID+1:] # Discards FID part of signal + First CPMG point
+    tau2 = tau2[nFID:] # Discards FID part of signal + First CPMG point
     S0, T1, T2, K1, K2 = IO.initKernel2D(nP1, nP2, tau1, tau2, 
                                          T1min, T1max, T2min, T2max)
     params = (rf'Acquisition: RDT = {RDT} $\mu$s | Atten = {att} dB | '
