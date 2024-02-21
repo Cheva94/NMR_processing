@@ -36,6 +36,13 @@ plt.rcParams["lines.linestyle"] = '-'
 
 plt.rcParams["figure.autolayout"] = True
 
+# Colores
+Verde = '#08a189' # = 08A189 = 8 161 137    (principal)
+Naranja = '#fa6210' # = FA6210 = 250 98 16    (secundario)
+Morado = '#7f03fc' # =  = 127 3 252   (terciario)
+Amarillo = '#f7f307' # =  = 247 243 7   (cuaternario)
+Gris = '#626262' # =  = 98 98 98 (alternativo)
+Negro = '#000000' # =  = 0 0 0 (base)
 
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
@@ -75,11 +82,11 @@ def FID(t, SGL, CS, spec, root, ppm, params, pDrop):
     axs[0,0].set_title(f'Discarded points: {pDrop}.', fontsize='large')
     axs[0,0].scatter(t, SGL.real, 
                      label = fr'$M_R (0)$ = {SGL[0].real * 10**-m:.4f} E{m}', 
-                     color='coral')
+                     color=Naranja)
     lbl = (fr'$M_R ({pts})$ = ({fid0 * 10**-m:.4f} $\pm$'
            fr'{fid0_SD * 10**-m:.4f}) E{m}')
     axs[0,0].plot(t[:pts], SGL[:pts].real, lw = 10, 
-                  label = lbl, color='teal')
+                  label = lbl, color=Verde)
     axs[0,0].axhline(y=0, color='k', ls=':', lw=4)
     axs[0,0].set_xlabel('t [ms]')
     axs[0,0].set_ylabel('FID (Real)')
@@ -88,12 +95,12 @@ def FID(t, SGL, CS, spec, root, ppm, params, pDrop):
 
     # FID: real part (inset: zoom at the beginning)
     axins1 = inset_axes(axs[0,0], width="30%", height="30%", loc=5)
-    axins1.scatter(t[0:40], SGL[0:40].real, color='coral')
-    axins1.plot(t[:pts], SGL[:pts].real, color='teal')
+    axins1.scatter(t[0:40], SGL[0:40].real, color=Naranja)
+    axins1.plot(t[:pts], SGL[:pts].real, color=Verde)
 
     # FID: imaginary part (full)
-    axs[1,0].scatter(t, SGL.imag)
-    axs[1,0].plot(t[:pts], SGL[:pts].imag, lw = 10, color='red')
+    axs[1,0].scatter(t, SGL.imag, color=Morado)
+    axs[1,0].plot(t[:pts], SGL[:pts].imag, lw = 10, color=Amarillo, zorder=50)
     axs[1,0].axhline(y=0, color='k', ls=':', lw=4)
     axs[1,0].set_xlabel('t [ms]')
     axs[1,0].set_ylabel('FID (Imag)')
@@ -110,7 +117,7 @@ def FID(t, SGL, CS, spec, root, ppm, params, pDrop):
     
     # Spectrum: real part (zoom around the peak)
     m = int(np.floor(np.log10(np.max(area_peak))))
-    axs[0,1].plot(CS, specNorm.real, color='coral')
+    axs[0,1].plot(CS, specNorm.real, color=Naranja)
     axs[0,1].fill_between(CS[mask], 0, specNorm[mask].real, 
                           label = fr'Area = {area_peak * 10**-m:.4f} E{m}',
                           alpha = 0.25, color="teal")
@@ -134,10 +141,10 @@ def FID(t, SGL, CS, spec, root, ppm, params, pDrop):
     # Spectrum: real part (inset: full spectrum)
     axins2 = inset_axes(axs[0,1], width="30%", height="30%", loc=2)
     axins2.tick_params(labelleft=False)
-    axins2.plot(CS, specNorm.real, color='coral')
+    axins2.plot(CS, specNorm.real, color=Naranja)
 
     # Spectrum: imaginary part (zoom around the peak)
-    axs[1,1].scatter(CS, specNorm.imag)
+    axs[1,1].scatter(CS, specNorm.imag, color=Morado)
     axs[1,1].axhline(y=0, color='k', ls=':', lw=4)
     axs[1,1].axvline(x=0, color='k', ls=':', lw=4)
     axs[1,1].set_xlim(-2*ppm, 2*ppm)
@@ -175,8 +182,8 @@ def CPMG(t, Z, T2, S, MLaplace, root, alpha, T2min, T2max, params,
     fig.suptitle(params, fontsize='large')
 
     # CPMG: experimental and fit
-    axs[0,0].scatter(t, Z, label='Exp', color='coral')
-    axs[0,0].plot(t, MLaplace, label='NLI Fit', color='teal')
+    axs[0,0].scatter(t, Z, label='Exp', color=Naranja)
+    axs[0,0].plot(t, MLaplace, label='NLI Fit', color=Verde)
     axs[0,0].set_xlabel(r'$\tau$ [ms]')
     axs[0,0].set_ylabel('CPMG')
     axs[0,0].legend()
@@ -184,12 +191,12 @@ def CPMG(t, Z, T2, S, MLaplace, root, alpha, T2min, T2max, params,
 
     # CPMG: experimental and fit (inset: zoom at the beginning)
     axins1 = inset_axes(axs[0,0], width="30%", height="30%", loc=5)
-    axins1.scatter(t[0:30], Z[0:30], color='coral')
-    axins1.plot(t[0:30], MLaplace[0:30], color='teal')
+    axins1.scatter(t[0:30], Z[0:30], color=Naranja)
+    axins1.plot(t[0:30], MLaplace[0:30], color=Verde)
 
     # CPMG: experimental and fit (semilog)
-    axs[0,1].scatter(t, Z, label='Exp', color='coral')
-    axs[0,1].plot(t, MLaplace, label='NLI Fit', color='teal')
+    axs[0,1].scatter(t, Z, label='Exp', color=Naranja)
+    axs[0,1].plot(t, MLaplace, label='NLI Fit', color=Verde)
     axs[0,1].set_yscale('log')
     axs[0,1].set_xlabel(r'$\tau$ [ms]')
     axs[0,1].set_ylabel('log(CPMG)')
@@ -201,7 +208,7 @@ def CPMG(t, Z, T2, S, MLaplace, root, alpha, T2min, T2max, params,
     ss_tot = np.sum((Z - np.mean(Z)) ** 2)
     R2Laplace = 1 - ss_res / ss_tot
     axs[1,0].set_title(fr'NLI: R$^2$ = {R2Laplace:.6f}')
-    axs[1,0].scatter(t, residuals, color = 'blue')
+    axs[1,0].scatter(t, residuals, color = Morado)
     axs[1,0].axhline(0, c = 'k', lw = 4, ls = ':')
     axs[1,0].set_xlabel(r'$\tau$ [ms]')
     axs[1,0].axhline(0.1*np.max(Z), c = 'red', lw = 6, ls = '-')
@@ -212,11 +219,11 @@ def CPMG(t, Z, T2, S, MLaplace, root, alpha, T2min, T2max, params,
     peaks, _ = find_peaks(Snorm,height=0.025, distance = 5)
     peaksx, peaksy = T2[peaks], Snorm[peaks]
 
-    axs[0,2].fill_between([tEcho, 5 * tEcho], -0.02, 1.2, color='red', 
+    axs[0,2].fill_between([tEcho, 5 * tEcho], -0.02, 1.2, color=Gris, 
                           alpha=0.3, zorder=-2)
     axs[0,2].set_title(rf'$\alpha$ = {alpha}')
     axs[0,2].axhline(y=0.1, color='k', ls=':', lw=4)
-    axs[0,2].plot(T2, Snorm, label = 'Distrib.', color = 'teal')
+    axs[0,2].plot(T2, Snorm, label = 'Distrib.', color = Verde)
     for i in range(len(peaksx)):
             axs[0,2].plot(peaksx[i], peaksy[i] + 0.05, lw = 0, marker=11, 
                           color='black')
@@ -231,7 +238,7 @@ def CPMG(t, Z, T2, S, MLaplace, root, alpha, T2min, T2max, params,
     cumT2 = np.cumsum(S)
     cumT2norm = cumT2 / cumT2[-1]
     ax = axs[0,2].twinx()
-    ax.plot(T2, cumT2norm, label = 'Cumul.', color = 'coral')
+    ax.plot(T2, cumT2norm, label = 'Cumul.', color = Naranja)
     ax.set_ylim(-0.02, 1.2)
 
     axs[1,1].axis('off')
@@ -292,8 +299,8 @@ def SRCPMG(tau1, tau2, Z, T1, T2, S, MLap_SR, MLap_CPMG, root, alpha,
     MLap_SR *= projOffset
 
     axs[0,0].set_title(f'Neg. pts.: {NegPts}', fontsize='large')
-    axs[0,0].scatter(tau1, Z[:, 0], label='Exp', color='coral')
-    axs[0,0].plot(tau1, MLap_SR, label='NLI Fit', color='teal')
+    axs[0,0].scatter(tau1, Z[:, 0], label='Exp', color=Naranja)
+    axs[0,0].plot(tau1, MLap_SR, label='NLI Fit', color=Verde)
     axs[0,0].set_xlabel(r'$\tau_1$ [ms]')
     axs[0,0].set_ylabel('SR')
     axs[0,0].legend()
@@ -306,7 +313,7 @@ def SRCPMG(tau1, tau2, Z, T1, T2, S, MLap_SR, MLap_CPMG, root, alpha,
     R2_indir = 1 - ss_res / ss_tot
 
     axs[1,0].set_title(fr'NLI: R$^2$ = {R2_indir:.6f}')
-    axs[1,0].scatter(tau1, residuals, color = 'blue')
+    axs[1,0].scatter(tau1, residuals, color = Morado)
     axs[1,0].axhline(0.1*np.max(Z[:, 0]), c = 'red', lw = 6, ls = '-')
     axs[1,0].axhline(-0.1*np.max(Z[:, 0]), c = 'red', lw = 6, ls = '-')
     axs[1,0].axhline(0, c = 'k', lw = 4, ls = ':')
@@ -317,8 +324,8 @@ def SRCPMG(tau1, tau2, Z, T1, T2, S, MLap_SR, MLap_CPMG, root, alpha,
     MLap_SR *= projOffset
 
     axs[0,1].set_title(f'Disc. pts.: 1', fontsize='large')
-    axs[0,1].scatter(tau2, Z[-1, :], label='Exp', color='coral')
-    axs[0,1].plot(tau2, MLap_CPMG, label='NLI Fit', color='teal')
+    axs[0,1].scatter(tau2, Z[-1, :], label='Exp', color=Naranja)
+    axs[0,1].plot(tau2, MLap_CPMG, label='NLI Fit', color=Verde)
     axs[0,1].set_xlabel(r'$\tau_2$ [ms]')
     axs[0,1].set_ylabel('CPMG')
     axs[0,1].legend()
@@ -326,8 +333,8 @@ def SRCPMG(tau1, tau2, Z, T1, T2, S, MLap_SR, MLap_CPMG, root, alpha,
 
     # CPMG: experimental and fit (inset: zoom at the beginning)
     axins2 = inset_axes(axs[0,1], width="30%", height="30%", loc=5)
-    axins2.scatter(tau2[0:30], Z[-1, :][0:30], color='coral')
-    axins2.plot(tau2[0:30], MLap_CPMG[0:30], color='teal')
+    axins2.scatter(tau2[0:30], Z[-1, :][0:30], color=Naranja)
+    axins2.plot(tau2[0:30], MLap_CPMG[0:30], color=Verde)
 
     # CPMG: NLI residuals
     residuals = MLap_CPMG-Z[-1, :]
@@ -336,7 +343,7 @@ def SRCPMG(tau1, tau2, Z, T1, T2, S, MLap_SR, MLap_CPMG, root, alpha,
     R2_dir = 1 - ss_res / ss_tot
 
     axs[1,1].set_title(fr'NLI: R$^2$ = {R2_dir:.6f}')
-    axs[1,1].scatter(tau2, residuals, color = 'blue')
+    axs[1,1].scatter(tau2, residuals, color = Morado)
     axs[1,1].axhline(0.1*np.max(Z[-1, :]), c = 'red', lw = 6, ls = '-')
     axs[1,1].axhline(-0.1*np.max(Z[-1, :]), c = 'red', lw = 6, ls = '-')
     axs[1,1].axhline(0, c = 'k', lw = 4, ls = ':')
@@ -349,7 +356,7 @@ def SRCPMG(tau1, tau2, Z, T1, T2, S, MLap_SR, MLap_CPMG, root, alpha,
     peaks1x, peaks1y = T1[peaks1], projT1[peaks1]
     
     axs[0,2].axhline(y=0.1, color='k', ls=':', lw=4)
-    axs[0,2].plot(T1, projT1, label = 'Distrib.', color = 'teal')
+    axs[0,2].plot(T1, projT1, label = 'Distrib.', color = Verde)
     for i in range(len(peaks1x)):
         axs[0,2].plot(peaks1x[i], peaks1y[i] + 0.05, lw = 0, marker=11, 
                       color='black')
@@ -364,7 +371,7 @@ def SRCPMG(tau1, tau2, Z, T1, T2, S, MLap_SR, MLap_CPMG, root, alpha,
     cumT1 = np.cumsum(projT1)
     cumT1 /= cumT1[-1]
     ax = axs[0,2].twinx()
-    ax.plot(T1, cumT1, label = 'Cumul.', color = 'coral')
+    ax.plot(T1, cumT1, label = 'Cumul.', color = Naranja)
     ax.set_ylim(-0.02, 1.2)
 
     # Projected T2 distribution
@@ -374,7 +381,7 @@ def SRCPMG(tau1, tau2, Z, T1, T2, S, MLap_SR, MLap_CPMG, root, alpha,
     peaks2x, peaks2y = T2[peaks2], projT2[peaks2]
     
     axs[0,3].axhline(y=0.1, color='k', ls=':', lw=4)
-    axs[0,3].plot(T2, projT2, label = 'Distrib.', color = 'teal')
+    axs[0,3].plot(T2, projT2, label = 'Distrib.', color = Verde)
     for i in range(len(peaks2x)):
         axs[0,3].plot(peaks2x[i], peaks2y[i] + 0.05, lw = 0, marker=11, 
                       color='black')
@@ -385,13 +392,13 @@ def SRCPMG(tau1, tau2, Z, T1, T2, S, MLap_SR, MLap_CPMG, root, alpha,
     axs[0,3].set_xscale('log')
     axs[0,3].set_ylim(-0.02, 1.2)
     axs[0,3].set_xlim(10.0**T2min, 10.0**T2max)
-    axs[0,3].fill_between([tEcho, 5 * tEcho], -0.02, 1.2, color='red', 
+    axs[0,3].fill_between([tEcho, 5 * tEcho], -0.02, 1.2, color=Gris, 
                           alpha=0.3, zorder=-2)
     
     cumT2 = np.cumsum(projT2)
     cumT2 /= cumT2[-1]
     ax = axs[0,3].twinx()
-    ax.plot(T2, cumT2, label = 'Cumul.', color = 'coral')
+    ax.plot(T2, cumT2, label = 'Cumul.', color = Naranja)
     ax.set_ylim(-0.02, 1.2)
 
     # T1-T2 map

@@ -340,10 +340,10 @@ def fitLapMag_1D(t, T2, S, nP):
     Fits decay from T2 distribution.
     '''
 
-    t = range(nP)
+    # t = range(nP)
     d = range(len(T2))
     M = []
-    for i in t:
+    for i in range(nP):
         m = 0
         for j in d:
             m += S[j] * np.exp(- t[i] / T2[j])
