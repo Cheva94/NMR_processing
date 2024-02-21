@@ -53,7 +53,7 @@ def specFID(SGL, nP, SW):
     '''
 
     # Preparación del espectro
-    zf = FT.next_fast_len(2**5 * nP)
+    zf = FT.next_fast_len(4 * nP)
     freq = FT.fftshift(FT.fftfreq(zf, d=1/SW)) # Hz scale
     CS = freq / 300 # ppm for Bruker scale
     spec = np.flip(FT.fftshift(FT.fft(SGL, n = zf)))
@@ -228,7 +228,7 @@ def specDQ(SGL, nP, SW, lenvd):
     '''
 
     # Preparación del espectro
-    zf = FT.next_fast_len(2**5 * nP)
+    zf = FT.next_fast_len(4 * nP)
     freq = FT.fftshift(FT.fftfreq(zf, d=1/SW)) # Hz scale
     CS = freq / 300 # ppm for Bruker scale
     spec = []

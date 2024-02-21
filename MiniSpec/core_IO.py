@@ -195,7 +195,7 @@ def specFID(SGL, nP, DW):
     Generates spectrum.
     '''
 
-    zf = FT.next_fast_len(2**5 * nP)
+    zf = FT.next_fast_len(4 * nP)
     freq = FT.fftshift(FT.fftfreq(zf, d=DW)) # Hz scale
     CS = freq / 20 # ppm for Minispec scale
     spec = np.flip(FT.fftshift(FT.fft(SGL, n = zf)))
