@@ -32,6 +32,13 @@ plt.rcParams["lines.linestyle"] = '-'
 
 plt.rcParams["figure.autolayout"] = True
 
+# Colores
+Verde = '#08a189' # = 08A189 = 8 161 137    (principal)
+Naranja = '#fa6210' # = FA6210 = 250 98 16    (secundario)
+Morado = '#7f03fc' # =  = 127 3 252   (terciario)
+Amarillo = '#f7f307' # =  = 247 243 7   (cuaternario)
+Gris = '#626262' # =  = 98 98 98 (alternativo)
+Negro = '#000000' # =  = 0 0 0 (base)
 
 # FID related funcitons
 
@@ -60,9 +67,9 @@ def FID(t, SGL, nS, RDT, RG, att, RD, p90, CS, spec, Out, mlim):
 
     # Plot de la parte real de la FID
     m = np.floor(np.log10(np.max(SGL.real)))
-    axs[0,0].scatter(t, SGL.real, label = fr'$M_R (0)$ = {SGL[0].real * 10**-m:.4f} x10$^{m:.0f}$', color='coral')
-    axs[0,0].plot(t[:points], SGL[:points].real, lw = 10, label = fr'$M_R ({points})$ = ({fid0 * 10**-m:.4f} $\pm$ {fid0_SD * 10**-m:.4f}) x10$^{m:.0f}$', color='teal')
-    axs[0,0].axhline(y=0, color='k', ls=':', lw=4)
+    axs[0,0].scatter(t, SGL.real, label = fr'$M_R (0)$ = {SGL[0].real * 10**-m:.4f} E{m:.0f}', color=Naranja)
+    axs[0,0].plot(t[:points], SGL[:points].real, lw = 10, label = fr'$M_R ({points})$ = ({fid0 * 10**-m:.4f} $\pm$ {fid0_SD * 10**-m:.4f}) E{m:.0f}', color=Verde, zorder=-10)
+    axs[0,0].axhline(y=0, color=Gris, ls=':', lw=4)
     axs[0,0].set_xlabel(r't [$\mu$s]')
     axs[0,0].set_ylabel('FID (real part)')
     axs[0,0].legend()
@@ -70,13 +77,14 @@ def FID(t, SGL, nS, RDT, RG, att, RD, p90, CS, spec, Out, mlim):
 
     # Inset del comienzo de la parte real de la FID
     axins1 = inset_axes(axs[0,0], width="30%", height="30%", loc=5)
-    axins1.scatter(t[0:40], SGL[0:40].real, color='coral')
-    axins1.plot(t[:points], SGL[:points].real, color='teal')
+    axins1.scatter(t[0:40], SGL[0:40].real, color=Naranja)
+    axins1.plot(t[:points], SGL[:points].real, color=Verde)
+    axins1.ticklabel_format(axis='y', style='sci', scilimits=(m,m))
 
     # Plot de la parte imaginaria de la FID
-    axs[1,0].scatter(t, SGL.imag)
-    axs[1,0].plot(t[:points], SGL[:points].imag, lw = 10, color='red')
-    axs[1,0].axhline(y=0, color='k', ls=':', lw=4)
+    axs[1,0].scatter(t, SGL.imag, color=Morado)
+    axs[1,0].plot(t[:points], SGL[:points].imag, lw = 10, color=Amarillo, zorder=50)
+    axs[1,0].axhline(y=0, color=Gris, ls=':', lw=4)
     axs[1,0].set_xlabel(r't [$\mu$s]')
     axs[1,0].set_ylabel('FID (imag. part)')
     m = np.floor(np.log10(np.max(SGL.imag)))
@@ -92,16 +100,16 @@ def FID(t, SGL, nS, RDT, RG, att, RD, p90, CS, spec, Out, mlim):
     
     # Plot de la parte real del espectro, zoom en el pico
     m = np.floor(np.log10(np.max(area_peak)))
-    axs[0,1].plot(CS, specNorm.real, color='coral')
-    axs[0,1].fill_between(CS[mask], 0, specNorm[mask].real, label = fr'Peak area = {area_peak * 10**-m:.4f} x10$^{m:.0f}$', alpha = 0.25, color="teal")
+    axs[0,1].plot(CS, specNorm.real, color=Naranja)
+    axs[0,1].fill_between(CS[mask], 0, specNorm[mask].real, label = fr'Peak area = {area_peak * 10**-m:.4f} E{m:.0f}', alpha = 0.25, color="teal")
     axs[0,1].plot(peaksx[0], peaksy[0] + 0.05, lw = 0, marker=11, color='black')
     axs[0,1].annotate(f'{peaksx[0]:.4f} ppm', xy = (peaksx[0], peaksy[0] + 0.07), fontsize=30, ha='center') 
     axs[0,1].set_xlim(-2*mlim, 2*mlim)
     axs[0,1].set_ylim(-0.05, 1.2)
     axs[0,1].xaxis.set_minor_locator(AutoMinorLocator())
     axs[0,1].set_xlabel(r'$\delta$ [ppm]')
-    axs[0,1].axvline(x=0, color='k', ls=':', lw=2)
-    axs[0,1].axhline(y=0, color='k', ls=':', lw=2)
+    axs[0,1].axvline(x=0, color=Gris, ls=':', lw=2)
+    axs[0,1].axhline(y=0, color=Gris, ls=':', lw=2)
     axs[0,1].legend(loc='upper right')
     axs[0,1].set_ylabel('Norm. Spec. (real part)')
     secax = axs[0,1].secondary_xaxis('top', functions=(CS2freq, freq2CS))
@@ -112,12 +120,12 @@ def FID(t, SGL, nS, RDT, RG, att, RD, p90, CS, spec, Out, mlim):
     # Inset del espectro completo
     axins2 = inset_axes(axs[0,1], width="30%", height="30%", loc=2)
     axins2.tick_params(labelleft=False)
-    axins2.plot(CS, specNorm.real, color='coral')
+    axins2.plot(CS, specNorm.real, color=Naranja)
 
     # Plot de la parte imaginaria del espectro
-    axs[1,1].scatter(CS, specNorm.imag)
-    axs[1,1].axhline(y=0, color='k', ls=':', lw=4)
-    axs[1,1].axvline(x=0, color='k', ls=':', lw=4)
+    axs[1,1].scatter(CS, specNorm.imag, color=Morado)
+    axs[1,1].axhline(y=0, color=Gris, ls=':', lw=4)
+    axs[1,1].axvline(x=0, color=Gris, ls=':', lw=4)
     axs[1,1].set_xlim(-2*mlim, 2*mlim)
     axs[1,1].xaxis.set_minor_locator(AutoMinorLocator())
     axs[1,1].set_xlabel(r'$\delta$ [ppm]')
@@ -158,7 +166,7 @@ def Nutac(SGL, nS, RDT, RG, att, RD, vp, Out, lenvp):
     # Plot del primer punto de la FID
     axs[0].set_title('Primer punto de cada FID')
     axs[0].scatter(vp, fid00, label=rf'Max = {vp[fid00 == np.max(fid00)][0]} $\mu$s', color='tab:blue')
-    axs[0].axhline(y=0, color='k', ls=':', lw=4)
+    axs[0].axhline(y=0, color=Gris, ls=':', lw=4)
     axs[0].set_xlabel(r't [$\mu$s]')
     axs[0].legend()
     m = np.floor(np.log10(np.max(fid00)))
@@ -167,7 +175,7 @@ def Nutac(SGL, nS, RDT, RG, att, RD, vp, Out, lenvp):
     # Plot del promedio de los primeros puntos de la FID
     axs[1].set_title('Primeros 10 puntos de cada FID')
     axs[1].scatter(vp, fidPts, label=rf'Max = {vp[fidPts == np.max(fidPts)][0]} $\mu$s', color='tab:orange')
-    axs[1].axhline(y=0, color='k', ls=':', lw=4)
+    axs[1].axhline(y=0, color=Gris, ls=':', lw=4)
     axs[1].set_xlabel(r't [$\mu$s]')
     axs[1].legend()
     m = np.floor(np.log10(np.max(fidPts)))
@@ -220,7 +228,7 @@ def DQ_bu(SGL, nS, RDT, RG, att, RD, evol, zFilter, p90, vd, CS, spec, DQfilter,
     # Plot del primer punto de la FID
     axs[0].set_title('Primer punto de cada FID')
     axs[0].scatter(vd, fid00, label=rf'Max = {vd[fid00 == np.max(fid00[1:])][0]} $\mu$s', color='tab:blue')
-    axs[0].axhline(y=0, color='k', ls=':', lw=4)
+    axs[0].axhline(y=0, color=Gris, ls=':', lw=4)
     axs[0].set_xlabel(r't [$\mu$s]')
     m = np.floor(np.log10(np.max(fid00)))
     axs[0].ticklabel_format(axis='y', style='sci', scilimits=(m,m))
@@ -229,7 +237,7 @@ def DQ_bu(SGL, nS, RDT, RG, att, RD, evol, zFilter, p90, vd, CS, spec, DQfilter,
     # Plot del promedio de los primeros puntos de la FID
     axs[1].set_title('Primeros 10 puntos de cada FID')
     axs[1].scatter(vd, fidPts, label=rf'Max = {vd[fidPts == np.max(fidPts[1:])][0]} $\mu$s', color='tab:orange')
-    axs[1].axhline(y=0, color='k', ls=':', lw=4)
+    axs[1].axhline(y=0, color=Gris, ls=':', lw=4)
     axs[1].set_xlabel(r't [$\mu$s]')
     m = np.floor(np.log10(np.max(fidPts)))
     axs[1].ticklabel_format(axis='y', style='sci', scilimits=(m,m))
@@ -238,7 +246,7 @@ def DQ_bu(SGL, nS, RDT, RG, att, RD, evol, zFilter, p90, vd, CS, spec, DQfilter,
     # Plot de las áreas de los espectros
     axs[2].set_title('Área de los picos de cada espectro')
     axs[2].scatter(vd, pArea, label=rf'Max = {vd[pArea == np.max(pArea[1:])][0]} $\mu$s', color='tab:green')
-    axs[2].axhline(y=0, color='k', ls=':', lw=4)
+    axs[2].axhline(y=0, color=Gris, ls=':', lw=4)
     axs[2].set_xlabel(r't [$\mu$s]')
     m = np.floor(np.log10(np.max(pArea)))
     axs[2].ticklabel_format(axis='y', style='sci', scilimits=(m,m))
@@ -272,9 +280,9 @@ def DQ_verbose(t, SGL, nS, RDT, RG, att, RD, evol, zFilter, p90, vd, CS, spec, D
 
         # Plot de la parte real de la FID
         m = np.floor(np.log10(np.max(SGL.real)))
-        axs[0,0].scatter(t, SGL[k, :].real, label = fr'$M_R (0)$ = {SGL[k, 0].real * 10**-m:.4f} x10$^{m:.0f}$', color='coral')
-        axs[0,0].plot(t[:points], SGL[k, :points].real, lw = 10, label = fr'$M_R ({points})$ = ({fid0 * 10**-m:.4f} $\pm$ {fid0_SD * 10**-m:.4f}) x10$^{m:.0f}$', color='teal')
-        axs[0,0].axhline(y=0, color='k', ls=':', lw=4)
+        axs[0,0].scatter(t, SGL[k, :].real, label = fr'$M_R (0)$ = {SGL[k, 0].real * 10**-m:.4f} E{m:.0f}', color=Naranja)
+        axs[0,0].plot(t[:points], SGL[k, :points].real, lw = 10, label = fr'$M_R ({points})$ = ({fid0 * 10**-m:.4f} $\pm$ {fid0_SD * 10**-m:.4f}) E{m:.0f}', color=Verde, zorder=-10)
+        axs[0,0].axhline(y=0, color=Gris, ls=':', lw=4)
         axs[0,0].set_xlabel(r't [$\mu$s]')
         axs[0,0].set_ylabel('FID (real part)')
         axs[0,0].legend()
@@ -282,13 +290,13 @@ def DQ_verbose(t, SGL, nS, RDT, RG, att, RD, evol, zFilter, p90, vd, CS, spec, D
 
         # Inset del comienzo de la parte real de la FID
         axins1 = inset_axes(axs[0,0], width="30%", height="30%", loc=5)
-        axins1.scatter(t[0:40], SGL[k, 0:40].real, color='coral')
-        axins1.plot(t[:points], SGL[k, :points].real, color='teal')
+        axins1.scatter(t[0:40], SGL[k, 0:40].real, color=Naranja)
+        axins1.plot(t[:points], SGL[k, :points].real, color=Verde)
 
         # Plot de la parte imaginaria de la FID
-        axs[1,0].scatter(t, SGL[k, :].imag)
-        axs[1,0].plot(t[:points], SGL[k, :points].imag, lw = 10, color='red')
-        axs[1,0].axhline(y=0, color='k', ls=':', lw=4)
+        axs[1,0].scatter(t, SGL[k, :].imag, color=Morado)
+        axs[1,0].plot(t[:points], SGL[k, :points].imag, lw = 10, color=Amarillo, zorder=50)
+        axs[1,0].axhline(y=0, color=Gris, ls=':', lw=4)
         axs[1,0].set_xlabel(r't [$\mu$s]')
         axs[1,0].set_ylabel('FID (imag. part)')
         m = np.floor(np.log10(np.max(SGL[k, :].imag)))
@@ -304,16 +312,16 @@ def DQ_verbose(t, SGL, nS, RDT, RG, att, RD, evol, zFilter, p90, vd, CS, spec, D
         
         # Plot de la parte real del espectro, zoom en el pico
         m = np.floor(np.log10(np.max(area_peak)))
-        axs[0,1].plot(CS, specNorm.real, color='coral')
-        axs[0,1].fill_between(CS[mask], 0, specNorm[mask].real, label = fr'Peak area = {area_peak * 10**-m:.4f} x10$^{m:.0f}$', alpha = 0.25, color="teal")
+        axs[0,1].plot(CS, specNorm.real, color=Naranja)
+        axs[0,1].fill_between(CS[mask], 0, specNorm[mask].real, label = fr'Peak area = {area_peak * 10**-m:.4f} E{m:.0f}', alpha = 0.25, color="teal")
         axs[0,1].plot(peaksx[0], peaksy[0] + 0.05, lw = 0, marker=11, color='black')
         axs[0,1].annotate(f'{peaksx[0]:.4f} ppm', xy = (peaksx[0], peaksy[0] + 0.07), fontsize=30, ha='center') 
         axs[0,1].set_xlim(-2*mlim, 2*mlim)
         axs[0,1].set_ylim(-0.05, 1.2)
         axs[0,1].xaxis.set_minor_locator(AutoMinorLocator())
         axs[0,1].set_xlabel(r'$\delta$ [ppm]')
-        axs[0,1].axvline(x=0, color='k', ls=':', lw=2)
-        axs[0,1].axhline(y=0, color='k', ls=':', lw=2)
+        axs[0,1].axvline(x=0, color=Gris, ls=':', lw=2)
+        axs[0,1].axhline(y=0, color=Gris, ls=':', lw=2)
         axs[0,1].legend(loc='upper right')
         axs[0,1].set_ylabel('Norm. Spec. (real part)')
         secax = axs[0,1].secondary_xaxis('top', functions=(CS2freq, freq2CS))
@@ -324,12 +332,12 @@ def DQ_verbose(t, SGL, nS, RDT, RG, att, RD, evol, zFilter, p90, vd, CS, spec, D
         # Inset del espectro completo
         axins2 = inset_axes(axs[0,1], width="30%", height="30%", loc=2)
         axins2.tick_params(labelleft=False)
-        axins2.plot(CS, specNorm.real, color='coral')
+        axins2.plot(CS, specNorm.real, color=Naranja)
 
         # Plot de la parte imaginaria del espectro
-        axs[1,1].scatter(CS, specNorm.imag)
-        axs[1,1].axhline(y=0, color='k', ls=':', lw=4)
-        axs[1,1].axvline(x=0, color='k', ls=':', lw=4)
+        axs[1,1].scatter(CS, specNorm.imag, color=Morado)
+        axs[1,1].axhline(y=0, color=Gris, ls=':', lw=4)
+        axs[1,1].axvline(x=0, color=Gris, ls=':', lw=4)
         axs[1,1].set_xlim(-2*mlim, 2*mlim)
         axs[1,1].xaxis.set_minor_locator(AutoMinorLocator())
         axs[1,1].set_xlabel(r'$\delta$ [ppm]')

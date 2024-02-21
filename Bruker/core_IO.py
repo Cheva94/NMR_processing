@@ -1,4 +1,4 @@
-import readbruker as rb
+import core_readbruker as rb
 import numpy as np
 import pandas as pd
 import scipy.fft as FT
@@ -25,7 +25,7 @@ def readFID(fileDir):
     
     filter = 69 # Puntos que no sirven tema de filtro digital
     SGL = rawdata[filter:]
-    SGL[0] = 2*SGL[0] # arreglo lo que el bruker rompe
+    # SGL[0] = 2*SGL[0] # arreglo lo que el bruker rompe
     nP = len(SGL) # Cantidad total de puntos que me quedan en la FID
     t = np.array([x * 1E6 / SW for x in range(nP)]) # eje temporal en microsegundos
 
@@ -81,13 +81,13 @@ def writeFID(t, SGL, nP, CS, spec, Out, mlim):
 def writeFID_acq(nS, RDT, RG, att, RD, p90, Out):
 
     with open(f'{Out}acq_param.csv', 'w') as f:
-        f.write("Otros parámetros de adquisición:\n")
-        f.write(f"\t\t Cantidad de scans >>> {nS:.0f}\n")
-        f.write(f"\t\t Tiempo entre scans >>> {RD:.4f} s\n")
-        f.write(f"\t\t Tiempo muerto >>> {RDT} us\n")
-        f.write(f"\t\t Ganancia >>> {RG:.1f} dB\n")
-        f.write(f"\t\t Atenuación >>> {att:.0f} dB\n")
-        f.write(f"\t\t Ancho del pulso de 90 >>> {p90} us")
+        f.write("Parámetros de adquisición:\n")
+        f.write(f"\tCantidad de scans\t{nS:.0f}\n")
+        f.write(f"\tTiempo entre scans\t{RD:.4f}\ts\n")
+        f.write(f"\tTiempo muerto\t{RDT}\tus\n")
+        f.write(f"\tGanancia\t{RG:.1f}\tdB\n")
+        f.write(f"\tAtenuación\t{att:.0f}\tdB\n")
+        f.write(f"\tAncho del pulso de 90\t{p90}\tus")
 
 
 # Nutation related functions
@@ -125,15 +125,15 @@ def writeNutac_acq(nS, RDT, RG, att, RD, vp, Out, lenvp):
     
     with open(f'{Out}acq_param.csv', 'w') as f:
         f.write("Barrido de pulsos:\n")
-        f.write(f"\t\t Rango de tiempo variable >>> {vp[0]:.2f} us - {vp[-1]:.2f} us\n")
-        f.write(f"\t\t Cantidad total de puntos >>> {lenvp}\n")
+        f.write(f"\tRango de tiempo variable\t{vp[0]:.2f}\tus\t{vp[-1]:.2f}\tus\n")
+        f.write(f"\tCantidad total de puntos\t{lenvp}\n")
 
         f.write("Otros parámetros de adquisición:\n")
-        f.write(f"\t\t Cantidad de scans >>> {nS:.0f}\n")
-        f.write(f"\t\t Tiempo entre scans >>> {RD:.4f} s\n")
-        f.write(f"\t\t Tiempo muerto >>> {RDT} us\n")
-        f.write(f"\t\t Ganancia >>> {RG:.1f} dB\n")
-        f.write(f"\t\t Atenuación >>> {att:.0f} dB\n")
+        f.write(f"\tCantidad de scans\t{nS:.0f}\n")
+        f.write(f"\tTiempo entre scans\t{RD:.4f}\ts\n")
+        f.write(f"\tTiempo muerto\t{RDT}\tus\n")
+        f.write(f"\tGanancia\t{RG:.1f}\tdB\n")
+        f.write(f"\tAtenuación\t{att:.0f}\tdB\n")
 
 
 def writeNutac(vp, fid00, fidPts, Out):
@@ -244,22 +244,22 @@ def writeDQ_acq(nS, RDT, RG, att, RD, evol, zFilter, p90, vd, DQfilter, DQfilter
 
     with open(f'{Out}acq_param.csv', 'w') as f:
         f.write("DQ-filter:\n")
-        f.write(f"\t\t Filtro utilizado >>> {DQfilter:.6f} s\n")
-        f.write(f"\t\t z-Filter del filtro utilizado >>> {DQfilterzFil:.6f} s\n\n")
+        f.write(f"\tFiltro utilizado\t{DQfilter:.6f}\ts\n")
+        f.write(f"\tz-Filter del filtro utilizado\t{DQfilterzFil:.6f}\ts\n\n")
         
         f.write("DQ:\n")
-        f.write(f"\t\t Rango de tiempo variable >>> {vd[0]:.2f} us - {vd[-1]:.2f} us\n")
-        f.write(f"\t\t Cantidad total de puntos >>> {lenvd}\n")
-        f.write(f"\t\t Tiempo de evolución entre bloques >>> {evol:.6f} s\n")
-        f.write(f"\t\t z-Filter preadquisición >>> {zFilter:.6f} s\n\n")
+        f.write(f"\tRango de tiempo variable\t{vd[0]:.2f}\tus\t{vd[-1]:.2f}\tus\n")
+        f.write(f"\tCantidad total de puntos\t{lenvd}\n")
+        f.write(f"\tTiempo de evolución entre bloques\t{evol:.6f}\ts\n")
+        f.write(f"\tz-Filter preadquisición\t{zFilter:.6f}\ts\n\n")
 
         f.write("Otros parámetros de adquisición:\n")
-        f.write(f"\t\t Cantidad de scans >>> {nS:.0f}\n")
-        f.write(f"\t\t Tiempo entre scans >>> {RD:.4f} s\n")
-        f.write(f"\t\t Tiempo muerto >>> {RDT} us\n")
-        f.write(f"\t\t Ganancia >>> {RG:.1f} dB\n")
-        f.write(f"\t\t Atenuación >>> {att:.0f} dB\n")
-        f.write(f"\t\t Ancho del pulso de 90 >>> {p90} us")
+        f.write(f"\tCantidad de scans\t{nS:.0f}\n")
+        f.write(f"\tTiempo entre scans\t{RD:.4f}\ts\n")
+        f.write(f"\tTiempo muerto\t{RDT}\tus\n")
+        f.write(f"\tGanancia\t{RG:.1f}\tdB\n")
+        f.write(f"\tAtenuación\t{att:.0f}\tdB\n")
+        f.write(f"\tAncho del pulso de 90\t{p90}\tus")
 
 def writeDQ_verbose(t, SGL, nP, CS, spec, Out, lenvd):
 

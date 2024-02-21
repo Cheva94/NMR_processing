@@ -1,8 +1,8 @@
 #!/usr/bin/python3.10
 
 import argparse
-import bruker_IO as IO
-import bruker_Plot as graph
+import core_IO as IO
+import core_Plot as graph
 import os
 
 def main():
