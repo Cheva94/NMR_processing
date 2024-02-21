@@ -7,7 +7,5 @@ config.py
 __pycache__/
 
 # exclude data from source control by default
-Bruker/
-Comparison/
-MOUSE/
-old_MiniSpec
+NoControlado_MiniSpec_Old/
+NoControlado_MOUSE/
