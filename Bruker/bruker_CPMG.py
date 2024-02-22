@@ -12,7 +12,7 @@ def main():
     fileDir = args.input
     alpha = args.alpha
     T2min, T2max = args.T2Range[0], args.T2Range[1]
-    Out = fileDir.split('/')[0]+'_procFID/'
+    Out = fileDir.split('/')[0]+'_procCPMG/'
     isExist = os.path.exists(Out)
     if not isExist:
         os.makedirs(Out)
@@ -20,7 +20,7 @@ def main():
     t, SGL, nP, SW, nS, RDT, RG, att, RD, p90, p180, tEcho, nEcho = IO.readCPMG(fileDir)
 
     S0, T2, K = IO.initKernel1D(nP, t, T2min, T2max)
-    params = (rf'Acquisition: RDT = {RDT} $\mu$s | Atten = {att} dB | '
+    params = (rf'Acquisition: RDT = {RDT:.2f} $\mu$s | Atten = {att} dB | '
               rf'RG = {RG} dB | nS = {nS} | RD = {RD:.2f} s | '
               rf'p90 = {p90} $\mu$s | p180 = {p180} $\mu$s | '
               rf'tE = {tEcho:.1f} ms | nE = {nEcho}')

@@ -4,6 +4,18 @@ import pandas as pd
 import scipy.fft as FT
 from scipy.optimize import curve_fit
 
+def r_square(x, y, f, popt):
+    '''
+    Pearson's coefficient.
+    '''
+
+    residuals = y - f(x, *popt)
+    ss_res = np.sum(residuals ** 2)
+    ss_tot = np.sum((y - np.mean(y)) ** 2)
+
+    return 1 - ss_res / ss_tot
+
+
 # FID related functions
 
 
@@ -167,13 +179,16 @@ def readCPMG(fileDir):
 
     nEcho = dic["acqus"]["TD"]
     tEcho = dic["acqus"]["D"][6] # s
-    tEcho  *= 1000 # ms
+    tEcho  *= 2 * 1000 # ms
 
-    filter = 69 # Puntos que no sirven tema de filtro digital
-    SGL = rawdata[filter:]
+    # filter = 69 # Puntos que no sirven tema de filtro digital
+    # SGL = rawdata[filter:]
+    SGL = rawdata
+    print(len(SGL))
     # SGL[0] = 2*SGL[0] # arreglo lo que el bruker rompe
     nP = len(SGL) # Cantidad total de puntos que me quedan en la FID
-    t = np.array([x * 1E6 / SW for x in range(nP)]) # eje temporal en microsegundos
+    # t = np.array([x * tEcho for x in range(nEcho)]) # eje temporal en ms
+    t = np.array([x * 1E3 / SW for x in range(nP)]) # eje temporal en microsegundos
 
     return t, SGL, nP, SW, nS, RDT, RG, att, RD, p90, p180, tEcho, nEcho
 
