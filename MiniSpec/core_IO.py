@@ -387,7 +387,7 @@ def initKernel2D(nP1, nP2, tau1, tau2, T1min, T1max, T2min, T2max):
     nBinx = nBiny = 150
     S0 = np.ones((nBinx, nBiny))
     T1 = np.logspace(T1min, T1max, nBinx)
-    T2 = np.logspace(T2min, T2max, nBiny)    
+    T2 = np.logspace(T2min, T2max, nBiny)
 
     K1 = 1 - np.exp(-tau1 / T1)
     K2 = np.exp(-tau2 / T2)

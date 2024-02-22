@@ -36,7 +36,7 @@ def main():
     else:
         print('Warning!')
         print('Maximum number of iterations reached!')
-        print('Try modifying T2Range and/or alpha settings.')
+        print('Try modifying T1Range/T2Range and/or alpha settings.')
 
     print(f'Fitting NLI results in time domain...')
     MLap_SR, MLap_CPMG = IO.fitLapMag_2D(tau1, tau2, T1, T2, S)

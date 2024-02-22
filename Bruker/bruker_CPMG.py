@@ -17,7 +17,7 @@ def main():
     if not isExist:
         os.makedirs(Out)
 
-    t, SGL, SW, nS, RDT, RG, att, RD, p90, p180, tEcho, nEcho = IO.readCPMG(fileDir)
+    t, SGL, nS, RDT, RG, att, RD, p90, p180, tEcho, nEcho = IO.readCPMG(fileDir)
 
     S0, T2, K = IO.initKernel1D(nEcho, t, T2min, T2max)
     params = (rf'Acquisition: RDT = {RDT:.2f} $\mu$s | Atten = {att} dB | '
@@ -67,7 +67,7 @@ def main():
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('input', help = "Path to the FID fileDir.")
+    parser.add_argument('input', help = "Path to the CPMG fileDir.")
     parser.add_argument('-alpha', type = float, default = 0.1, 
                         help = "Tikhonov regularization parameter.")
     parser.add_argument('-T2Range', nargs = 2, type = float, default = [-1, 4], 
