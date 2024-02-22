@@ -213,15 +213,19 @@ def expFit_1(t, Z):
     Monoexponential fitting of CPMG decay.
     '''
 
-    popt, pcov = curve_fit(exp_1, t, Z, bounds=(0, np.inf), p0=[70, 40])
-    perr = np.sqrt(np.diag(pcov))
+    try:
+        popt, pcov = curve_fit(exp_1, t, Z, bounds=(0, np.inf), p0=[Z[0], 100])
+        perr = np.sqrt(np.diag(pcov))
 
-    Mag_1 = [fr'M0 = ({popt[0]:.2f}$\pm${perr[0]:.2f})', '']
-    T2_1 = [fr'T2 = ({popt[1]:.2f}$\pm${perr[1]:.2f}) ms', '']
-    
-    r2 = r_square(t, Z, exp_1, popt)
+        Mag_1 = [fr'M0 = ({popt[0]:.2f}$\pm${perr[0]:.2f})', '']
+        T2_1 = [fr'T2 = ({popt[1]:.2f}$\pm${perr[1]:.2f}) ms', '']
+        
+        r2 = r_square(t, Z, exp_1, popt)
 
-    return Mag_1, T2_1, r2
+        return Mag_1, T2_1, r2
+    except RuntimeError:
+        print("No se encontraron valores óptimos para el ajuste monoexponencial")
+        return [0, 0], [0, 0], 0
 
 
 def exp_2(t, M0_1, T2_1, M0_2, T2_2):
@@ -233,18 +237,22 @@ def expFit_2(t, Z):
     Biexponential fitting of CPMG decay.
     '''
 
-    popt, pcov = curve_fit(exp_2, t, Z, bounds=(0, np.inf), 
-                           p0=[70, 40, 30, 10])
-    perr = np.sqrt(np.diag(pcov))
+    try:
+        popt, pcov = curve_fit(exp_2, t, Z, bounds=(0, np.inf), 
+                           p0=[Z[0], 100, Z[0]/4, 50])
+        perr = np.sqrt(np.diag(pcov))
 
-    Mag_2 = [fr'M0 = ({popt[0]:.2f}$\pm${perr[0]:.2f})', 
-             fr'M0 = ({popt[2]:.2f}$\pm${perr[2]:.2f})']
-    T2_2 = [fr'T2 = ({popt[1]:.2f}$\pm${perr[1]:.2f}) ms', 
-            fr'T2 = ({popt[3]:.2f}$\pm${perr[3]:.2f}) ms']
+        Mag_2 = [fr'M0 = ({popt[0]:.2f}$\pm${perr[0]:.2f})', 
+                    fr'M0 = ({popt[2]:.2f}$\pm${perr[2]:.2f})']
+        T2_2 = [fr'T2 = ({popt[1]:.2f}$\pm${perr[1]:.2f}) ms', 
+                fr'T2 = ({popt[3]:.2f}$\pm${perr[3]:.2f}) ms']
 
-    r2 = r_square(t, Z, exp_2, popt)
+        r2 = r_square(t, Z, exp_2, popt)
 
-    return Mag_2, T2_2, r2
+        return Mag_2, T2_2, r2
+    except RuntimeError:
+        print("No se encontraron valores óptimos para el ajuste biexponencial")
+        return [0, 0], [0, 0], 0
 
 
 def NLI_FISTA_1D(K, Z, alpha, S):
