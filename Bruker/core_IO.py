@@ -164,7 +164,6 @@ def readCPMG(fileDir):
 
     # read in the bruker formatted data
     dic, rawdata = rb.read(fileDir)
-    SGL = rawdata
 
     SW = dic["acqus"]["SW_h"] # Hz
     nS = dic["acqus"]["NS"]
@@ -177,15 +176,13 @@ def readCPMG(fileDir):
     p90 = dic["acqus"]["P"][1] # us
     p180 = dic["acqus"]["P"][2] # us
 
-    # nEcho = dic["acqus"]["TD"]
-    # tEcho = dic["acqus"]["D"][6] # s
-    # tEcho  *= 2 * 1000 # ms
-    nEcho = len(SGL)
+    nEcho = dic["acqus"]["TD"]
+    nEcho = int(nEcho/2)
     tEcho = dic["acqus"]["D"][6] # s
-    tEcho  *= 1000 # ms
+    tEcho *= 2 * 1000 # ms
 
     t = np.linspace(tEcho, tEcho*nEcho, nEcho) # eje temporal en ms
-    print(t)
+    SGL = rawdata[:nEcho]
 
     return t, SGL, SW, nS, RDT, RG, att, RD, p90, p180, tEcho, nEcho
 
