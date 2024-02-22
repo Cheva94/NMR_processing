@@ -8,7 +8,7 @@ import numpy as np
 def main():
 
     path = args.path
-    root = path.split(".csv")[0]
+    root = 'DQ_Laplace'
     alpha = args.alpha
     DipMin, DipMax = args.DipRange[0], args.DipRange[1]
     limSup = args.limSup
@@ -52,7 +52,7 @@ def main():
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('path', help = "Path to the DQ signal.")
-    parser.add_argument('limSup', help = "Puntos a tomar para el ajuste", 
+    parser.add_argument('-limSup', help = "Puntos a tomar para el ajuste", 
                         type=int, default=18)
     parser.add_argument('-alpha', type = float, default = 0.1, 
                         help = "Tikhonov regularization parameter.")

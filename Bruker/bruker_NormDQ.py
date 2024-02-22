@@ -35,13 +35,13 @@ def main():
 
     SDQ = args.DQ
     Sref = args.ref
-    Out = SDQ.split('/')[0] + '/DQ_norm'
+    Out = 'Norm'
 
-    acq = pd.read_csv(SDQ.split('/')[0] + '/acq_param.csv').to_numpy()
-    DQfilter = acq[0][0].split('>>> ')[1]
-    DQfilterzFil = acq[1][0].split('>>> ')[1]
-    evol = acq[5][0].split('>>> ')[1]
-    zFilter = acq[6][0].split('>>> ')[1]
+    acq = pd.read_csv('acq_param.csv').to_numpy()
+    DQfilter = acq[0][0].split('\t')[1]
+    DQfilterzFil = acq[1][0].split('\t')[1]
+    evol = acq[5][0].split('\t')[1]
+    zFilter = acq[6][0].split('\t')[1]
 
     SDQ = pd.read_csv(f'{SDQ}', sep='\t').to_numpy()
     vd = SDQ[:, 0]
@@ -54,9 +54,9 @@ def main():
     fig, axs = plt.subplots(1, 3, figsize=(37.5, 10))
     
     if DQfilter == '0.000000 s':
-        acqdq = rf'No filter used | Evol = {evol} | z-Filter = {zFilter}'
+        acqdq = rf'No filter used | Evol = {evol} s | z-Filter = {zFilter} s'
     else:
-        acqdq = rf'DQ-filter = {DQfilter} | DQ-fil (z-fil) = {DQfilterzFil} | Evol = {evol} | z-Filter = {zFilter}'
+        acqdq = rf'DQ-filter = {DQfilter} s | DQ-fil (z-fil) = {DQfilterzFil} s | Evol = {evol} s | z-Filter = {zFilter} s'
 
     fig.suptitle(acqdq, fontsize='large')
 
