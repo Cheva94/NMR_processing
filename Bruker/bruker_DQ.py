@@ -1,8 +1,8 @@
 #!/usr/bin/python3.10
 
 import argparse
-import bruker_IO as IO
-import bruker_Plot as graph
+import core_IO as IO
+import core_Plot as graph
 import os
 
 def main():
@@ -28,7 +28,7 @@ def main():
 
     if verbose == True:
         print('Writing FID processed data from DQ...')
-        IO.writeDQ_verbose(t, SGL, nP, CS, spec, Out, lenvd)
+        IO.writeDQ_verbose(t, SGL, nP, CS, spec, Out, lenvd, mlim)
 
         print('Plotting FID processed data from DQ...')
         graph.DQ_verbose(t, SGL, nS, RDT, RG, att, RD, evol, zFilter, p90, vd, CS, spec, DQfilter, DQfilterzFil, Out, lenvd, mlim)

@@ -81,7 +81,7 @@ def writeFID(t, SGL, nP, CS, spec, Out, mlim):
         for i in range(nP):
             f.write(f'{t[i]:.6f}\t{SGL[i].real:.6f}\t{SGL[i].imag:.6f} \n')
 
-    mask = (CS>-mlim)&(CS<mlim)
+    mask = (CS>-2*mlim)&(CS<2*mlim)
     CS = CS[mask]
     spec = spec[mask]
 
@@ -89,7 +89,6 @@ def writeFID(t, SGL, nP, CS, spec, Out, mlim):
         f.write("CS [ppm]\tRe[spec]\tIm[spec] \n")
         for i in range(len(CS)):
             f.write(f'{CS[i]:.6f}\t{spec[i].real:.6f}\t{spec[i].imag:.6f} \n')
-
 
 def writeFID_acq(nS, RDT, RG, att, RD, p90, Out):
 
@@ -457,11 +456,11 @@ def writeDQ_acq(nS, RDT, RG, att, RD, evol, zFilter, p90, vd, DQfilter, DQfilter
         f.write(f"\tAtenuación\t{att:.0f}\tdB\n")
         f.write(f"\tAncho del pulso de 90\t{p90}\tus")
 
-def writeDQ_verbose(t, SGL, nP, CS, spec, Out, lenvd):
+def writeDQ_verbose(t, SGL, nP, CS, spec, Out, lenvd, mlim):
 
     print('Progress:')
 
-    mask = (CS>-5)&(CS<5)
+    mask = (CS>-2*mlim)&(CS<2*mlim)
     CS = CS[mask]
     spec = spec[:, mask]
 

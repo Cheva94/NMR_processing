@@ -13,7 +13,7 @@ def main():
 
     print('Reading FID raw data...')
     t, SGL, nP, DW = IO.read1Dsgl(path)
-    nS, RDT, RG, att, RD, p90, _, _, _ = IO.read1Dparams(root)
+    RDT, att, RG, nS, RD, p90, _, _, _ = IO.read1Dparams(root)
     params = (rf'Acquisition: RDT = {RDT} $\mu$s | Atten = {att} dB | '
               rf'RG = {RG} dB | nS = {nS} | RD = {RD:.2f} s | '
               rf'p90 = {p90} $\mu$s')
