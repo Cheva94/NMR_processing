@@ -17,9 +17,9 @@ def main():
     if not isExist:
         os.makedirs(Out)
 
-    t, SGL, nP, SW, nS, RDT, RG, att, RD, p90, p180, tEcho, nEcho = IO.readCPMG(fileDir)
+    t, SGL, SW, nS, RDT, RG, att, RD, p90, p180, tEcho, nEcho = IO.readCPMG(fileDir)
 
-    S0, T2, K = IO.initKernel1D(nP, t, T2min, T2max)
+    S0, T2, K = IO.initKernel1D(nEcho, t, T2min, T2max)
     params = (rf'Acquisition: RDT = {RDT:.2f} $\mu$s | Atten = {att} dB | '
               rf'RG = {RG} dB | nS = {nS} | RD = {RD:.2f} s | '
               rf'p90 = {p90} $\mu$s | p180 = {p180} $\mu$s | '
@@ -53,7 +53,7 @@ def main():
         print('Try modifying T2Range and/or alpha settings.')
 
     print(f'Fitting NLI results in time domain...')
-    MLaplace = IO.fitLapMag_1D(t, T2, S, nP)
+    MLaplace = IO.fitLapMag_1D(t, T2, S, nEcho)
 
     print('Writing acquisition parameters...')
     IO.writeCPMG_acq(nS, RDT, RG, att, RD, p90, p180, tEcho, nEcho, Out)

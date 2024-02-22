@@ -165,7 +165,8 @@ def readCPMG(fileDir):
 
     # read in the bruker formatted data
     dic, rawdata = rb.read(fileDir)
-    
+    SGL = rawdata
+
     SW = dic["acqus"]["SW_h"] # Hz
     nS = dic["acqus"]["NS"]
     RDT = dic["acqus"]["DE"] # us
@@ -177,20 +178,17 @@ def readCPMG(fileDir):
     p90 = dic["acqus"]["P"][1] # us
     p180 = dic["acqus"]["P"][2] # us
 
-    nEcho = dic["acqus"]["TD"]
+    # nEcho = dic["acqus"]["TD"]
+    # tEcho = dic["acqus"]["D"][6] # s
+    # tEcho  *= 2 * 1000 # ms
+    nEcho = len(SGL)
     tEcho = dic["acqus"]["D"][6] # s
-    tEcho  *= 2 * 1000 # ms
+    tEcho  *= 1000 # ms
 
-    # filter = 69 # Puntos que no sirven tema de filtro digital
-    # SGL = rawdata[filter:]
-    SGL = rawdata
-    print(len(SGL))
-    # SGL[0] = 2*SGL[0] # arreglo lo que el bruker rompe
-    nP = len(SGL) # Cantidad total de puntos que me quedan en la FID
-    # t = np.array([x * tEcho for x in range(nEcho)]) # eje temporal en ms
-    t = np.array([x * 1E3 / SW for x in range(nP)]) # eje temporal en microsegundos
+    t = np.linspace(tEcho, tEcho*nEcho, nEcho) # eje temporal en ms
+    print(t)
 
-    return t, SGL, nP, SW, nS, RDT, RG, att, RD, p90, p180, tEcho, nEcho
+    return t, SGL, SW, nS, RDT, RG, att, RD, p90, p180, tEcho, nEcho
 
 
 def initKernel1D(nP, t, T2min, T2max):
@@ -218,7 +216,7 @@ def expFit_1(t, Z):
     Monoexponential fitting of CPMG decay.
     '''
 
-    popt, pcov = curve_fit(exp_1, t, Z, bounds=(0, np.inf), p0=[70, 2000])
+    popt, pcov = curve_fit(exp_1, t, Z, bounds=(0, np.inf), p0=[70, 40])
     perr = np.sqrt(np.diag(pcov))
 
     Mag_1 = [fr'M0 = ({popt[0]:.2f}$\pm${perr[0]:.2f})', '']
@@ -239,7 +237,7 @@ def expFit_2(t, Z):
     '''
 
     popt, pcov = curve_fit(exp_2, t, Z, bounds=(0, np.inf), 
-                           p0=[70, 2000, 30, 1000])
+                           p0=[70, 40, 30, 10])
     perr = np.sqrt(np.diag(pcov))
 
     Mag_2 = [fr'M0 = ({popt[0]:.2f}$\pm${perr[0]:.2f})', 
