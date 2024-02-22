@@ -8,7 +8,7 @@ import numpy as np
 def main():
 
     path = args.path
-    root = 'DQ_Laplace'
+    root = 'Laplace'
     alpha = args.alpha
     DipMin, DipMax = args.DipRange[0], args.DipRange[1]
     limSup = args.limSup

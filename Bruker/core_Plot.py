@@ -609,20 +609,17 @@ def DQLap(vd_us, bu, Dip, S, MLaplace, root, alpha, DipMin, DipMax, limSup):
     Plots DQ Laplace results.
     '''
 
-    _, axs = plt.subplots(2, 3, figsize=(50, 20), 
+    _, axs = plt.subplots(2, 2, figsize=(30, 20), 
                             gridspec_kw={'height_ratios': [3,1]})
 
-    # CPMG: experimental and fit
+    # Build-up: experimental and fit
     axs[0,0].scatter(vd_us, bu, label='Exp', color='coral')
     axs[0,0].plot(vd_us[:limSup], MLaplace, label='NLI Fit', color='teal')
-    # M0 = 42000
-    # Dip0 = 2000
-    # axs[0,0].plot(t[:limSup], M0 * (1 - np.exp(- (t[:limSup] * Dip0)**2)), label='Clásico', color='blue')
     axs[0,0].set_xlabel('vd [us]')
     axs[0,0].legend()
     axs[0,0].axhline(0, c = 'k', lw = 4, ls = ':', zorder=-2)
 
-    # CPMG: NLI residuals
+    # Build-up: NLI residuals
     residuals = MLaplace-bu[:limSup]
     ss_res = np.sum(residuals ** 2)
     ss_tot = np.sum((bu - np.mean(bu)) ** 2)
@@ -634,27 +631,23 @@ def DQLap(vd_us, bu, Dip, S, MLaplace, root, alpha, DipMin, DipMax, limSup):
     axs[1,0].axhline(0.1*np.max(bu), c = 'red', lw = 6, ls = '-')
     axs[1,0].axhline(-0.1*np.max(bu), c = 'red', lw = 6, ls = '-')
 
-    # T2 distribution
+    # Dip distribution
     Snorm = S / np.max(S)
     peaks, _ = find_peaks(Snorm,height=0.025, distance = 5)
     peaksx, peaksy = Dip[peaks], Snorm[peaks]
 
-    axs[0,2].set_title(rf'$\alpha$ = {alpha}')
-    axs[0,2].axhline(y=0.1, color='k', ls=':', lw=4)
-    axs[0,2].plot(Dip, Snorm, label = 'Distrib.', color = 'teal')
+    axs[0,1].set_title(rf'$\alpha$ = {alpha}')
+    axs[0,1].axhline(y=0.1, color='k', ls=':', lw=4)
+    axs[0,1].plot(Dip, Snorm, label = 'Distrib.', color = 'teal')
     for i in range(len(peaksx)):
-            axs[0,2].plot(peaksx[i], peaksy[i] + 0.05, lw = 0, marker=11, 
+            axs[0,1].plot(peaksx[i], peaksy[i] + 0.05, lw = 0, marker=11, 
                           color='black')
-            axs[0,2].annotate(f'{peaksx[i]:.2f}', 
+            axs[0,1].annotate(f'{peaksx[i]:.2f}', 
                               xy = (peaksx[i], peaksy[i] + 0.07), 
                               fontsize=30, ha='center')
-    axs[0,2].set_xlabel('D [???]')
-    axs[0,2].set_ylim(-0.02, 1.2)
-    # axs[0,2].set_xscale('log')
-    # axs[0,2].set_xlim(10.0**DipMin, 10.0**DipMax)
+    axs[0,1].set_xlabel('D [kHz]')
+    axs[0,1].set_ylim(-0.02, 1.2)
 
-    axs[0,1].axis('off')
     axs[1,1].axis('off')
-    axs[1,2].axis('off')
 
     plt.savefig(f'{root}')
