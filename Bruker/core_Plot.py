@@ -609,7 +609,7 @@ def DQLap(vd_us, bu, Dip, S, MLaplace, root, alpha, DipMin, DipMax, limSup):
     Plots DQ Laplace results.
     '''
 
-    _, axs = plt.subplots(2, 2, figsize=(30, 20), 
+    _, axs = plt.subplots(2, 3, figsize=(37.5, 20), 
                             gridspec_kw={'height_ratios': [3,1]})
 
     # Build-up: experimental and fit
@@ -648,6 +648,28 @@ def DQLap(vd_us, bu, Dip, S, MLaplace, root, alpha, DipMin, DipMax, limSup):
     axs[0,1].set_xlabel('D [kHz]')
     axs[0,1].set_ylim(-0.02, 1.2)
 
+    # Constantes físicas
+    mu0 = 1.256637E-6 # N/A^2
+    gammaH = 267.5E6 # Hz/T
+    hbar = 6.62607E-34 # Js
+    Hzm3TokHzA3 = 1E27
+    factConv = gammaH**2 * mu0 * hbar * Hzm3TokHzA3 / (4*np.pi) # kHz A^3
+    radDist = np.cbrt(factConv/Dip)
+    peaksx = radDist[peaks]
+
+    # Radial distribution
+    axs[0,2].axhline(y=0.1, color='k', ls=':', lw=4)
+    axs[0,2].plot(radDist, Snorm, label = 'Distrib.', color = 'teal')
+    for i in range(len(peaksx)):
+            axs[0,2].plot(peaksx[i], peaksy[i] + 0.05, lw = 0, marker=11, 
+                          color='black')
+            axs[0,2].annotate(f'{peaksx[i]:.2f}', 
+                              xy = (peaksx[i], peaksy[i] + 0.07), 
+                              fontsize=30, ha='center')
+    axs[0,2].set_xlabel('r [A]')
+    axs[0,2].set_ylim(-0.02, 1.2)
+
     axs[1,1].axis('off')
+    axs[1,2].axis('off')
 
     plt.savefig(f'{root}')

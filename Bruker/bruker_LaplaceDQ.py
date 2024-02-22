@@ -8,7 +8,6 @@ import numpy as np
 def main():
 
     path = args.path
-    root = 'Laplace'
     alpha = args.alpha
     DipMin, DipMax = args.DipRange[0], args.DipRange[1]
     limSup = args.limSup
@@ -19,6 +18,8 @@ def main():
     # no sé si es necesaria la normalización
     # bu /= np.max(bu)
     vdFit = vd_ms[:limSup]
+    print(f'Se ajusta hasta los {vdFit[-1]*1000} us.')
+    root = f'Laplace_Fit{vdFit[-1]*1000:.0f}us.'
     nP = len(vdFit)
     buFit = bu[:limSup]
 
@@ -42,18 +43,10 @@ def main():
     print('Plotting DQ processed data...')
     graph.DQLap(vd_us, bu, Dip, S, MLaplace, root, alpha, DipMin, DipMax, limSup)
 
-    print(f'Fitting with exponentials...')
-
-    # Mag_1, Dip_1, r2 = IO.expFit_1(vd[:limSup], bu[:limSup])
-    # print(f'R2 = {r2:.6f}')
-    # print(Mag_1)
-    # print(Dip_1)
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('path', help = "Path to the DQ signal.")
-    parser.add_argument('-limSup', help = "Puntos a tomar para el ajuste", 
-                        type=int, default=18)
+    parser.add_argument('limSup', type=int, help = "Puntos a tomar para el ajuste")
     parser.add_argument('-alpha', type = float, default = 0.1, 
                         help = "Tikhonov regularization parameter.")
     parser.add_argument('-DipRange', nargs = 2, type = float, default = [0, 100], 
