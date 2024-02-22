@@ -2,6 +2,19 @@ import core_readbruker as rb
 import numpy as np
 import pandas as pd
 import scipy.fft as FT
+from scipy.optimize import curve_fit
+
+def r_square(x, y, f, popt):
+    '''
+    Pearson's coefficient.
+    '''
+
+    residuals = y - f(x, *popt)
+    ss_res = np.sum(residuals ** 2)
+    ss_tot = np.sum((y - np.mean(y)) ** 2)
+
+    return 1 - ss_res / ss_tot
+
 
 # FID related functions
 
@@ -53,7 +66,7 @@ def specFID(SGL, nP, SW):
     '''
 
     # Preparación del espectro
-    zf = FT.next_fast_len(2**5 * nP)
+    zf = FT.next_fast_len(4 * nP)
     freq = FT.fftshift(FT.fftfreq(zf, d=1/SW)) # Hz scale
     CS = freq / 300 # ppm for Bruker scale
     spec = np.flip(FT.fftshift(FT.fft(SGL, n = zf)))
@@ -144,6 +157,189 @@ def writeNutac(vp, fid00, fidPts, Out):
             f.write(f'{vp[i]:.1f}\t{fid00[i]:.6f}\t{fidPts[i]:.6f}\n')
 
 
+# CPMG related functions
+def readCPMG(fileDir):
+    '''
+    Lectura del archivo de la medición y sus parámetros.
+    '''
+
+    # read in the bruker formatted data
+    dic, rawdata = rb.read(fileDir)
+    SGL = rawdata
+
+    SW = dic["acqus"]["SW_h"] # Hz
+    nS = dic["acqus"]["NS"]
+    RDT = dic["acqus"]["DE"] # us
+    RG = dic["acqus"]["RG"] # dB
+    
+    RD = dic["acqus"]["D"][1] # s
+    att = dic["acqus"]["PL"][1] # dB
+
+    p90 = dic["acqus"]["P"][1] # us
+    p180 = dic["acqus"]["P"][2] # us
+
+    # nEcho = dic["acqus"]["TD"]
+    # tEcho = dic["acqus"]["D"][6] # s
+    # tEcho  *= 2 * 1000 # ms
+    nEcho = len(SGL)
+    tEcho = dic["acqus"]["D"][6] # s
+    tEcho  *= 1000 # ms
+
+    t = np.linspace(tEcho, tEcho*nEcho, nEcho) # eje temporal en ms
+    print(t)
+
+    return t, SGL, SW, nS, RDT, RG, att, RD, p90, p180, tEcho, nEcho
+
+
+def initKernel1D(nP, t, T2min, T2max):
+    '''
+    Initialize variables for Laplace transform.
+    '''
+
+    nBin = 150
+    S0 = np.ones(nBin)
+    T2 = np.logspace(T2min, T2max, nBin)
+    K = np.zeros((nP, nBin))
+
+    for i in range(nP):
+        K[i, :] = np.exp(-t[i] / T2)
+
+    return S0, T2, K
+
+
+def exp_1(t, M0, T2):
+    return M0 * np.exp(- t / T2)
+
+
+def expFit_1(t, Z):
+    '''
+    Monoexponential fitting of CPMG decay.
+    '''
+
+    popt, pcov = curve_fit(exp_1, t, Z, bounds=(0, np.inf), p0=[70, 40])
+    perr = np.sqrt(np.diag(pcov))
+
+    Mag_1 = [fr'M0 = ({popt[0]:.2f}$\pm${perr[0]:.2f})', '']
+    T2_1 = [fr'T2 = ({popt[1]:.2f}$\pm${perr[1]:.2f}) ms', '']
+    
+    r2 = r_square(t, Z, exp_1, popt)
+
+    return Mag_1, T2_1, r2
+
+
+def exp_2(t, M0_1, T2_1, M0_2, T2_2):
+    return M0_1 * np.exp(- t / T2_1) + M0_2 * np.exp(- t / T2_2)
+
+
+def expFit_2(t, Z):
+    '''
+    Biexponential fitting of CPMG decay.
+    '''
+
+    popt, pcov = curve_fit(exp_2, t, Z, bounds=(0, np.inf), 
+                           p0=[70, 40, 30, 10])
+    perr = np.sqrt(np.diag(pcov))
+
+    Mag_2 = [fr'M0 = ({popt[0]:.2f}$\pm${perr[0]:.2f})', 
+             fr'M0 = ({popt[2]:.2f}$\pm${perr[2]:.2f})']
+    T2_2 = [fr'T2 = ({popt[1]:.2f}$\pm${perr[1]:.2f}) ms', 
+            fr'T2 = ({popt[3]:.2f}$\pm${perr[3]:.2f}) ms']
+
+    r2 = r_square(t, Z, exp_2, popt)
+
+    return Mag_2, T2_2, r2
+
+
+def NLI_FISTA_1D(K, Z, alpha, S):
+    '''
+    Numeric Laplace inversion, based on FISTA.
+    '''
+
+    Z = np.reshape(Z, (len(Z), 1))
+    S = np.reshape(S, (len(S), 1))
+
+    KTK = K.T @ K
+    KTZ = K.T @ Z
+    ZZT = np.trace(Z @ Z.T)
+
+    invL = 1 / (np.trace(KTK) + alpha)
+    factor = 1 - alpha * invL
+
+    Y = S
+    tstep = 1
+    lastRes = np.inf
+
+    for iter in range(100000):
+        term2 = KTZ - KTK @ Y
+        Snew = factor * Y + invL * term2
+        Snew[Snew<0] = 0
+
+        tnew = 0.5 * (1 + np.sqrt(1 + 4 * tstep**2))
+        tRatio = (tstep - 1) / tnew
+        Y = Snew + tRatio * (Snew - S)
+        tstep = tnew
+        S = Snew
+
+        if iter % 500 == 0:
+            TikhTerm = alpha * np.linalg.norm(S)**2
+            ObjFunc = ZZT - 2 * np.trace(S.T @ KTZ) + np.trace(S.T @ KTK @ S) + TikhTerm
+
+            Res = np.abs(ObjFunc - lastRes) / ObjFunc
+            lastRes = ObjFunc
+            print(f'\t# It = {iter} >>> Residue = {Res:.6f}')
+
+            if Res < 1E-5:
+                break
+
+    return S[:, 0], iter
+
+
+def fitLapMag_1D(t, T2, S, nP):
+    '''
+    Fits decay from T2 distribution.
+    '''
+
+    # t = range(nP)
+    d = range(len(T2))
+    M = []
+    for i in range(nP):
+        m = 0
+        for j in d:
+            m += S[j] * np.exp(- t[i] / T2[j])
+        M.append(m)
+
+    return M
+
+
+def writeCPMG_acq(nS, RDT, RG, att, RD, p90, p180, tEcho, nEcho, Out):
+
+    with open(f'{Out}acq_param.csv', 'w') as f:
+        f.write("Parámetros de adquisición:\n")
+        f.write(f"\tCantidad de scans\t{nS:.0f}\n")
+        f.write(f"\tTiempo entre scans\t{RD:.4f}\ts\n")
+        f.write(f"\tTiempo muerto\t{RDT}\tus\n")
+        f.write(f"\tGanancia\t{RG:.1f}\tdB\n")
+        f.write(f"\tAtenuación\t{att:.0f}\tdB\n")
+        f.write(f"\tAncho del pulso de 90\t{p90}\tus")
+        f.write(f"\tAncho del pulso de 180\t{p180}\tus")
+        f.write(f"\tTiempo de eco\t{tEcho}\tms")
+        f.write(f"\tNúmero de ecos\t{nEcho}")
+
+
+def writeCPMG(t, Z, MLaplace, T2, S, Out):
+
+    with open(f'{Out}CPMG_td.csv', 'w') as f:
+        f.write("t [ms]\t\tDecay\t\tFit (NLI)\n")
+        for i in range(len(t)):
+            f.write(f'{t[i]:.6f}\t{Z[i]:.6f}\t{MLaplace[i]:.6f}\n')
+
+    cumT2 = np.cumsum(S)
+    with open(f'{Out}CPMG_rd.csv', 'w') as f:
+        f.write("T2 [ms]\t\tDistribution\tCumulative\n")
+        for i in range(len(T2)):
+            f.write(f'{T2[i]:.6f}\t{S[i]:.6f}\t{cumT2[i]:.6f}\n')
+
+
 # DQ related functions
 
 
@@ -228,7 +424,7 @@ def specDQ(SGL, nP, SW, lenvd):
     '''
 
     # Preparación del espectro
-    zf = FT.next_fast_len(2**5 * nP)
+    zf = FT.next_fast_len(4 * nP)
     freq = FT.fftshift(FT.fftfreq(zf, d=1/SW)) # Hz scale
     CS = freq / 300 # ppm for Bruker scale
     spec = []

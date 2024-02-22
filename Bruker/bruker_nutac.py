@@ -1,15 +1,15 @@
 #!/usr/bin/python3.10
 
 import argparse
-import bruker_IO as IO
-import bruker_Plot as graph
+import core_IO as IO
+import core_Plot as graph
 import os
 
 def main():
 
     print('Analysing nutation raw data...')
     fileDir = args.input
-    Out = fileDir.split('/')[0]+'_procFID/'
+    Out = fileDir.split('/')[0]+'_procNutac/'
     isExist = os.path.exists(Out)
     if not isExist:
         os.makedirs(Out)

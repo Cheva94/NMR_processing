@@ -185,6 +185,105 @@ def Nutac(SGL, nS, RDT, RG, att, RD, vp, Out, lenvp):
 
     return fid00, fidPts
 
+
+# CPMG related functions
+
+def CPMG(t, Z, T2, S, MLaplace, Out, alpha, T2min, T2max, params, dataFit, tEcho):
+    '''
+    Grafica resultados de la CPMG.
+    '''
+
+    # Remove edge effects from NLI on the plots
+    S = S[2:-2]
+    T2 = T2[2:-2]
+
+    fig, axs = plt.subplots(2, 3, figsize=(50, 20), 
+                            gridspec_kw={'height_ratios': [3,1]})
+    fig.suptitle(params, fontsize='large')
+
+    # CPMG: experimental and fit
+    axs[0,0].scatter(t, Z, label='Exp', color=Naranja)
+    axs[0,0].plot(t, MLaplace, label='NLI Fit', color=Verde)
+    axs[0,0].set_xlabel(r'$\tau$ [ms]')
+    axs[0,0].set_ylabel('CPMG')
+    axs[0,0].legend()
+    axs[0,0].axhline(0, c = 'k', lw = 4, ls = ':', zorder=-2)
+
+    # CPMG: experimental and fit (inset: zoom at the beginning)
+    axins1 = inset_axes(axs[0,0], width="30%", height="30%", loc=5)
+    axins1.scatter(t[0:30], Z[0:30], color=Naranja)
+    axins1.plot(t[0:30], MLaplace[0:30], color=Verde)
+
+    # CPMG: experimental and fit (semilog)
+    axs[0,1].scatter(t, Z, label='Exp', color=Naranja)
+    axs[0,1].plot(t, MLaplace, label='NLI Fit', color=Verde)
+    axs[0,1].set_yscale('log')
+    axs[0,1].set_xlabel(r'$\tau$ [ms]')
+    axs[0,1].set_ylabel('log(CPMG)')
+    axs[0,1].legend()
+
+    # CPMG: NLI residuals
+    residuals = MLaplace-Z
+    ss_res = np.sum(residuals ** 2)
+    ss_tot = np.sum((Z - np.mean(Z)) ** 2)
+    R2Laplace = 1 - ss_res / ss_tot
+    axs[1,0].set_title(fr'NLI: R$^2$ = {R2Laplace:.6f}')
+    axs[1,0].scatter(t, residuals, color = Morado)
+    axs[1,0].axhline(0, c = 'k', lw = 4, ls = ':')
+    axs[1,0].set_xlabel(r'$\tau$ [ms]')
+    axs[1,0].axhline(0.1*np.max(Z), c = 'red', lw = 6, ls = '-')
+    axs[1,0].axhline(-0.1*np.max(Z), c = 'red', lw = 6, ls = '-')
+
+    # T2 distribution
+    Snorm = S / np.max(S)
+    peaks, _ = find_peaks(Snorm,height=0.025, distance = 5)
+    peaksx, peaksy = T2[peaks], Snorm[peaks]
+
+    axs[0,2].fill_between([tEcho, 5 * tEcho], -0.02, 1.2, color=Gris, 
+                          alpha=0.3, zorder=-2)
+    axs[0,2].set_title(rf'$\alpha$ = {alpha}')
+    axs[0,2].axhline(y=0.1, color='k', ls=':', lw=4)
+    axs[0,2].plot(T2, Snorm, label = 'Distrib.', color = Verde)
+    for i in range(len(peaksx)):
+            axs[0,2].plot(peaksx[i], peaksy[i] + 0.05, lw = 0, marker=11, 
+                          color='black')
+            axs[0,2].annotate(f'{peaksx[i]:.2f}', 
+                              xy = (peaksx[i], peaksy[i] + 0.07), 
+                              fontsize=30, ha='center')
+    axs[0,2].set_xlabel(r'$T_2$ [ms]')
+    axs[0,2].set_xscale('log')
+    axs[0,2].set_ylim(-0.02, 1.2)
+    axs[0,2].set_xlim(10.0**T2min, 10.0**T2max)
+
+    cumT2 = np.cumsum(S)
+    cumT2norm = cumT2 / cumT2[-1]
+    ax = axs[0,2].twinx()
+    ax.plot(T2, cumT2norm, label = 'Cumul.', color = Naranja)
+    ax.set_ylim(-0.02, 1.2)
+
+    axs[1,1].axis('off')
+    axs[1,2].axis('off')
+
+    # Exponential fit resutls
+    axs[1,1].annotate('>>> Monoexponential fit <<<', xy = (0.5, 1.00), 
+                      fontsize=30, ha='center')
+    axs[1,1].annotate(f'{dataFit[0,0]} --> {dataFit[1,0]}', xy = (0.5, 0.85), 
+                      fontsize=30, ha='center')
+    axs[1,1].annotate(f'{dataFit[0,2]}', xy = (0.5, 0.70), 
+                      fontsize=30, ha='center')
+
+    axs[1,1].annotate('>>> Biexponential fit <<<', xy = (0.5, 0.45), 
+                      fontsize=30, ha='center')
+    axs[1,1].annotate(f'{dataFit[2,0]} --> {dataFit[3,0]}', xy = (0.5, 0.30), 
+                      fontsize=30, ha='center')
+    axs[1,1].annotate(f'{dataFit[2,1]} --> {dataFit[3,1]}', xy = (0.5, 0.15), 
+                      fontsize=30, ha='center')
+    axs[1,1].annotate(f'{dataFit[2,2]}', xy = (0.5, 0.00), 
+                      fontsize=30, ha='center')
+    
+    plt.savefig(f'{Out}CPMG')
+
+
 # DQ related funcitons
 
 

@@ -167,8 +167,7 @@ def FID(t, SGL, CS, spec, root, ppm, params, pDrop):
 ################################################################################
 
 
-def CPMG(t, Z, T2, S, MLaplace, root, alpha, T2min, T2max, params, 
-         dataFit, tEcho):
+def CPMG(t, Z, T2, S, MLaplace, root, alpha, T2min, T2max, params, dataFit, tEcho):
     '''
     Plots CPMG results.
     '''
