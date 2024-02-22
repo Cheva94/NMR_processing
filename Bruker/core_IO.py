@@ -488,3 +488,65 @@ def writeDQ(vd, fid00, fidPts, fidPtsSD, pArea, Out):
             f.write("vd [us]\tFID00\tFID Pts\tFID Pts (SD)\tPeak Area\n")
             for i in range(len(vd)):
                 f.write(f'{vd[i]:.1f}\t{fid00[i]:.6f}\t{fidPts[i]:.6f}\t{fidPtsSD[i]:.6f}\t{pArea[i]:.6f}\n')
+
+
+def readDQLaplace(path):
+    '''
+    Reads signal file.
+    '''
+
+    data = pd.read_csv(path, sep='\t').to_numpy()
+
+    vd_us = data[:, 0] # In us
+    bu = data[:, 2] # Tomo el promedio de primeros puntos
+
+    return vd_us, bu
+
+def initKernelDQ(nP, vdFit, DipMin, DipMax):
+    '''
+    Initialize variables for Laplace transform.
+    '''
+
+    nBin = 150
+    S0 = np.ones(nBin)
+    # Dip = np.logspace(DipMin, DipMax, nBin) # separación logarítmica
+    Dip = np.linspace(DipMin, DipMax, nBin) # separación lineal
+
+    K = np.zeros((nP, nBin))
+
+    for i in range(nP):
+        K[i, :] = 1 - np.exp(-(vdFit[i] * Dip)**2)
+
+    return S0, Dip, K
+
+def fitLapMag_Dip(vd, Dip, S, nP):
+    '''
+    Fits decay from Dip distribution.
+    '''
+
+    d = range(len(Dip))
+    M = []
+    for i in range(nP):
+        m = 0
+        for j in d:
+            m += S[j] * (1 - np.exp(- vd[i]**2 * Dip[j]**2))
+        M.append(m)
+
+    return M
+
+
+def writeDQLap(vd, Z, MLaplace, Dip, S, root):
+    '''
+    Saves processed data.
+    '''
+
+    with open(f'{root}_TimeDom.csv', 'w') as f:
+        f.write("t [ms]\t\tDecay\t\tFit (NLI)\n")
+        for i in range(len(MLaplace)):
+            f.write(f'{vd[i]:.6f}\t{Z[i]:.6f}\t{MLaplace[i]:.6f}\n')
+
+    cumDip = np.cumsum(S)
+    with open(f'{root}_RatesDom.csv', 'w') as f:
+        f.write("Dip [ms]\t\tDistribution\tCumulative\n")
+        for i in range(len(Dip)):
+            f.write(f'{Dip[i]:.6f}\t{S[i]:.6f}\t{cumDip[i]:.6f}\n')
