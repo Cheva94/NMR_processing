@@ -175,7 +175,8 @@ def NormRG2D(Z, RG, nP1, nP2, nFID):
     '''
 
     norm = 1 / (6.32589E-4 * np.exp(RG/9) - 0.0854)
-    Z = np.reshape(Z*norm, (nP1, nP2))[:, nFID+1:]
+    # Z = np.reshape(Z*norm, (nP1, nP2))[:, nFID+1:]
+    Z = np.reshape(Z*norm, (nP1, nP2))[:, nFID:]
 
     return Z
 
@@ -194,7 +195,7 @@ def specFID(SGL, nP, DW):
     Generates spectrum.
     '''
 
-    zf = FT.next_fast_len(2**5 * nP)
+    zf = FT.next_fast_len(4 * nP)
     freq = FT.fftshift(FT.fftfreq(zf, d=DW)) # Hz scale
     CS = freq / 20 # ppm for Minispec scale
     spec = np.flip(FT.fftshift(FT.fft(SGL, n = zf)))
@@ -340,10 +341,10 @@ def fitLapMag_1D(t, T2, S, nP):
     Fits decay from T2 distribution.
     '''
 
-    t = range(nP)
+    # t = range(nP)
     d = range(len(T2))
     M = []
-    for i in t:
+    for i in range(nP):
         m = 0
         for j in d:
             m += S[j] * np.exp(- t[i] / T2[j])
@@ -386,7 +387,7 @@ def initKernel2D(nP1, nP2, tau1, tau2, T1min, T1max, T2min, T2max):
     nBinx = nBiny = 150
     S0 = np.ones((nBinx, nBiny))
     T1 = np.logspace(T1min, T1max, nBinx)
-    T2 = np.logspace(T2min, T2max, nBiny)    
+    T2 = np.logspace(T2min, T2max, nBiny)
 
     K1 = 1 - np.exp(-tau1 / T1)
     K2 = np.exp(-tau2 / T2)

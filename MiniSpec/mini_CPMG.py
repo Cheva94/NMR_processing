@@ -14,7 +14,7 @@ def main():
 
     print('Reading CPMG raw data...')
     t, SGL, nP, _ = IO.read1Dsgl(path)
-    nS, RDT, RG, att, RD, p90, p180, tEcho, nEcho = IO.read1Dparams(root)
+    RDT, att, RG, nS, RD, p90, p180, tEcho, nEcho = IO.read1Dparams(root)
     S0, T2, K = IO.initKernel1D(nP, t, T2min, T2max)
     params = (rf'Acquisition: RDT = {RDT} $\mu$s | Atten = {att} dB | '
               rf'RG = {RG} dB | nS = {nS} | RD = {RD:.2f} s | '
