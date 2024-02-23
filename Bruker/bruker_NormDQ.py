@@ -31,7 +31,13 @@ plt.rcParams["lines.linestyle"] = '-'
 
 plt.rcParams["figure.autolayout"] = True
 
+# Colores
+Verde = '#08a189' # = 08A189 = 8 161 137    (principal)
 Naranja = '#fa6210' # = FA6210 = 250 98 16    (secundario)
+Morado = '#7f03fc' # =  = 127 3 252   (terciario)
+Amarillo = '#f7f307' # =  = 247 243 7   (cuaternario)
+Gris = '#626262' # =  = 98 98 98 (alternativo)
+Negro = '#000000' # =  = 0 0 0 (base)
 
 def main():
 
@@ -62,26 +68,23 @@ def main():
 
     fig.suptitle(acqdq, fontsize='large')
 
-    # Plot del primer punto de la FID
-    axs[0].set_title('Primer punto de cada FID')
-    # axs[0].scatter(vd, Ssigma[:, 0] / Ssigma[0, 0], label=rf'S$_\Sigma$')
-    # axs[0].scatter(vd, Sref[:, 0] / Ssigma[0, 0], label=rf'S$_r$$_e$$_f$')
-    # axs[0].scatter(vd, SDQ[:, 0] / Ssigma[0, 0], label=rf'S$_D$$_Q$ ({vd[SDQ[:, 0] == np.max(SDQ[:, 0])][0]} $\mu$s)')
-    axs[0].scatter(vd, SnDQ[:, 0], label=rf'S$_n$$_D$$_Q$ ({vd[SnDQ[:, 0] == np.max(SnDQ[:, 0])][0]} $\mu$s)', color='tab:blue')
+    # DQ
+    axs[0].set_title('DQ')
+    axs[0].scatter(vd, SDQ[:, 1], label=rf'Max= ({vd[SDQ[:, 1] == np.max(SDQ[:, 1])][0]} $\mu$s)', color=Morado)
     axs[0].axhline(y=0, color='k', ls=':', lw=4)
     axs[0].set_xlabel(r't [$\mu$s]')
     axs[0].legend()
 
-    # Plot del promedio de los primeros puntos de la FID
-    axs[1].set_title('Primeros 10 puntos de cada FID')
-    axs[1].scatter(vd, SnDQ[:, 1], label=rf'S$_n$$_D$$_Q$ ({vd[SnDQ[:, 1] == np.max(SnDQ[:, 1])][0]} $\mu$s)', color='tab:orange')
+    # Ref
+    axs[1].set_title('Ref')
+    axs[1].scatter(vd, Sref[:, 1], label=rf'Max= ({vd[Sref[:, 1] == np.max(Sref[:, 1])][0]} $\mu$s)', color=Naranja)
     axs[1].axhline(y=0, color='k', ls=':', lw=4)
     axs[1].set_xlabel(r't [$\mu$s]')
     axs[1].legend()
 
-    # Plot de las áreas de los espectros
-    axs[2].set_title('Área de los picos de cada espectro')
-    axs[2].scatter(vd, SnDQ[:, 3], label=rf'S$_n$$_D$$_Q$ ({vd[SnDQ[:, 3] == np.max(SnDQ[:, 3])][0]} $\mu$s)', color='tab:green')
+    # Norm
+    axs[2].set_title('Norm')
+    axs[2].scatter(vd, SnDQ[:, 1], label=rf'Max= ({vd[SnDQ[:, 1] == np.max(SnDQ[:, 1])][0]} $\mu$s)', color=Verde)
     axs[2].axhline(y=0, color='k', ls=':', lw=4)
     axs[2].set_xlabel(r't [$\mu$s]')
     axs[2].legend()
