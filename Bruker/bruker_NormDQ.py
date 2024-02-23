@@ -31,6 +31,8 @@ plt.rcParams["lines.linestyle"] = '-'
 
 plt.rcParams["figure.autolayout"] = True
 
+Naranja = '#fa6210' # = FA6210 = 250 98 16    (secundario)
+
 def main():
 
     SDQ = args.DQ
@@ -38,10 +40,10 @@ def main():
     Out = 'Norm'
 
     acq = pd.read_csv('acq_param.csv').to_numpy()
-    DQfilter = acq[0][0].split('\t')[1]
-    DQfilterzFil = acq[1][0].split('\t')[1]
-    evol = acq[5][0].split('\t')[1]
-    zFilter = acq[6][0].split('\t')[1]
+    DQfilter = acq[0][0].split('\t')[2]
+    DQfilterzFil = acq[1][0].split('\t')[2]
+    evol = acq[5][0].split('\t')[2]
+    zFilter = acq[6][0].split('\t')[2]
 
     SDQ = pd.read_csv(f'{SDQ}', sep='\t').to_numpy()
     vd = SDQ[:, 0]
@@ -53,7 +55,7 @@ def main():
 
     fig, axs = plt.subplots(1, 3, figsize=(37.5, 10))
     
-    if DQfilter == '0.000000 s':
+    if DQfilter == '0.000000':
         acqdq = rf'No filter used | Evol = {evol} s | z-Filter = {zFilter} s'
     else:
         acqdq = rf'DQ-filter = {DQfilter} s | DQ-fil (z-fil) = {DQfilterzFil} s | Evol = {evol} s | z-Filter = {zFilter} s'
@@ -85,6 +87,11 @@ def main():
     axs[2].legend()
 
     plt.savefig(f'{Out}')
+
+    with open(f'{Out}.csv', 'w') as f:
+        f.write("vd [us]\tFID00\tFID Pts\tPeak Area\n")
+        for i in range(len(vd)):
+            f.write(f'{vd[i]:.1f}\t{SnDQ[i, 0]:.6f}\t{SnDQ[i, 1]:.6f}\t{SnDQ[i, 3]:.6f}\n')
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

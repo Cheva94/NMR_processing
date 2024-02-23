@@ -18,6 +18,8 @@ plt.rcParams['xtick.minor.size'] = 8
 plt.rcParams['xtick.minor.width'] = 2
 plt.rcParams['ytick.major.size'] = 10
 plt.rcParams['ytick.major.width'] = 5
+plt.rcParams['ytick.minor.size'] = 10
+plt.rcParams['ytick.minor.width'] = 5
 
 plt.rcParams["legend.loc"] = 'best'
 plt.rcParams["legend.frameon"] = True
@@ -165,7 +167,7 @@ def Nutac(SGL, nS, RDT, RG, att, RD, vp, Out, lenvp):
         
     # Plot del primer punto de la FID
     axs[0].set_title('Primer punto de cada FID')
-    axs[0].scatter(vp, fid00, label=rf'Max = {vp[fid00 == np.max(fid00)][0]} $\mu$s', color='tab:blue')
+    axs[0].scatter(vp, fid00, label=rf'Max = {vp[fid00 == np.max(fid00)][0]} $\mu$s', color=Verde)
     axs[0].axhline(y=0, color=Gris, ls=':', lw=4)
     axs[0].set_xlabel(r't [$\mu$s]')
     axs[0].legend()
@@ -174,7 +176,7 @@ def Nutac(SGL, nS, RDT, RG, att, RD, vp, Out, lenvp):
 
     # Plot del promedio de los primeros puntos de la FID
     axs[1].set_title('Primeros 10 puntos de cada FID')
-    axs[1].scatter(vp, fidPts, label=rf'Max = {vp[fidPts == np.max(fidPts)][0]} $\mu$s', color='tab:orange')
+    axs[1].scatter(vp, fidPts, label=rf'Max = {vp[fidPts == np.max(fidPts)][0]} $\mu$s', color=Verde)
     axs[1].axhline(y=0, color=Gris, ls=':', lw=4)
     axs[1].set_xlabel(r't [$\mu$s]')
     axs[1].legend()
@@ -477,7 +479,7 @@ def DQ_bu(SGL, nS, RDT, RG, att, RD, evol, zFilter, p90, vd, CS, spec, DQfilter,
         
     # Plot del primer punto de la FID
     axs[0].set_title('Primer punto de cada FID')
-    axs[0].scatter(vd, fid00, label=rf'Max = {vd[fid00 == np.max(fid00[1:])][0]} $\mu$s', color='tab:blue')
+    axs[0].scatter(vd, fid00, label=rf'Max = {vd[fid00 == np.max(fid00[1:])][0]} $\mu$s', color=Verde)
     axs[0].axhline(y=0, color=Gris, ls=':', lw=4)
     axs[0].set_xlabel(r't [$\mu$s]')
     m = np.floor(np.log10(np.max(fid00)))
@@ -486,7 +488,7 @@ def DQ_bu(SGL, nS, RDT, RG, att, RD, evol, zFilter, p90, vd, CS, spec, DQfilter,
 
     # Plot del promedio de los primeros puntos de la FID
     axs[1].set_title('Primeros 10 puntos de cada FID')
-    axs[1].scatter(vd, fidPts, label=rf'Max = {vd[fidPts == np.max(fidPts[1:])][0]} $\mu$s', color='tab:orange')
+    axs[1].scatter(vd, fidPts, label=rf'Max = {vd[fidPts == np.max(fidPts[1:])][0]} $\mu$s', color=Verde)
     axs[1].axhline(y=0, color=Gris, ls=':', lw=4)
     axs[1].set_xlabel(r't [$\mu$s]')
     m = np.floor(np.log10(np.max(fidPts)))
@@ -495,7 +497,7 @@ def DQ_bu(SGL, nS, RDT, RG, att, RD, evol, zFilter, p90, vd, CS, spec, DQfilter,
 
     # Plot de las áreas de los espectros
     axs[2].set_title('Área de los picos de cada espectro')
-    axs[2].scatter(vd, pArea, label=rf'Max = {vd[pArea == np.max(pArea[1:])][0]} $\mu$s', color='tab:green')
+    axs[2].scatter(vd, pArea, label=rf'Max = {vd[pArea == np.max(pArea[1:])][0]} $\mu$s', color=Verde)
     axs[2].axhline(y=0, color=Gris, ls=':', lw=4)
     axs[2].set_xlabel(r't [$\mu$s]')
     m = np.floor(np.log10(np.max(pArea)))

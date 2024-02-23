@@ -38,7 +38,6 @@ def readFID(fileDir):
     
     filter = 69 # Puntos que no sirven tema de filtro digital
     SGL = rawdata[filter:]
-    # SGL[0] = 2*SGL[0] # arreglo lo que el bruker rompe
     nP = len(SGL) # Cantidad total de puntos que me quedan en la FID
     t = np.array([x * 1E6 / SW for x in range(nP)]) # eje temporal en microsegundos
 
@@ -77,18 +76,18 @@ def specFID(SGL, nP, SW):
 def writeFID(t, SGL, nP, CS, spec, Out, mlim):
 
     with open(f'{Out}FID_td.csv', 'w') as f:
-        f.write("t [ms]\tRe[FID]\tIm[FID] \n")
+        f.write("t [ms]\tRe[FID]\tIm[FID]\n")
         for i in range(nP):
-            f.write(f'{t[i]:.6f}\t{SGL[i].real:.6f}\t{SGL[i].imag:.6f} \n')
+            f.write(f'{t[i]:.6f}\t{SGL[i].real:.6f}\t{SGL[i].imag:.6f}\n')
 
     mask = (CS>-2*mlim)&(CS<2*mlim)
     CS = CS[mask]
     spec = spec[mask]
 
     with open(f'{Out}FID_fd.csv', 'w') as f:
-        f.write("CS [ppm]\tRe[spec]\tIm[spec] \n")
+        f.write("CS [ppm]\tRe[spec]\tIm[spec]\n")
         for i in range(len(CS)):
-            f.write(f'{CS[i]:.6f}\t{spec[i].real:.6f}\t{spec[i].imag:.6f} \n')
+            f.write(f'{CS[i]:.6f}\t{spec[i].real:.6f}\t{spec[i].imag:.6f}\n')
 
 def writeFID_acq(nS, RDT, RG, att, RD, p90, Out):
 
@@ -128,7 +127,6 @@ def readNutac(fileDir):
 
     filter = 69 # Puntos que no sirven tema de filtro digital
     SGL = rawdata[:, filter:]
-    SGL[:, 0] = 2*SGL[:, 0] # arreglo lo que el bruker rompe
 
     return vp, SGL, nS, RDT, RG, att, RD
 
@@ -377,7 +375,6 @@ def readDQ(fileDir):
 
     filter = 69 # Puntos que no sirven tema de filtro digital
     SGL = rawdata[:, filter:]
-    SGL[:, 0] = 2*SGL[:, 0] # arreglo lo que el bruker rompe
     nP = len(SGL[0, :]) # Cantidad total de puntos que me quedan en la FID
     t = np.array([x * 1E6 / SW for x in range(nP)]) # eje temporal en microsegundos
 
@@ -472,14 +469,14 @@ def writeDQ_verbose(t, SGL, nP, CS, spec, Out, lenvd, mlim):
 
     for k in range(lenvd):
         with open(f'{Out}FID_td_{k}.csv', 'w') as f:
-            f.write("t [ms]\tRe[FID]\tIm[FID] \n")
+            f.write("t [ms]\tRe[FID]\tIm[FID]\n")
             for i in range(nP):
-                f.write(f'{t[i]:.6f}\t{SGL[k, i].real:.6f}\t{SGL[k, i].imag:.6f} \n')
+                f.write(f'{t[i]:.6f}\t{SGL[k, i].real:.6f}\t{SGL[k, i].imag:.6f}\n')
 
         with open(f'{Out}FID_fd_{k}.csv', 'w') as f:
-            f.write("CS [ppm]\tRe[spec]\tIm[spec] \n")
+            f.write("CS [ppm]\tRe[spec]\tIm[spec]\n")
             for i in range(len(CS)):
-                f.write(f'{CS[i]:.6f}\t{spec[k, i].real:.6f}\t{spec[k, i].imag:.6f} \n')
+                f.write(f'{CS[i]:.6f}\t{spec[k, i].real:.6f}\t{spec[k, i].imag:.6f}\n')
         
         if k % 5 == 0:
             print(f'\t\t{(k+1)*100/lenvd:.0f} %')
@@ -759,11 +756,11 @@ def writeSRCPMG(T1, T2, S, Out):
     with open(f'{Out}SR-CPMG_RatesDom_ProjectionT1.csv', 'w') as f:
         f.write("T1 [ms]\t\tDistribution\tCumulative\n")
         for i in range(len(T1)):
-            f.write(f'{T1[i]:.6f}\t{projT1[i]:.6f}\t{cumT1[i]:.6f} \n')
+            f.write(f'{T1[i]:.6f}\t{projT1[i]:.6f}\t{cumT1[i]:.6f}\n')
 
     projT2 = np.sum(S, axis=0)
     cumT2 = np.cumsum(projT2)
     with open(f'{Out}SR-CPMG_RatesDom_ProjectionT2.csv', 'w') as f:
         f.write("T2 [ms]\t\tDistribution\tCumulative\n")
         for i in range(len(T2)):
-            f.write(f'{T2[i]:.6f}\t{projT2[i]:.6f}\t{cumT2[i]:.6f} \n')
+            f.write(f'{T2[i]:.6f}\t{projT2[i]:.6f}\t{cumT2[i]:.6f}\n')
