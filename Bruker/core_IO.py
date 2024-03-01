@@ -518,7 +518,8 @@ def initKernelDQ(nP, vdFit, DipMin, DipMax):
     K = np.zeros((nP, nBin))
 
     for i in range(nP):
-        K[i, :] = 1 - np.exp(-(vdFit[i] * Dip)**2)
+        # K[i, :] = 1 - np.exp(-(vdFit[i] * Dip)**2) # F0
+        K[i, :] = 1 - np.exp(-0.4 * (vdFit[i] * Dip)**2) # F1
 
     return S0, Dip, K
 
@@ -532,7 +533,8 @@ def fitLapMag_Dip(vd, Dip, S, nP):
     for i in range(nP):
         m = 0
         for j in d:
-            m += S[j] * (1 - np.exp(- vd[i]**2 * Dip[j]**2))
+            # m += S[j] * (1 - np.exp(-(vd[i] * Dip[j])**2)) # F0
+            m += S[j] * (1 - np.exp(-0.4 * (vd[i] * Dip[j])**2)) # F1
         M.append(m)
 
     return M

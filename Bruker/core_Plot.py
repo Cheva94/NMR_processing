@@ -655,7 +655,8 @@ def DQLap(vd_us, bu, Dip, S, MLaplace, root, alpha, DipMin, DipMax, limSup):
     gammaH = 267.5E6 # Hz/T
     hbar = 6.62607E-34 # Js
     Hzm3TokHzA3 = 1E27
-    factConv = gammaH**2 * mu0 * hbar * Hzm3TokHzA3 / (4*np.pi) # kHz A^3
+    # factConv = gammaH**2 * mu0 * hbar * Hzm3TokHzA3 / (4*np.pi) # kHz A^3
+    factConv = gammaH**2 * mu0 * hbar * Hzm3TokHzA3 / (8*np.pi**2) # kHz A^3 + FreqAng2FreqLin
     radDist = np.cbrt(factConv/Dip)
     peaksx = radDist[peaks]
 

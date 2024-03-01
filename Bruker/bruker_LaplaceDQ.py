@@ -15,8 +15,6 @@ def main():
     print('Reading DQ raw data...')
     vd_us, bu = IO.readDQLaplace(path)
     vd_ms = 0.001 * vd_us
-    # no sé si es necesaria la normalización
-    # bu /= np.max(bu)
     vdFit = vd_ms[:limSup]
     print(f'Se ajusta hasta los {vdFit[-1]*1000} us.')
     root = f'Laplace_Fit{vdFit[-1]*1000:.0f}us.'
