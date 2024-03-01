@@ -17,7 +17,7 @@ def main():
     vd_ms = 0.001 * vd_us
     vdFit = vd_ms[:limSup]
     print(f'Se ajusta hasta los {vdFit[-1]*1000} us.')
-    root = f'Laplace_Fit{vdFit[-1]*1000:.0f}us.'
+    root = f'Laplace_Fit{vdFit[-1]*1000:.0f}us'
     nP = len(vdFit)
     buFit = bu[:limSup]
 

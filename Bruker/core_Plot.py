@@ -363,7 +363,7 @@ def SRCPMG(tau1, tau2, Z, T1, T2, S, MLap_SR, MLap_CPMG, Out,
     # Projected T1 distribution
     projT1 = np.sum(S, axis=1)
     projT1 = projT1 / np.max(projT1)
-    peaks1, _ = find_peaks(projT1, height=0.025, distance = 5)
+    peaks1, _ = find_peaks(projT1, height=0.025, distance = 1)
     peaks1x, peaks1y = T1[peaks1], projT1[peaks1]
     
     axs[0,2].axhline(y=0.1, color='k', ls=':', lw=4)
@@ -388,7 +388,7 @@ def SRCPMG(tau1, tau2, Z, T1, T2, S, MLap_SR, MLap_CPMG, Out,
     # Projected T2 distribution
     projT2 = np.sum(S, axis=0)
     projT2 = projT2 / np.max(projT2)
-    peaks2, _ = find_peaks(projT2, height=0.025, distance = 5)
+    peaks2, _ = find_peaks(projT2, height=0.025, distance = 8)
     peaks2x, peaks2y = T2[peaks2], projT2[peaks2]
     
     axs[0,3].axhline(y=0.1, color='k', ls=':', lw=4)

@@ -25,7 +25,7 @@ def main():
               rf'p90 = {p90} $\mu$s | p180 = {p180} $\mu$s | '
               rf'tE = {tEcho:.1f} ms | nE = {nEcho}')
 
-    print('Analysing CPMG raw data...')
+    print('Analysing SR-CPMG raw data...')
     Z = IO.PhCorr2D(SGL, lenIndir, nEcho) # ya sale parte real
 
     print(f'Starting NLI: Alpha = {alpha}.')
@@ -43,10 +43,10 @@ def main():
     print('Writing acquisition parameters...')
     IO.writeSRCPMG_acq(nS, RDT, RG, att, RD, p90, p180, tEcho, nEcho, Out)
 
-    print('Writing CPMG processed data...')
+    print('Writing SR-CPMG processed data...')
     IO.writeSRCPMG(T1, T2, S, Out)
 
-    print('Plotting CPMG processed data...')
+    print('Plotting SR-CPMG processed data...')
     graph.SRCPMG(tau1, tau2, Z, T1, T2, S, MLap_SR, MLap_CPMG, Out, 
                  alpha, T1min, T1max, T2min, T2max, params, tEcho)
 
