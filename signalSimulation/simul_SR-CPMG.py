@@ -83,17 +83,17 @@ def NLI_FISTA_2D(K1, K2, Z, alpha, S):
 ################################################################################
 
 alpha = 0.1
-T1s = np.array([10, 100]) # ms
-T2s = np.array([10, 100]) # ms
-Amps = np.array([1, 1]) # ([0.3, 0.7])
-T1min, T1max = 0.5, 2.5
-T2min, T2max = 0.5, 2.5
+T1s = np.array([150, 900]) # ms
+T2s = np.array([150, 900]) # ms
+Amps = np.array([0.3, 0.7])
+T1min, T1max = 2, 4
+T2min, T2max = 2, 4
 
 largo1 = 20
 largo2 = 100
-tau1 = np.logspace(0, 3, largo1) # ms
+tau1 = np.logspace(0, 4, largo1) # ms
 nP1 = len(tau1)
-tau2 = np.logspace(0, 3, largo2) # ms
+tau2 = np.logspace(0, 4, largo2) # ms
 nP2 = len(tau2)
 
 SGL0 = np.zeros((nP1, nP2))
@@ -104,7 +104,7 @@ for i in range(nP1):
         SGL1[i, j] = Amps[1] * (1 - np.exp(-tau1[i]/T1s[1])) * np.exp(-tau2[j]/T2s[1])
 SGLnoisynt = SGL0 + SGL1
 
-noise = np.random.normal(0, 0.015, (largo1, largo2))
+noise = np.random.normal(0, 0.007, (largo1, largo2))
 SGLnoisy = SGLnoisynt + noise
 
 nBinx = nBiny = 300
@@ -119,55 +119,45 @@ K2 = np.zeros((nP2, nBiny))
 for i in range(nP2):
     K2[i, :] = np.exp(-tau2[i] / T2)
 
-Snoisynt, _ = NLI_FISTA_2D(K1, K2, SGLnoisynt, alpha, S0)
-np.savetxt('simul_SR-CPMG_sinRuido_Laplace.txt', Snoisynt)
+
 Snoisy, _ = NLI_FISTA_2D(K1, K2, SGLnoisy, alpha, S0)
 np.savetxt('simul_SR-CPMG_conRuido_Laplace.txt', Snoisy)
 # Snoisy = pd.read_csv('simul_SR-CPMG_conRuido_Laplace.txt', header = None, delim_whitespace=True).to_numpy()
-# Snoisynt = pd.read_csv('simul_SR-CPMG_sinRuido_Laplace.txt', header = None, delim_whitespace=True).to_numpy()
 
-###################################################################### Sin ruido
-print('Gráficos sin ruido')
 _, axs = plt.subplots(subplot_kw={"projection": "3d"})
 tau2, tau1 = np.meshgrid(tau2, tau1)
-axs.plot_surface(tau1, tau2, SGLnoisynt, cmap='viridis', rcount=100, ccount=100)
-
-axs.set_xlabel(r'$\tau_1$ [s]', fontsize=15)
-axs.set_ylabel(r'$\tau_2$ [s]', fontsize=15)
-axs.set_zlabel('Señal SR-CPMG', fontsize=15)
-axs.view_init(elev=10, azim=140)
-
-plt.savefig('simul_SR-CPMG_sinRuido_TimeDomain')
-
-_, axs = plt.subplots()
-Snorm = Snoisynt / np.max(Snoisynt)
-# Snorm = np.where(Snorm<0.15, 0.0, Snorm)
-
-axs.contour(T2, T1, Snorm, 100, cmap='rainbow')
-axs.set_xlabel(r'$T_2$ [ms]')
-axs.set_ylabel(r'$T_1$ [ms]')
-axs.set_xlim(10.0**T2min, 10.0**T2max)
-axs.set_ylim(10.0**T1min, 10.0**T1max)
-axs.set_xscale('log')
-axs.set_yscale('log')
-
-plt.savefig('simul_SR-CPMG_sinRuido_Laplace')
-
-###################################################################### Con ruido
-print('Gráficos con ruido')
-_, axs = plt.subplots(subplot_kw={"projection": "3d"})
 axs.plot_surface(tau1, tau2, SGLnoisy, cmap='viridis', rcount=100, ccount=100)
 
-axs.set_xlabel(r'$\tau_1$ [s]', fontsize=15)
-axs.set_ylabel(r'$\tau_2$ [s]', fontsize=15)
-axs.set_zlabel('Señal SR-CPMG', fontsize=15)
-axs.view_init(elev=10, azim=140)
+axs.set_xlabel(r'$\tau_1$ [ms]')
+axs.set_ylabel(r'$\tau_2$ [ms]')
+axs.set_zlabel('Señal SR-CPMG')
+
+axs.xaxis.labelpad=30
+axs.yaxis.labelpad=30
+axs.zaxis.labelpad=30
+
+axs.set_zlim(0, 1)
+axs.zaxis.set_major_locator(MultipleLocator(0.2))
+axs.zaxis.set_minor_locator(MultipleLocator(0.1))
+
+axs.xaxis.set_major_locator(MultipleLocator(3000))
+axs.xaxis.set_minor_locator(MultipleLocator(1500))
+
+axs.yaxis.set_major_locator(MultipleLocator(3000))
+axs.yaxis.set_minor_locator(MultipleLocator(1500))
+
+axs.view_init(elev=20, azim=135)
 
 plt.savefig('simul_SR-CPMG_conRuido_TimeDomain')
 
 _, axs = plt.subplots()
 Snorm = Snoisy / np.max(Snoisy)
-# Snorm = np.where(Snorm<0.15, 0.0, Snorm)
+
+# Remove edge effects from NLI on the plots
+Snorm = Snorm[4:-9, 2:-2]
+T1 = T1[4:-9]
+T2 = T2[2:-2]
+Snorm = np.where(Snorm<0.05, 0.0, Snorm)
 
 axs.contour(T2, T1, Snorm, 100, cmap='rainbow')
 axs.set_xlabel(r'$T_2$ [ms]')
