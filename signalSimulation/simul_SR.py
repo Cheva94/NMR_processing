@@ -1,16 +1,10 @@
 #!/usr/bin/python3.10
 
-import pandas as pd
 import numpy as np
 np.random.seed(1994)
 from scipy.signal import find_peaks
 import matplotlib.pyplot as plt
-from matplotlib.ticker import FormatStrFormatter # Para determinar decimales
-from mpl_toolkits.axes_grid1.inset_locator import inset_axes
-# axs.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
 from matplotlib.ticker import MultipleLocator
-# ax.xaxis.set_major_locator(MultipleLocator(1))
-# ax.xaxis.set_minor_locator(MultipleLocator(0.5))
 
 plt.rcParams["font.weight"] = "bold"
 plt.rcParams["font.size"] = 30
@@ -113,14 +107,14 @@ SGL = Amps[0] * (1 - np.exp(-tau1/T1s[0])) + Amps[1] * (1 - np.exp(-tau1/T1s[1])
 noise = np.random.normal(0, 0.015, largo)
 SGLnoisy = SGL + noise
 
-nBin = 150
+nBin = 300
 S0 = np.ones(nBin)
 T1 = np.logspace(T1min, T1max, nBin)
 K = np.zeros((nP, nBin))
 for i in range(nP):
     K[i, :] = 1 - np.exp(-tau1[i] / T1)
 
-alpha = 0.01
+alpha = 0.008
 Snoisy, iter = NLI_FISTA_1D(K, SGLnoisy, alpha, S0)
 
 MagLap = fitLapMag_1D(tau1, T1, Snoisy)

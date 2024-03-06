@@ -1,71 +1,160 @@
-#!/usr/bin/python3.10
+#!/uCPMG/bin/python3.10
 
-import argparse
-import core_IO as IO
-import core_Plot as graph
 import numpy as np
+np.random.seed(1994)
+from scipy.signal import find_peaks
+import matplotlib.pyplot as plt
+from matplotlib.ticker import MultipleLocator
 
-def main():
+plt.rcParams["font.weight"] = "bold"
+plt.rcParams["font.size"] = 30
 
-    path = args.path
-    root = path.split(".txt")[0]
-    alpha = args.alpha
-    T2min, T2max = args.T2Range[0], args.T2Range[1]
+plt.rcParams["axes.labelweight"] = "bold"
+plt.rcParams["axes.linewidth"] = 2
 
-    print('Reading CPMG raw data...')
-    t, SGL, nP, _ = IO.read1Dsgl(path)
-    RDT, att, RG, nS, RD, p90, p180, tEcho, nEcho = IO.read1Dparams(root)
-    S0, T2, K = IO.initKernel1D(nP, t, T2min, T2max)
-    params = (rf'Acquisition: RDT = {RDT} $\mu$s | Atten = {att} dB | '
-              rf'RG = {RG} dB | nS = {nS} | RD = {RD:.2f} s | '
-              rf'p90 = {p90} $\mu$s | p180 = {p180} $\mu$s | '
-              rf'tE = {tEcho:.1f} ms | nE = {nEcho}')
+plt.rcParams['xtick.major.size'] = 10
+plt.rcParams['xtick.major.width'] = 2
+plt.rcParams['xtick.minor.size'] = 6
+plt.rcParams['xtick.minor.width'] = 1.5
 
-    print('Analysing CPMG raw data...')
-    SGL = IO.PhCorr1D(SGL)
-    Z = SGL.real
-    Z = IO.NormRG1D(Z, RG)
+plt.rcParams['ytick.major.size'] = 10
+plt.rcParams['ytick.major.width'] = 2
+plt.rcParams['ytick.minor.size'] = 6
+plt.rcParams['ytick.minor.width'] = 1.5
 
-    print(f'Fitting with exponentials...')
-    Pearson = []
+plt.rcParams["legend.frameon"] = False
+plt.rcParams["legend.fontsize"] = 30
 
-    Mag_1, T2_1, r2 = IO.expFit_1(t, Z)
-    Pearson.append(f'R2 = {r2:.6f}')
-    Pearson.append('')
+plt.rcParams["figure.figsize"] = 12.5, 10
+plt.rcParams["figure.autolayout"] = True
 
-    Mag_2, T2_2, r2 = IO.expFit_2(t, Z)
-    Pearson.append(f'R2 = {r2:.6f}')
-    Pearson.append('')
+plt.rcParams["lines.linewidth"] = 4
 
-    dataFit = np.hstack((np.vstack((Mag_1, T2_1, Mag_2, T2_2)), 
-                         np.array([Pearson]).T))
+# Colores
+Verde = '#08a189' # = 08A189 = 8 161 137    (principal)
+Naranja = '#fa6210' # = FA6210 = 250 98 16    (secundario)
+Azul = '#3498db' # (terciario)
+Morado = '#6a1b9a' # (cuaternario)
+Gris = '#808080' # (alternativo)
+Negro = '#000000' # =  = 0 0 0 (base)
 
-    print(f'Starting NLI: Alpha = {alpha}.')
-    S, iter = IO.NLI_FISTA_1D(K, Z, alpha, S0)
-    if iter < 100000:
-        print('Inversion ready!')
-    else:
-        print('Warning!')
-        print('Maximum number of iterations reached!')
-        print('Try modifying T2Range and/or alpha settings.')
+def NLI_FISTA_1D(K, Z, alpha, S):
+    '''
+    Numeric Laplace inversion, based on FISTA.
+    '''
 
-    print(f'Fitting NLI results in time domain...')
-    MLaplace = IO.fitLapMag_1D(t, T2, S, nP)
+    Z = np.reshape(Z, (len(Z), 1))
+    S = np.reshape(S, (len(S), 1))
 
-    print('Writing CPMG processed data...')
-    IO.writeCPMG(t, Z, MLaplace, T2, S, root)
+    KTK = K.T @ K
+    KTZ = K.T @ Z
+    ZZT = np.trace(Z @ Z.T)
 
-    print('Plotting CPMG processed data...')
-    graph.CPMG(t, Z, T2, S, MLaplace, root, alpha, T2min, T2max, params, 
-               dataFit, tEcho)
+    invL = 1 / (np.trace(KTK) + alpha)
+    factor = 1 - alpha * invL
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-path', type=str, default = 'CPMG.txt', 
-                        help = "Path to the CPMG signal.")
-    parser.add_argument('-alpha', type = float, default = 0.1, 
-                        help = "Tikhonov regularization parameter.")
-    parser.add_argument('-T2Range', nargs = 2, type = float, default = [-1, 4], 
-                        help = "Range to consider for T2 values.")
-    args = parser.parse_args()
-    main()
+    Y = S
+    tstep = 1
+    lastRes = np.inf
+
+    for iter in range(100000):
+        term2 = KTZ - KTK @ Y
+        Snew = factor * Y + invL * term2
+        Snew[Snew<0] = 0
+
+        tnew = 0.5 * (1 + np.sqrt(1 + 4 * tstep**2))
+        tRatio = (tstep - 1) / tnew
+        Y = Snew + tRatio * (Snew - S)
+        tstep = tnew
+        S = Snew
+
+        if iter % 500 == 0:
+            TikhTerm = alpha * np.linalg.norm(S)**2
+            ObjFunc = ZZT - 2 * np.trace(S.T @ KTZ) + np.trace(S.T @ KTK @ S) + TikhTerm
+
+            Res = np.abs(ObjFunc - lastRes) / ObjFunc
+            lastRes = ObjFunc
+            print(f'\t# It = {iter} >>> Residue = {Res:.6f}')
+
+            if Res < 1E-5:
+                break
+
+    return S[:, 0], iter
+
+def fitLapMag_1D(tau2, T2, S):
+    '''
+    Fits decay from T2 distribution.
+    '''
+
+    M = []
+    for i in range(len(tau2)):
+        m = 0
+        for j in range(len(T2)):
+            m += S[j] * np.exp(-tau2[i] / T2[j])
+        M.append(m)
+
+    return M
+
+################################################################################
+
+largo = 20
+tau2 = np.logspace(0, 3, largo) # ms
+nP = len(tau2)
+T2s = np.array([10, 100]) # ms
+T2min, T2max = 0.5, 2.5
+Amps = np.array([0.3, 0.7])
+SGL = Amps[0] * np.exp(-tau2/T2s[0]) + Amps[1] * np.exp(-tau2/T2s[1])
+noise = np.random.normal(0, 0.015, largo)
+SGLnoisy = SGL + noise
+
+nBin = 300
+S0 = np.ones(nBin)
+T2 = np.logspace(T2min, T2max, nBin)
+K = np.zeros((nP, nBin))
+for i in range(nP):
+    K[i, :] = np.exp(-tau2[i] / T2)
+
+alpha = 0.003
+Snoisy, iter = NLI_FISTA_1D(K, SGLnoisy, alpha, S0)
+
+MagLap = fitLapMag_1D(tau2, T2, Snoisy)
+
+# Remove edge effects from NLI on the plots
+Snoisy = Snoisy[4:]
+T2 = T2[4:]
+
+_, axs = plt.subplots()
+
+axs.plot(tau2, SGLnoisy, color=Negro, marker='*', ms=20, ls='', label='Dato')
+axs.plot(tau2, MagLap, color=Azul, ls=':', zorder=-10, label='Ajuste')
+axs.set_xlabel(r'$\tau_2$ [ms]')
+axs.set_ylabel('Señal CPMG')
+axs.legend(loc='upper right')
+
+axs.xaxis.set_major_locator(MultipleLocator(200))
+axs.xaxis.set_minor_locator(MultipleLocator(100))
+axs.yaxis.set_major_locator(MultipleLocator(0.2))
+axs.yaxis.set_minor_locator(MultipleLocator(0.1))
+
+plt.savefig('simul_CPMG_TimeDomain')
+
+Snorm = Snoisy / np.max(Snoisy)
+peaks, _ = find_peaks(Snorm,height=0.025, distance = 5)
+peaksx, peaksy = T2[peaks], Snorm[peaks]
+
+_, axs = plt.subplots()
+
+axs.plot(T2, Snorm, color = Verde)
+for i in range(len(peaksx)):
+    axs.plot(peaksx[i], peaksy[i] + 0.05, lw = 0, marker=11, ms=20, color=Naranja)
+    axs.annotate(f'{peaksx[i]:.0f} ms', xy = (peaksx[i], peaksy[i] + 0.07), 
+                    fontsize=30, ha='center')
+axs.set_xlabel(r'$T_2$ [ms]')
+axs.set_xscale('log')
+axs.set_ylim(-0.02, 1.2)
+axs.set_xlim(10.0**T2min, 10.0**T2max)
+
+axs.yaxis.set_major_locator(MultipleLocator(0.2))
+axs.yaxis.set_minor_locator(MultipleLocator(0.1))
+
+plt.savefig('simul_CPMG_Laplace')
