@@ -83,9 +83,9 @@ def NLI_FISTA_2D(K1, K2, Z, alpha, S):
 ################################################################################
 
 alpha = 0.1
-T1s = np.array([150, 900]) # ms
-T2s = np.array([150, 900]) # ms
-Amps = np.array([0.3, 0.7])
+T1s = np.array([2400]) # ms
+T2s = np.array([160]) # ms
+Amps = np.array([1])
 T1min, T1max = 2, 4
 T2min, T2max = 2, 4
 
@@ -101,8 +101,8 @@ SGL1 = np.zeros((nP1, nP2))
 for i in range(nP1):
     for j in range(nP2):
         SGL0[i, j] = Amps[0] * (1 - np.exp(-tau1[i]/T1s[0])) * np.exp(-tau2[j]/T2s[0])
-        SGL1[i, j] = Amps[1] * (1 - np.exp(-tau1[i]/T1s[1])) * np.exp(-tau2[j]/T2s[1])
-SGLnoisynt = SGL0 + SGL1
+        # SGL1[i, j] = Amps[1] * (1 - np.exp(-tau1[i]/T1s[1])) * np.exp(-tau2[j]/T2s[1])
+SGLnoisynt = SGL0 #+ SGL1
 
 noise = np.random.normal(0, 0.007, (largo1, largo2))
 SGLnoisy = SGLnoisynt + noise
